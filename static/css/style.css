@@ -1,0 +1,77 @@
+/* ── VARIABLES ── */
+:root {
+    --bg: #080c12;
+    --panel: #0f1923;
+    --border: #1a2d42;
+    --blue: #0ea5e9;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --text: #e2eaf4;
+    --text2: #7a9bb8;
+}
+
+/* ── RESET ── */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    line-height: 1.7;
+}
+
+/* ── NAV ── */
+nav {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-logo {
+    color: var(--blue);
+    font-size: 1.3rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.nav-links a:hover {
+    color: var(--blue);
+}
+
+/* ── MAIN ── */
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+/* ── FOOTER ── */
+footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    text-align: center;
+    color: var(--text2);
+    font-size: 0.8rem;
+}

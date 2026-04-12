@@ -8,7 +8,7 @@ db = SQLAlchemy(app)
 
 @app.route('/')
 def dashboard():
-    return "BlueForge — Panel operativo"
+    return render_template('base.html')
 
 @app.route('/health')
 def health():
