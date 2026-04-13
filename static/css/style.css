@@ -460,3 +460,26 @@ footer {
     letter-spacing: 0.05em;
     font-family: 'Courier New', monospace;
 }
+
+/* ── FEEDBACK ── */
+.obj-feedback {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    display: none;
+}
+
+.obj-feedback.correcto {
+    display: block;
+    background: rgba(16,185,129,0.1);
+    color: var(--green);
+    border: 1px solid rgba(16,185,129,0.3);
+}
+
+.obj-feedback.incorrecto {
+    display: block;
+    background: rgba(239,68,68,0.1);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.3);
+}

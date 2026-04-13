@@ -37,9 +37,11 @@
                 <span class="obj-cat">{{ obj.categoria }}</span>
             </div>
             <p class="obj-pregunta">{{ obj.pregunta }}</p>
-            <div class="obj-form">
-                <input type="text" name="respuesta" placeholder="Tu respuesta..." class="obj-input">
-                <button class="obj-btn">Enviar</button>
+            <div class="obj-form" id="form-{{ obj.id }}">
+    <input type="text" id="input-{{ obj.id }}" placeholder="Tu respuesta..." class="obj-input">
+    <button class="obj-btn" onclick="enviarRespuesta('{{ scenario.id }}', '{{ obj.id }}')">Enviar</button>
+</div>
+<div class="obj-feedback" id="feedback-{{ obj.id }}"></div>
             </div>
         </div>
         {% endfor %}
@@ -63,5 +65,72 @@
         {% endfor %}
     </div>
 </div>
+
+<script>
+function enviarRespuesta(scenarioId, objId) {
+    const input = document.getElementById('input-' + objId);
+    const feedback = document.getElementById('feedback-' + objId);
+    const respuesta = input.value.trim();
+
+    if (!respuesta) return;
+
+    fetch('/submit/' + scenarioId + '/' + objId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'respuesta=' + encodeURIComponent(respuesta)
+    })
+    .then(r => r.json())
+    .then(data => {
+        feedback.textContent = data.mensaje;
+        feedback.className = 'obj-feedback ' + (data.correcta ? 'correcto' : 'incorrecto');
+        if (data.correcta) {
+            input.disabled = true;
+            document.querySelector('#form-' + objId + ' .obj-btn').disabled = true;
+        }
+    });
+}
+</script>
+
+<script>
+// Cargar progreso al entrar a la página
+fetch('/api/progreso')
+    .then(r => r.json())
+    .then(data => {
+        data.objetivos_resueltos.forEach(objId => {
+            const feedback = document.getElementById('feedback-' + objId);
+            const input = document.getElementById('input-' + objId);
+            const btn = document.querySelector('#form-' + objId + ' .obj-btn');
+            if (feedback) {
+                feedback.textContent = '✓ Objetivo completado';
+                feedback.className = 'obj-feedback correcto';
+            }
+            if (input) input.disabled = true;
+            if (btn) btn.disabled = true;
+        });
+    });
+
+function enviarRespuesta(scenarioId, objId) {
+    const input = document.getElementById('input-' + objId);
+    const feedback = document.getElementById('feedback-' + objId);
+    const respuesta = input.value.trim();
+
+    if (!respuesta) return;
+
+    fetch('/submit/' + scenarioId + '/' + objId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'respuesta=' + encodeURIComponent(respuesta)
+    })
+    .then(r => r.json())
+    .then(data => {
+        feedback.textContent = data.mensaje;
+        feedback.className = 'obj-feedback ' + (data.correcta ? 'correcto' : 'incorrecto');
+        if (data.correcta) {
+            input.disabled = true;
+            document.querySelector('#form-' + objId + ' .obj-btn').disabled = true;
+        }
+    });
+}
+</script>
 
 {% endblock %}

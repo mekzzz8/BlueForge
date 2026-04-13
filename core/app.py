@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blueforge.db'
+app.secret_key = 'blueforge-dev-key-2025'
 
 db = SQLAlchemy(app)
 
@@ -67,6 +68,56 @@ def scenario(scenario_id):
     if sc is None:
         return "Escenario no encontrado", 404
     return render_template('scenario.html', scenario=sc)
+
+@app.route('/submit/<scenario_id>/<obj_id>', methods=['POST'])
+def submit(scenario_id, obj_id):
+    from flask import request, session
+
+    sc = next((s for s in SCENARIOS if s['id'] == scenario_id), None)
+    if sc is None:
+        return jsonify({"error": "Escenario no encontrado"}), 404
+
+    obj = next((o for o in sc['objetivos'] if o['id'] == obj_id), None)
+    if obj is None:
+        return jsonify({"error": "Objetivo no encontrado"}), 404
+
+    # Inicializar progreso en sesión si no existe
+    if 'progreso' not in session:
+        session['progreso'] = {}
+
+    # Si ya fue resuelto no hacer nada
+    if obj_id in session['progreso']:
+        return jsonify({
+            "correcta": True,
+            "mensaje": "Ya resolviste este objetivo.",
+            "puntos": 0
+        })
+
+    respuesta = request.form.get('respuesta', '').strip()
+    correcta = respuesta == obj['flag']
+
+    if correcta:
+        session['progreso'][obj_id] = {
+            "scenario_id": scenario_id,
+            "puntos": obj['puntos']
+        }
+        session.modified = True
+
+    return jsonify({
+        "correcta": correcta,
+        "mensaje": "¡Correcto! +{} puntos".format(obj['puntos']) if correcta else "Incorrecto, sigue investigando.",
+        "puntos": obj['puntos'] if correcta else 0
+    })
+
+@app.route('/api/progreso')
+def api_progreso():
+    from flask import session
+    progreso = session.get('progreso', {})
+    total_puntos = sum(v['puntos'] for v in progreso.values())
+    return jsonify({
+        "objetivos_resueltos": list(progreso.keys()),
+        "total_puntos": total_puntos
+    })
 
 @app.route('/health')
 def health():
