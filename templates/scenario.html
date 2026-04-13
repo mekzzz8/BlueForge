@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ scenario.nombre }}{% endblock %}
+
+{% block content %}
+
+<div class="scenario-header">
+    <div class="scenario-meta">
+        <span class="sc-id">{{ scenario.id | upper }}</span>
+        <span class="badge {{ scenario.dificultad }}">{{ scenario.dificultad | capitalize }}</span>
+        <span class="siem-badge">📊 {{ scenario.siem }}</span>
+    </div>
+    <h1>{{ scenario.nombre }}</h1>
+    <p class="sc-empresa">🏢 {{ scenario.empresa }}</p>
+    <p class="sc-tipo">{{ scenario.tipo }}</p>
+</div>
+
+<div class="briefing-box">
+    <div class="briefing-header">
+        <span class="briefing-label">// BRIEFING DEL INCIDENTE</span>
+    </div>
+    <div class="briefing-content">
+        <p>{{ scenario.briefing }}</p>
+    </div>
+</div>
+
+<div class="objectives-section">
+    <h2>Objetivos de la investigación</h2>
+    <p class="objectives-desc">Responde cada pregunta basándote en el análisis de los logs en tu SIEM. Las respuestas son sensibles a mayúsculas.</p>
+
+    <div class="objectives-list">
+        {% for obj in scenario.objetivos %}
+        <div class="objective-card">
+            <div class="obj-header">
+                <span class="obj-id">{{ obj.id }}</span>
+                <span class="obj-pts">{{ obj.puntos }} pts</span>
+                <span class="obj-cat">{{ obj.categoria }}</span>
+            </div>
+            <p class="obj-pregunta">{{ obj.pregunta }}</p>
+            <div class="obj-form">
+                <input type="text" name="respuesta" placeholder="Tu respuesta..." class="obj-input">
+                <button class="obj-btn">Enviar</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="tools-section">
+    <h2>Herramientas recomendadas</h2>
+    <div class="tools-list">
+        {% for tool in scenario.herramientas %}
+        <span class="tool-badge">{{ tool }}</span>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="mitre-section">
+    <h2>Técnicas MITRE ATT&CK</h2>
+    <div class="mitre-list">
+        {% for tecnica in scenario.tecnicas_mitre %}
+        <span class="mitre-badge">{{ tecnica }}</span>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

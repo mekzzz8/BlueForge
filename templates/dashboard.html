@@ -30,8 +30,8 @@
 
 <div class="scenarios-grid">
     {% for scenario in scenarios %}
-    <div class="scenario-card {% if scenario.bloqueado %}locked{% endif %}">
-        <div class="card-header">
+<div class="scenario-card {% if scenario.bloqueado %}locked{% endif %}" 
+     {% if not scenario.bloqueado %}onclick="window.location='/scenario/{{ scenario.id }}'"{% endif %}>        <div class="card-header">
             <span class="sc-id">{{ scenario.id | upper }}</span>
             <span class="badge {{ scenario.dificultad }}">{{ scenario.dificultad | capitalize }}</span>
         </div>
