@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-header">
+    <h1>Panel de Operaciones</h1>
+    <p class="subtitle">Selecciona un escenario para comenzar la investigación</p>
+</div>
+
+<div class="stats-bar">
+    <div class="stat">
+        <span class="stat-num">6</span>
+        <span class="stat-label">Escenarios</span>
+    </div>
+    <div class="stat">
+        <span class="stat-num">0</span>
+        <span class="stat-label">Completados</span>
+    </div>
+    <div class="stat">
+        <span class="stat-num">0</span>
+        <span class="stat-label">Puntos</span>
+    </div>
+    <div class="stat">
+        <span class="stat-num">3</span>
+        <span class="stat-label">SIEMs activos</span>
+    </div>
+</div>
+
+<div class="scenarios-grid">
+    {% for scenario in scenarios %}
+    <div class="scenario-card {% if scenario.bloqueado %}locked{% endif %}">
+        <div class="card-header">
+            <span class="sc-id">{{ scenario.id | upper }}</span>
+            <span class="badge {{ scenario.dificultad }}">{{ scenario.dificultad | capitalize }}</span>
+        </div>
+        <h3>{{ scenario.nombre }}</h3>
+        <p class="sc-type">{{ scenario.tipo }}</p>
+        <p class="sc-desc">{{ scenario.desc }}</p>
+        <div class="card-footer">
+            <span class="siem-badge">📊 {{ scenario.siem }}</span>
+            {% if scenario.bloqueado %}
+            <span class="points">🔒 Bloqueado</span>
+            {% else %}
+            <span class="points">{{ scenario.puntos_max }} pts</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+    <div class="scenario-card locked">
+        <div class="card-header">
+            <span class="sc-id">SC-002</span>
+            <span class="badge hard">Hard</span>
+        </div>
+        <h3>Operación SilentMove</h3>
+        <p class="sc-type">APT · Lateral Movement</p>
+        <p class="sc-desc">Próximamente disponible.</p>
+        <div class="card-footer">
+            <span class="siem-badge">📊 Splunk</span>
+            <span class="points locked-pts">🔒 Bloqueado</span>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

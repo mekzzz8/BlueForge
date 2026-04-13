@@ -64,7 +64,10 @@ nav {
 main {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 3rem 2rem;
+    padding: 4rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
 }
 
 /* ── FOOTER ── */
@@ -74,4 +77,181 @@ footer {
     text-align: center;
     color: var(--text2);
     font-size: 0.8rem;
+}
+
+/* ── DASHBOARD ── */
+.dashboard-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.dashboard-header h1 {
+    font-size: 2.2rem;
+    color: var(--blue);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+.subtitle {
+    color: var(--text2);
+    font-size: 0.95rem;
+}
+
+/* ── STATS BAR ── */
+.stats-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 4rem;
+    padding: 2rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    justify-content: space-around;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-num {
+    font-size: 2.2rem;
+    color: var(--blue);
+    font-weight: bold;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+/* ── SCENARIO CARDS ── */
+.scenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+}
+
+.scenario-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.scenario-card:hover {
+    border-color: var(--blue);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.scenario-card.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.scenario-card.locked:hover {
+    border-color: var(--border);
+    transform: none;
+    box-shadow: none;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.sc-id {
+    font-size: 0.7rem;
+    color: var(--text2);
+    letter-spacing: 0.15em;
+    background: rgba(255,255,255,0.05);
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+}
+
+.badge {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: bold;
+}
+
+.badge.easy {
+    background: rgba(16,185,129,0.15);
+    color: var(--green);
+    border: 1px solid rgba(16,185,129,0.4);
+}
+
+.badge.medium {
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    border: 1px solid rgba(245,158,11,0.4);
+}
+
+.badge.hard {
+    background: rgba(239,68,68,0.15);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.4);
+}
+
+.scenario-card h3 {
+    font-size: 1.2rem;
+    color: var(--text);
+    letter-spacing: 0.02em;
+}
+
+.sc-type {
+    font-size: 0.78rem;
+    color: var(--blue);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.sc-desc {
+    font-size: 0.88rem;
+    color: var(--text2);
+    line-height: 1.8;
+    flex: 1;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.25rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.siem-badge {
+    font-size: 0.72rem;
+    color: var(--text2);
+    background: rgba(255,255,255,0.04);
+    padding: 0.25rem 0.6rem;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+}
+
+.points {
+    font-size: 0.8rem;
+    color: var(--blue);
+    font-weight: bold;
+    letter-spacing: 0.05em;
 }

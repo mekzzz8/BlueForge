@@ -6,9 +6,34 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blueforge.db'
 
 db = SQLAlchemy(app)
 
+SCENARIOS = [
+    {
+        "id": "sc-001",
+        "nombre": "Operación NightCrypt",
+        "empresa": "FinCorp Solutions S.A.",
+        "tipo": "Ransomware · Incident Response",
+        "dificultad": "medium",
+        "siem": "Elastic Stack",
+        "puntos_max": 1000,
+        "bloqueado": False,
+        "desc": "FinCorp Solutions sufre cifrado masivo a las 3AM. Analiza los logs de Windows para reconstruir la cadena de ataque completa."
+    },
+    {
+        "id": "sc-002",
+        "nombre": "Operación SilentMove",
+        "empresa": "GovTech Ministerio",
+        "tipo": "APT · Lateral Movement",
+        "dificultad": "hard",
+        "siem": "Splunk",
+        "puntos_max": 2000,
+        "bloqueado": True,
+        "desc": "Próximamente disponible."
+    }
+]
+
 @app.route('/')
 def dashboard():
-    return render_template('base.html')
+    return render_template('dashboard.html', scenarios=SCENARIOS)
 
 @app.route('/health')
 def health():
