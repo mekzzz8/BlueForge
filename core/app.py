@@ -123,5 +123,9 @@ def api_progreso():
 def health():
     return jsonify({"status": "online", "platform": "BlueForge"})
 
+@app.route('/progress')
+def progress():
+    return render_template('progress.html')
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)

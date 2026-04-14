@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Progreso{% endblock %}
+
+{% block content %}
+
+<div class="progress-header">
+    <h1>Panel de Progreso</h1>
+    <p class="subtitle">Tu avance como analista Blue Team</p>
+</div>
+
+<div class="stats-bar">
+    <div class="stat">
+        <span class="stat-num" id="total-puntos">0</span>
+        <span class="stat-label">Puntos totales</span>
+    </div>
+    <div class="stat">
+        <span class="stat-num" id="total-resueltos">0</span>
+        <span class="stat-label">Objetivos resueltos</span>
+    </div>
+    <div class="stat">
+        <span class="stat-num" id="total-escenarios">0</span>
+        <span class="stat-label">Escenarios completados</span>
+    </div>
+</div>
+
+<div class="progress-scenarios">
+    <h2>Progreso por escenario</h2>
+    <div id="scenarios-progress"></div>
+</div>
+
+<div class="progress-history">
+    <h2>Objetivos completados</h2>
+    <div id="objetivos-list"></div>
+</div>
+
+<script>
+fetch('/api/progreso')
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('total-puntos').textContent = data.total_puntos;
+        document.getElementById('total-resueltos').textContent = data.objetivos_resueltos.length;
+
+        const lista = document.getElementById('objetivos-list');
+        if (data.objetivos_resueltos.length === 0) {
+            lista.innerHTML = '<p class="empty-msg">Aún no has resuelto ningún objetivo. ¡Empieza investigando!</p>';
+        } else {
+            data.objetivos_resueltos.forEach(objId => {
+                const div = document.createElement('div');
+                div.className = 'obj-done-card';
+                div.innerHTML = `
+                    <span class="obj-done-icon">✓</span>
+                    <span class="obj-done-id">${objId}</span>
+                    <span class="obj-done-label">Objetivo completado</span>
+                `;
+                lista.appendChild(div);
+            });
+        }
+    });
+</script>
+
+{% endblock %}

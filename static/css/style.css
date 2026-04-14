@@ -483,3 +483,64 @@ footer {
     color: var(--red);
     border: 1px solid rgba(239,68,68,0.3);
 }
+
+/* ── PROGRESS PAGE ── */
+.progress-header {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.progress-header h1 {
+    font-size: 2rem;
+    color: var(--blue);
+    margin-bottom: 0.5rem;
+}
+
+.progress-scenarios h2,
+.progress-history h2 {
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.03em;
+}
+
+.empty-msg {
+    color: var(--text2);
+    font-size: 0.9rem;
+    padding: 1.5rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-align: center;
+}
+
+.obj-done-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+}
+
+.obj-done-icon {
+    color: var(--green);
+    font-size: 1rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.obj-done-id {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: var(--blue);
+    flex-shrink: 0;
+}
+
+.obj-done-label {
+    font-size: 0.85rem;
+    color: var(--text2);
+}
