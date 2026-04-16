@@ -22,29 +22,46 @@ SCENARIOS = [
         "herramientas": ["Kibana", "Volatility", "Wireshark"],
         "tecnicas_mitre": ["T1566.001", "T1059.001", "T1547.001", "T1486"],
         "objetivos": [
-            {
-                "id": "OBJ-001",
-                "pregunta": "¿Cuál es el nombre del proceso malicioso que inició el ataque?",
-                "categoria": "Threat Hunting",
-                "flag": "svchost_fake.exe",
-                "puntos": 150
-            },
-            {
-                "id": "OBJ-002",
-                "pregunta": "¿Qué dirección IP externa contactó el malware durante la fase C2?",
-                "categoria": "Network Forensics",
-                "flag": "185.220.101.47",
-                "puntos": 200
-            },
-            {
-                "id": "OBJ-003",
-                "pregunta": "¿Qué clave de registro usó el malware para establecer persistencia?",
-                "categoria": "Incident Response",
-                "flag": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-                "puntos": 250
-            }
+    {
+        "id": "OBJ-001",
+        "pregunta": "¿Cuál es el nombre del proceso malicioso que inició el ataque?",
+        "categoria": "Threat Hunting",
+        "flag": "svchost_fake.exe",
+        "puntos": 150,
+        "hints": [
+            {"nivel": 1, "coste": 0,   "archivo": "hint-obj001-1.md"},
+            {"nivel": 2, "coste": 50,  "archivo": "hint-obj001-2.md"},
+            {"nivel": 3, "coste": 100, "archivo": "hint-obj001-3.md"}
         ]
     },
+    {
+        "id": "OBJ-002",
+        "pregunta": "¿Qué dirección IP externa contactó el malware durante la fase C2?",
+        "categoria": "Network Forensics",
+        "flag": "185.220.101.47",
+        "puntos": 200,
+        "hints": [
+            {"nivel": 1, "coste": 0,   "archivo": "hint-obj002-1.md"},
+            {"nivel": 2, "coste": 50,  "archivo": "hint-obj002-2.md"},
+            {"nivel": 3, "coste": 100, "archivo": "hint-obj002-3.md"}
+        ]
+    },
+    {
+        "id": "OBJ-003",
+        "pregunta": "¿Qué clave de registro usó el malware para establecer persistencia?",
+        "categoria": "Incident Response",
+        "flag": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+        "puntos": 250,
+        "hints": [
+            {"nivel": 1, "coste": 0,   "archivo": "hint-obj003-1.md"},
+            {"nivel": 2, "coste": 50,  "archivo": "hint-obj003-2.md"},
+            {"nivel": 3, "coste": 100, "archivo": "hint-obj003-3.md"}
+        ]
+    }
+]
+
+    },
+
     {
         "id": "sc-002",
         "nombre": "Operación SilentMove",
@@ -126,6 +143,82 @@ def health():
 @app.route('/progress')
 def progress():
     return render_template('progress.html')
+
+@app.route('/hint/<scenario_id>/<obj_id>/<int:nivel>', methods=['POST'])
+def get_hint(scenario_id, obj_id, nivel):
+    from flask import session
+    import os
+
+    sc = next((s for s in SCENARIOS if s['id'] == scenario_id), None)
+    if sc is None:
+        return jsonify({"error": "Escenario no encontrado"}), 404
+
+    obj = next((o for o in sc['objetivos'] if o['id'] == obj_id), None)
+    if obj is None:
+        return jsonify({"error": "Objetivo no encontrado"}), 404
+
+    hint = next((h for h in obj['hints'] if h['nivel'] == nivel), None)
+    if hint is None:
+        return jsonify({"error": "Hint no encontrado"}), 404
+
+    # Inicializar hints en sesión
+    if 'hints_usados' not in session:
+        session['hints_usados'] = {}
+
+    hint_key = f"{obj_id}-nivel{nivel}"
+
+    # Si ya fue usado devolver el contenido sin cobrar
+    if hint_key in session['hints_usados']:
+        return jsonify({
+            "contenido": session['hints_usados'][hint_key],
+            "coste": 0,
+            "ya_usado": True
+        })
+
+    # Verificar puntos suficientes para hints de pago
+    if hint['coste'] > 0:
+        total_puntos = sum(
+            v['puntos'] for v in session.get('progreso', {}).values()
+        )
+        hints_gastados = sum(
+            h['coste'] for h in session['hints_usados'].values()
+            if isinstance(h, dict) and 'coste' in h
+        )
+        puntos_disponibles = total_puntos - hints_gastados
+        if puntos_disponibles < hint['coste']:
+            return jsonify({
+                "error": f"Puntos insuficientes. Necesitas {hint['coste']} pts."
+            }), 403
+
+    # Leer el archivo de hint
+    hint_path = os.path.join(
+        '..', 'scenarios', scenario_id + '-ransomware',
+        'hints', hint['archivo']
+    )
+    
+    # Ruta absoluta desde la raíz del proyecto
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    hint_path = os.path.join(
+        base_dir, 'scenarios', 'sc-001-ransomware',
+        'hints', hint['archivo']
+    )
+
+    try:
+        with open(hint_path, 'r', encoding='utf-8') as f:
+            contenido = f.read().strip()
+    except FileNotFoundError:
+        return jsonify({"error": "Archivo de hint no encontrado"}), 404
+
+    # Guardar en sesión
+    session['hints_usados'][hint_key] = contenido
+    session.modified = True
+
+    return jsonify({
+        "contenido": contenido,
+        "coste": hint['coste'],
+        "nivel": nivel,
+        "ya_usado": False
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)

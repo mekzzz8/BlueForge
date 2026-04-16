@@ -544,3 +544,76 @@ footer {
     font-size: 0.85rem;
     color: var(--text2);
 }
+
+/* ── HINTS ── */
+.hints-section {
+    margin: 1rem 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.hints-header {
+    background: rgba(14,165,233,0.05);
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.hints-label {
+    font-family: 'Courier New', monospace;
+    font-size: 0.68rem;
+    color: var(--blue);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.hints-buttons {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+}
+
+.hint-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    padding: 0.4rem 0.9rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text2);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+}
+
+.hint-btn:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+}
+
+.hint-btn-used {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.hint-content {
+    display: none;
+    padding: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    border-top: 1px solid var(--border);
+}
+
+.hint-content.hint-visible {
+    display: block;
+    color: var(--text2);
+    background: rgba(245,158,11,0.04);
+    white-space: pre-line;
+}
+
+.hint-content.hint-error {
+    display: block;
+    color: var(--red);
+    background: rgba(239,68,68,0.05);
+}

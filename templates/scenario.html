@@ -30,21 +30,42 @@
 
     <div class="objectives-list">
         {% for obj in scenario.objetivos %}
-        <div class="objective-card">
-            <div class="obj-header">
-                <span class="obj-id">{{ obj.id }}</span>
-                <span class="obj-pts">{{ obj.puntos }} pts</span>
-                <span class="obj-cat">{{ obj.categoria }}</span>
-            </div>
-            <p class="obj-pregunta">{{ obj.pregunta }}</p>
-            <div class="obj-form" id="form-{{ obj.id }}">
-    <input type="text" id="input-{{ obj.id }}" placeholder="Tu respuesta..." class="obj-input">
-    <button class="obj-btn" onclick="enviarRespuesta('{{ scenario.id }}', '{{ obj.id }}')">Enviar</button>
-</div>
-<div class="obj-feedback" id="feedback-{{ obj.id }}"></div>
-            </div>
+<div class="objective-card" id="card-{{ obj.id }}">
+    <div class="obj-header">
+        <span class="obj-id">{{ obj.id }}</span>
+        <span class="obj-pts">{{ obj.puntos }} pts</span>
+        <span class="obj-cat">{{ obj.categoria }}</span>
+    </div>
+    <p class="obj-pregunta">{{ obj.pregunta }}</p>
+
+    <div class="hints-section">
+        <div class="hints-header">
+            <span class="hints-label">// Pistas disponibles</span>
         </div>
-        {% endfor %}
+        <div class="hints-buttons">
+            {% for hint in obj.hints %}
+            <button
+                class="hint-btn"
+                id="hbtn-{{ obj.id }}-{{ hint.nivel }}"
+                onclick="pedirHint('{{ scenario.id }}', '{{ obj.id }}', {{ hint.nivel }}, {{ hint.coste }})">
+                {% if hint.coste == 0 %}
+                    Pista {{ hint.nivel }} — Gratis
+                {% else %}
+                    Pista {{ hint.nivel }} — {{ hint.coste }} pts
+                {% endif %}
+            </button>
+            {% endfor %}
+        </div>
+        <div class="hint-content" id="hint-{{ obj.id }}"></div>
+    </div>
+
+    <div class="obj-form" id="form-{{ obj.id }}">
+        <input type="text" id="input-{{ obj.id }}" placeholder="Tu respuesta..." class="obj-input">
+        <button class="obj-btn" onclick="enviarRespuesta('{{ scenario.id }}', '{{ obj.id }}')">Enviar</button>
+    </div>
+    <div class="obj-feedback" id="feedback-{{ obj.id }}"></div>
+</div>
+{% endfor %}
     </div>
 </div>
 
@@ -92,7 +113,7 @@ function enviarRespuesta(scenarioId, objId) {
 </script>
 
 <script>
-// Cargar progreso al entrar a la página
+// Restaurar progreso al cargar
 fetch('/api/progreso')
     .then(r => r.json())
     .then(data => {
@@ -109,6 +130,35 @@ fetch('/api/progreso')
         });
     });
 
+// Pedir hint
+function pedirHint(scenarioId, objId, nivel, coste) {
+    const hintBox = document.getElementById('hint-' + objId);
+    const btn = document.getElementById('hbtn-' + objId + '-' + nivel);
+
+    if (coste > 0) {
+        const confirmar = confirm(`Esta pista cuesta ${coste} puntos. ¿Continuar?`);
+        if (!confirmar) return;
+    }
+
+    fetch(`/hint/${scenarioId}/${objId}/${nivel}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                hintBox.textContent = '⚠ ' + data.error;
+                hintBox.className = 'hint-content hint-error';
+                return;
+            }
+            hintBox.textContent = data.contenido;
+            hintBox.className = 'hint-content hint-visible';
+            btn.disabled = true;
+            btn.classList.add('hint-btn-used');
+            if (!data.ya_usado && coste > 0) {
+                btn.textContent = `Pista ${nivel} — Usada (-${coste} pts)`;
+            }
+        });
+}
+
+// Enviar respuesta
 function enviarRespuesta(scenarioId, objId) {
     const input = document.getElementById('input-' + objId);
     const feedback = document.getElementById('feedback-' + objId);
