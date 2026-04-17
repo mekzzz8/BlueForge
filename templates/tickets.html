@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Tickets — {{ scenario.nombre }}{% endblock %}
+
+{% block content %}
+
+<div class="tickets-header">
+    <div class="tickets-meta">
+        <span class="logs-badge">// SISTEMA DE TICKETS SOC</span>
+        <span class="logs-count">{{ tickets | length }} tickets activos</span>
+    </div>
+    <h1>Cola de Incidentes</h1>
+    <p class="subtitle">{{ scenario.empresa }} — Responde y cierra cada ticket correctamente</p>
+</div>
+
+<div class="alert-box">
+    <span class="alert-icon">⚠</span>
+    <span>Cada decisión tiene consecuencias reales. Una acción incorrecta penaliza puntos y puede causar impacto al negocio. Analiza los logs antes de actuar.</span>
+</div>
+
+<div class="tickets-list">
+    {% for ticket in tickets %}
+    <div class="ticket-card" id="tkt-{{ ticket.id }}">
+        <div class="ticket-header">
+            <div class="ticket-left">
+                <span class="ticket-id">{{ ticket.id }}</span>
+                <span class="ticket-severidad sev-{{ ticket.severidad }}">{{ ticket.severidad | upper }}</span>
+                <span class="ticket-estado" id="estado-{{ ticket.id }}">ABIERTO</span>
+            </div>
+            <div class="ticket-right">
+                <span class="ticket-scenario">{{ scenario.id | upper }}</span>
+            </div>
+        </div>
+
+        <h3 class="ticket-titulo">{{ ticket.titulo }}</h3>
+        <p class="ticket-desc">{{ ticket.descripcion }}</p>
+
+        <div class="ticket-acciones">
+            <div class="acciones-label">// Selecciona la acción de respuesta:</div>
+            <div class="acciones-list">
+                {% for accion in ticket.acciones %}
+                <button
+                    class="accion-btn"
+                    id="abtn-{{ ticket.id }}-{{ accion.id }}"
+                    onclick="tomarAccion('{{ scenario.id }}', '{{ ticket.id }}', '{{ accion.id }}')">
+                    {{ accion.texto }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="ticket-feedback" id="feedback-{{ ticket.id }}"></div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="logs-back">
+    <a href="/scenario/{{ scenario.id }}" class="btn-back">← Volver al escenario</a>
+</div>
+
+<script>
+function tomarAccion(scenarioId, ticketId, accionId) {
+    const feedback = document.getElementById('feedback-' + ticketId);
+    const estado = document.getElementById('estado-' + ticketId);
+    const botones = document.querySelectorAll(`[id^="abtn-${ticketId}"]`);
+
+    fetch(`/ticket/accion/${scenarioId}/${ticketId}/${accionId}`, {
+        method: 'POST'
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ya_resuelto) {
+            feedback.textContent = 'Este ticket ya fue cerrado.';
+            feedback.className = 'ticket-feedback feedback-info';
+            return;
+        }
+
+        botones.forEach(btn => btn.disabled = true);
+        document.getElementById(`abtn-${ticketId}-${accionId}`).classList.add(
+            data.correcto ? 'accion-correcta' : 'accion-incorrecta'
+        );
+
+        estado.textContent = 'CERRADO';
+        estado.classList.add('estado-cerrado');
+
+        let msg = data.feedback;
+        if (data.puntos > 0) msg += ` | +${data.puntos} pts`;
+        if (data.puntos < 0) msg += ` | ${data.puntos} pts (penalización)`;
+        if (data.impacto > 0) msg += ` | Impacto al negocio: -${data.impacto} pts`;
+
+        feedback.textContent = msg;
+        feedback.className = 'ticket-feedback ' + (data.correcto ? 'feedback-correcto' : 'feedback-incorrecto');
+    });
+}
+
+// Restaurar tickets ya resueltos al cargar
+fetch('/api/progreso')
+    .then(r => r.json())
+    .then(data => {
+        if (data.tickets_resueltos) {
+            Object.keys(data.tickets_resueltos).forEach(key => {
+                const parts = key.split('-');
+                const ticketId = parts[1] + '-' + parts[2];
+                const estado = document.getElementById('estado-' + ticketId);
+                if (estado) {
+                    estado.textContent = 'CERRADO';
+                    estado.classList.add('estado-cerrado');
+                    const botones = document.querySelectorAll(`[id^="abtn-${ticketId}"]`);
+                    botones.forEach(btn => btn.disabled = true);
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}

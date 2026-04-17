@@ -31,6 +31,17 @@ class Progreso(db.Model):
     correcta = db.Column(db.Boolean, nullable=False)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Ticket(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    scenario_id = db.Column(db.String(10), nullable=False)
+    titulo = db.Column(db.String(200), nullable=False)
+    severidad = db.Column(db.String(10), nullable=False)
+    estado = db.Column(db.String(20), default='Abierto')
+    accion_tomada = db.Column(db.String(100), nullable=True)
+    impacto_negocio = db.Column(db.Integer, default=0)
+    fecha_apertura = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_cierre = db.Column(db.DateTime, nullable=True)
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

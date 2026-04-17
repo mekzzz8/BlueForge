@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request, session
 from flask_sqlalchemy import SQLAlchemy
 import os
 
@@ -23,46 +23,118 @@ SCENARIOS = [
         "herramientas": ["Kibana", "Volatility", "Wireshark"],
         "tecnicas_mitre": ["T1566.001", "T1059.001", "T1547.001", "T1486"],
         "objetivos": [
-    {
-        "id": "OBJ-001",
-        "pregunta": "¿Cuál es el nombre del proceso malicioso que inició el ataque?",
-        "categoria": "Threat Hunting",
-        "flag": "svchost_fake.exe",
-        "puntos": 150,
-        "hints": [
-            {"nivel": 1, "coste": 0,   "archivo": "hint-obj001-1.md"},
-            {"nivel": 2, "coste": 50,  "archivo": "hint-obj001-2.md"},
-            {"nivel": 3, "coste": 100, "archivo": "hint-obj001-3.md"}
+            {
+                "id": "OBJ-001",
+                "pregunta": "¿Cuál es el nombre del proceso malicioso que inició el ataque?",
+                "categoria": "Threat Hunting",
+                "flag": "svchost_fake.exe",
+                "puntos": 150,
+                "hints": [
+                    {"nivel": 1, "coste": 0,   "archivo": "hint-obj001-1.md"},
+                    {"nivel": 2, "coste": 50,  "archivo": "hint-obj001-2.md"},
+                    {"nivel": 3, "coste": 100, "archivo": "hint-obj001-3.md"}
+                ]
+            },
+            {
+                "id": "OBJ-002",
+                "pregunta": "¿Qué dirección IP externa contactó el malware durante la fase C2?",
+                "categoria": "Network Forensics",
+                "flag": "185.220.101.47",
+                "puntos": 200,
+                "hints": [
+                    {"nivel": 1, "coste": 0,   "archivo": "hint-obj002-1.md"},
+                    {"nivel": 2, "coste": 50,  "archivo": "hint-obj002-2.md"},
+                    {"nivel": 3, "coste": 100, "archivo": "hint-obj002-3.md"}
+                ]
+            },
+            {
+                "id": "OBJ-003",
+                "pregunta": "¿Qué clave de registro usó el malware para establecer persistencia?",
+                "categoria": "Incident Response",
+                "flag": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                "puntos": 250,
+                "hints": [
+                    {"nivel": 1, "coste": 0,   "archivo": "hint-obj003-1.md"},
+                    {"nivel": 2, "coste": 50,  "archivo": "hint-obj003-2.md"},
+                    {"nivel": 3, "coste": 100, "archivo": "hint-obj003-3.md"}
+                ]
+            }
+        ],
+        "tickets": [
+            {
+                "id": "TKT-001",
+                "titulo": "Alerta: Proceso sospechoso detectado en WKSTN-042",
+                "severidad": "alta",
+                "descripcion": "El EDR ha detectado la creación de svchost_fake.exe desde C:\\Users\\Public\\. El proceso estableció conexión saliente a IP externa. Host afectado: WKSTN-042, Usuario: j.martinez.",
+                "acciones": [
+                    {
+                        "id": "A1",
+                        "texto": "Aislar el host WKSTN-042 de la red inmediatamente",
+                        "puntos": 100,
+                        "impacto": 0,
+                        "correcto": True,
+                        "feedback": "Correcto. Aislar el host evita propagación lateral y corta la comunicación C2 sin afectar al negocio."
+                    },
+                    {
+                        "id": "A2",
+                        "texto": "Apagar el servidor de base de datos para contener la amenaza",
+                        "puntos": -200,
+                        "impacto": 200,
+                        "correcto": False,
+                        "feedback": "Incorrecto. Apagar el servidor de BD en horario laboral causa pérdida de datos y paraliza operaciones."
+                    },
+                    {
+                        "id": "A3",
+                        "texto": "Notificar al CISO y abrir proceso formal de Incident Response",
+                        "puntos": 150,
+                        "impacto": 0,
+                        "correcto": True,
+                        "feedback": "Correcto. Escalar al CISO es obligatorio ante un incidente confirmado. Activa el proceso IR formal."
+                    },
+                    {
+                        "id": "A4",
+                        "texto": "Ignorar la alerta — puede ser un falso positivo",
+                        "puntos": -300,
+                        "impacto": 300,
+                        "correcto": False,
+                        "feedback": "Incorrecto. Ignorar una alerta de proceso sospechoso con conexión C2 activa es una negligencia grave."
+                    }
+                ]
+            },
+            {
+                "id": "TKT-002",
+                "titulo": "Alerta: Modificación de clave de registro Run detectada",
+                "severidad": "media",
+                "descripcion": "Sysmon reporta modificación de HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run en WKSTN-042. Valor añadido: svchost_update apuntando a C:\\Users\\Public\\.",
+                "acciones": [
+                    {
+                        "id": "B1",
+                        "texto": "Documentar el IOC y añadirlo a las reglas de detección del SIEM",
+                        "puntos": 100,
+                        "impacto": 0,
+                        "correcto": True,
+                        "feedback": "Correcto. Documentar IOCs mejora la detección futura y enriquece la inteligencia de amenazas."
+                    },
+                    {
+                        "id": "B2",
+                        "texto": "Eliminar la clave de registro sin preservar evidencias forenses",
+                        "puntos": -150,
+                        "impacto": 150,
+                        "correcto": False,
+                        "feedback": "Incorrecto. Eliminar evidencias antes de preservarlas destruye la cadena de custodia forense."
+                    },
+                    {
+                        "id": "B3",
+                        "texto": "Realizar volcado de memoria del host antes de cualquier acción",
+                        "puntos": 200,
+                        "impacto": 0,
+                        "correcto": True,
+                        "feedback": "Correcto. El volcado de memoria captura el estado del malware en ejecución — información crítica para el análisis forense."
+                    }
+                ]
+            }
         ]
     },
-    {
-        "id": "OBJ-002",
-        "pregunta": "¿Qué dirección IP externa contactó el malware durante la fase C2?",
-        "categoria": "Network Forensics",
-        "flag": "185.220.101.47",
-        "puntos": 200,
-        "hints": [
-            {"nivel": 1, "coste": 0,   "archivo": "hint-obj002-1.md"},
-            {"nivel": 2, "coste": 50,  "archivo": "hint-obj002-2.md"},
-            {"nivel": 3, "coste": 100, "archivo": "hint-obj002-3.md"}
-        ]
-    },
-    {
-        "id": "OBJ-003",
-        "pregunta": "¿Qué clave de registro usó el malware para establecer persistencia?",
-        "categoria": "Incident Response",
-        "flag": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-        "puntos": 250,
-        "hints": [
-            {"nivel": 1, "coste": 0,   "archivo": "hint-obj003-1.md"},
-            {"nivel": 2, "coste": 50,  "archivo": "hint-obj003-2.md"},
-            {"nivel": 3, "coste": 100, "archivo": "hint-obj003-3.md"}
-        ]
-    }
-]
-
-    },
-
     {
         "id": "sc-002",
         "nombre": "Operación SilentMove",
@@ -76,9 +148,11 @@ SCENARIOS = [
     }
 ]
 
+
 @app.route('/')
 def dashboard():
     return render_template('dashboard.html', scenarios=SCENARIOS)
+
 
 @app.route('/scenario/<scenario_id>')
 def scenario(scenario_id):
@@ -87,10 +161,9 @@ def scenario(scenario_id):
         return "Escenario no encontrado", 404
     return render_template('scenario.html', scenario=sc)
 
+
 @app.route('/submit/<scenario_id>/<obj_id>', methods=['POST'])
 def submit(scenario_id, obj_id):
-    from flask import request, session
-
     sc = next((s for s in SCENARIOS if s['id'] == scenario_id), None)
     if sc is None:
         return jsonify({"error": "Escenario no encontrado"}), 404
@@ -99,17 +172,11 @@ def submit(scenario_id, obj_id):
     if obj is None:
         return jsonify({"error": "Objetivo no encontrado"}), 404
 
-    # Inicializar progreso en sesión si no existe
     if 'progreso' not in session:
         session['progreso'] = {}
 
-    # Si ya fue resuelto no hacer nada
     if obj_id in session['progreso']:
-        return jsonify({
-            "correcta": True,
-            "mensaje": "Ya resolviste este objetivo.",
-            "puntos": 0
-        })
+        return jsonify({"correcta": True, "mensaje": "Ya resolviste este objetivo.", "puntos": 0})
 
     respuesta = request.form.get('respuesta', '').strip()
     correcta = respuesta == obj['flag']
@@ -127,29 +194,32 @@ def submit(scenario_id, obj_id):
         "puntos": obj['puntos'] if correcta else 0
     })
 
+
 @app.route('/api/progreso')
 def api_progreso():
-    from flask import session
     progreso = session.get('progreso', {})
+    tickets_resueltos = session.get('tickets_resueltos', {})
     total_puntos = sum(v['puntos'] for v in progreso.values())
+    total_puntos += sum(v['puntos'] for v in tickets_resueltos.values())
     return jsonify({
         "objetivos_resueltos": list(progreso.keys()),
+        "tickets_resueltos": tickets_resueltos,
         "total_puntos": total_puntos
     })
+
 
 @app.route('/health')
 def health():
     return jsonify({"status": "online", "platform": "BlueForge"})
 
+
 @app.route('/progress')
 def progress():
     return render_template('progress.html')
 
+
 @app.route('/hint/<scenario_id>/<obj_id>/<int:nivel>', methods=['POST'])
 def get_hint(scenario_id, obj_id, nivel):
-    from flask import session
-    import os
-
     sc = next((s for s in SCENARIOS if s['id'] == scenario_id), None)
     if sc is None:
         return jsonify({"error": "Escenario no encontrado"}), 404
@@ -162,13 +232,11 @@ def get_hint(scenario_id, obj_id, nivel):
     if hint is None:
         return jsonify({"error": "Hint no encontrado"}), 404
 
-    # Inicializar hints en sesión
     if 'hints_usados' not in session:
         session['hints_usados'] = {}
 
     hint_key = f"{obj_id}-nivel{nivel}"
 
-    # Si ya fue usado devolver el contenido sin cobrar
     if hint_key in session['hints_usados']:
         return jsonify({
             "contenido": session['hints_usados'][hint_key],
@@ -176,33 +244,18 @@ def get_hint(scenario_id, obj_id, nivel):
             "ya_usado": True
         })
 
-    # Verificar puntos suficientes para hints de pago
     if hint['coste'] > 0:
-        total_puntos = sum(
-            v['puntos'] for v in session.get('progreso', {}).values()
-        )
+        total_puntos = sum(v['puntos'] for v in session.get('progreso', {}).values())
         hints_gastados = sum(
             h['coste'] for h in session['hints_usados'].values()
             if isinstance(h, dict) and 'coste' in h
         )
         puntos_disponibles = total_puntos - hints_gastados
         if puntos_disponibles < hint['coste']:
-            return jsonify({
-                "error": f"Puntos insuficientes. Necesitas {hint['coste']} pts."
-            }), 403
+            return jsonify({"error": f"Puntos insuficientes. Necesitas {hint['coste']} pts."}), 403
 
-    # Leer el archivo de hint
-    hint_path = os.path.join(
-        '..', 'scenarios', scenario_id + '-ransomware',
-        'hints', hint['archivo']
-    )
-    
-    # Ruta absoluta desde la raíz del proyecto
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    hint_path = os.path.join(
-        base_dir, 'scenarios', 'sc-001-ransomware',
-        'hints', hint['archivo']
-    )
+    hint_path = os.path.join(base_dir, 'scenarios', 'sc-001-ransomware', 'hints', hint['archivo'])
 
     try:
         with open(hint_path, 'r', encoding='utf-8') as f:
@@ -210,7 +263,6 @@ def get_hint(scenario_id, obj_id, nivel):
     except FileNotFoundError:
         return jsonify({"error": "Archivo de hint no encontrado"}), 404
 
-    # Guardar en sesión
     session['hints_usados'][hint_key] = contenido
     session.modified = True
 
@@ -221,12 +273,13 @@ def get_hint(scenario_id, obj_id, nivel):
         "ya_usado": False
     })
 
+
 @app.route('/logs/<scenario_id>')
 def ver_logs(scenario_id):
     import json as json_module
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     logs_path = os.path.join(base_dir, 'scenarios', 'sc-001-ransomware', 'logs', 'events.json')
-    
+
     try:
         with open(logs_path, 'r', encoding='utf-8') as f:
             eventos = json_module.load(f)
@@ -234,6 +287,52 @@ def ver_logs(scenario_id):
         eventos = []
 
     return render_template('logs.html', eventos=eventos, scenario_id=scenario_id)
+
+
+@app.route('/tickets/<scenario_id>')
+def tickets(scenario_id):
+    sc = next((s for s in SCENARIOS if s['id'] == scenario_id), None)
+    if sc is None:
+        return "Escenario no encontrado", 404
+    return render_template('tickets.html', scenario=sc, tickets=sc.get('tickets', []))
+
+
+@app.route('/ticket/accion/<scenario_id>/<ticket_id>/<accion_id>', methods=['POST'])
+def ticket_accion(scenario_id, ticket_id, accion_id):
+    sc = next((s for s in SCENARIOS if s['id'] == scenario_id), None)
+    if sc is None:
+        return jsonify({"error": "Escenario no encontrado"}), 404
+
+    ticket = next((t for t in sc.get('tickets', []) if t['id'] == ticket_id), None)
+    if ticket is None:
+        return jsonify({"error": "Ticket no encontrado"}), 404
+
+    accion = next((a for a in ticket['acciones'] if a['id'] == accion_id), None)
+    if accion is None:
+        return jsonify({"error": "Accion no encontrada"}), 404
+
+    if 'tickets_resueltos' not in session:
+        session['tickets_resueltos'] = {}
+
+    ticket_key = f"{scenario_id}-{ticket_id}"
+    if ticket_key in session['tickets_resueltos']:
+        return jsonify({"error": "Ticket ya cerrado", "ya_resuelto": True})
+
+    session['tickets_resueltos'][ticket_key] = {
+        "accion_id": accion_id,
+        "correcto": accion['correcto'],
+        "puntos": accion['puntos']
+    }
+    session.modified = True
+
+    return jsonify({
+        "correcto": accion['correcto'],
+        "feedback": accion['feedback'],
+        "puntos": accion['puntos'],
+        "impacto": accion['impacto']
+    })
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
