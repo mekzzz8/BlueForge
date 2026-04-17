@@ -1046,3 +1046,84 @@ footer {
     border: 1px solid rgba(14,165,233,0.25);
     color: var(--blue);
 }
+
+/* ── EVIDENCE / SHADOW IT ── */
+.shadow-toolbar {
+    display: flex;
+    gap: 1rem;
+}
+
+.evidence-box {
+    background: #060a0f;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.evidence-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+}
+
+.evidence-filename {
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: var(--amber);
+}
+
+.evidence-size {
+    font-family: 'Courier New', monospace;
+    font-size: 0.68rem;
+    color: var(--text3);
+}
+
+.evidence-content {
+    padding: 1rem 0;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.log-line {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.2rem 1.25rem;
+    transition: background 0.1s;
+}
+
+.log-line:hover { background: rgba(255,255,255,0.03); }
+
+.line-suspicious {
+    background: rgba(239,68,68,0.06);
+    border-left: 2px solid var(--red);
+}
+
+.line-suspicious:hover { background: rgba(239,68,68,0.1); }
+
+.line-comment { opacity: 0.4; }
+
+.line-num {
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    color: var(--text3);
+    flex-shrink: 0;
+    width: 28px;
+    text-align: right;
+}
+
+.line-text {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    line-height: 1.8;
+    word-break: break-all;
+}
+
+.shadow-objectives h2 {
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+}

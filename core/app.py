@@ -332,7 +332,19 @@ def ticket_accion(scenario_id, ticket_id, accion_id):
         "impacto": accion['impacto']
     })
 
+@app.route('/evidence/<scenario_id>')
+def evidence(scenario_id):
+    import json as json_module
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    evidence_path = os.path.join(base_dir, 'scenarios', 'sc-001-ransomware', 'evidence', 'srv-backup01-raw.log')
 
+    try:
+        with open(evidence_path, 'r', encoding='utf-8') as f:
+            contenido = f.read()
+    except FileNotFoundError:
+        contenido = "Archivo de evidencia no encontrado."
+
+    return render_template('evidence.html', contenido=contenido, scenario_id=scenario_id)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
