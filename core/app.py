@@ -346,5 +346,9 @@ def evidence(scenario_id):
 
     return render_template('evidence.html', contenido=contenido, scenario_id=scenario_id)
 
+@app.route('/learn')
+def learn():
+    return render_template('learn.html')
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)

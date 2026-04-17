@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+
+{% block title %}Centro de Aprendizaje{% endblock %}
+
+{% block content %}
+
+<div class="learn-hero">
+    <div class="learn-hero-badge">📚 Centro Educativo</div>
+    <h1>Guía de Logs para Blue Team</h1>
+    <p>Todo lo que necesitas saber sobre logs de seguridad, desde cero hasta nivel analista SOC.</p>
+</div>
+
+<div class="learn-nav">
+    <button class="learn-tab active" onclick="showTab('que-son')">¿Qué son los logs?</button>
+    <button class="learn-tab" onclick="showTab('tipos')">Tipos de logs</button>
+    <button class="learn-tab" onclick="showTab('windows')">Windows Event Logs</button>
+    <button class="learn-tab" onclick="showTab('siem')">Logs en el SIEM</button>
+    <button class="learn-tab" onclick="showTab('iocs')">IOCs en logs</button>
+</div>
+
+<!-- TAB 1: QUÉ SON -->
+<div class="learn-tab-content active" id="tab-que-son">
+
+    <div class="learn-section">
+        <div class="learn-card card-blue">
+            <div class="learn-card-icon">📋</div>
+            <div class="learn-card-body">
+                <h3>¿Qué es un log?</h3>
+                <p>Un log es un registro cronológico de eventos que ocurren en un sistema. Cada vez que alguien inicia sesión, accede a un archivo, ejecuta un proceso o establece una conexión de red, el sistema genera un evento que queda registrado.</p>
+                <p>Para un analista Blue Team, los logs son la fuente principal de evidencia. Son el equivalente digital de las huellas que deja un atacante al moverse por una red.</p>
+            </div>
+        </div>
+
+        <div class="learn-analogy">
+            <div class="analogy-icon">💡</div>
+            <div class="analogy-text">
+                <strong>Analogía:</strong> Imagina un hotel. Cada vez que alguien entra por la puerta, sube al ascensor, abre una habitación o usa la wifi, el sistema del hotel lo registra. Los logs son ese registro. Si alguien roba algo, el investigador revisa los registros para saber quién estuvo, cuándo y dónde.
+            </div>
+        </div>
+
+        <div class="learn-grid-3">
+            <div class="learn-mini-card mini-blue">
+                <span class="mini-icon">⏱️</span>
+                <span class="mini-title">Timestamp</span>
+                <span class="mini-desc">Cuándo ocurrió el evento exactamente</span>
+            </div>
+            <div class="learn-mini-card mini-green">
+                <span class="mini-icon">🖥️</span>
+                <span class="mini-title">Origen</span>
+                <span class="mini-desc">Qué sistema o aplicación lo generó</span>
+            </div>
+            <div class="learn-mini-card mini-amber">
+                <span class="mini-icon">📝</span>
+                <span class="mini-title">Descripción</span>
+                <span class="mini-desc">Qué acción se realizó exactamente</span>
+            </div>
+            <div class="learn-mini-card mini-red">
+                <span class="mini-icon">👤</span>
+                <span class="mini-title">Usuario</span>
+                <span class="mini-desc">Quién realizó la acción</span>
+            </div>
+            <div class="learn-mini-card mini-purple">
+                <span class="mini-icon">🌐</span>
+                <span class="mini-title">IP / Host</span>
+                <span class="mini-desc">Desde dónde se realizó</span>
+            </div>
+            <div class="learn-mini-card mini-cyan">
+                <span class="mini-icon">🔢</span>
+                <span class="mini-title">Event ID</span>
+                <span class="mini-desc">Código único que identifica el tipo de evento</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- TAB 2: TIPOS -->
+<div class="learn-tab-content" id="tab-tipos">
+
+    <div class="learn-section">
+        <div class="tipos-grid">
+
+            <div class="tipo-card tipo-windows">
+                <div class="tipo-header">
+                    <span class="tipo-icon">🪟</span>
+                    <span class="tipo-name">Windows Event Logs</span>
+                </div>
+                <p class="tipo-desc">Registros nativos de Windows. Cubren autenticación, procesos, acceso a archivos y cambios de configuración. Son la fuente principal en entornos empresariales Windows.</p>
+                <div class="tipo-examples">
+                    <span class="tipo-tag">Security.evtx</span>
+                    <span class="tipo-tag">System.evtx</span>
+                    <span class="tipo-tag">Application.evtx</span>
+                </div>
+            </div>
+
+            <div class="tipo-card tipo-sysmon">
+                <div class="tipo-header">
+                    <span class="tipo-icon">🔬</span>
+                    <span class="tipo-name">Sysmon</span>
+                </div>
+                <p class="tipo-desc">Herramienta de Microsoft que amplía los logs nativos. Registra creación de procesos con línea de comandos completa, conexiones de red, modificaciones de registro y mucho más.</p>
+                <div class="tipo-examples">
+                    <span class="tipo-tag">ProcessCreate</span>
+                    <span class="tipo-tag">NetworkConnect</span>
+                    <span class="tipo-tag">RegistryEvent</span>
+                </div>
+            </div>
+
+            <div class="tipo-card tipo-network">
+                <div class="tipo-header">
+                    <span class="tipo-icon">🌐</span>
+                    <span class="tipo-name">Logs de Red</span>
+                </div>
+                <p class="tipo-desc">Registros generados por firewalls, proxies y dispositivos de red. Muestran qué IPs se comunicaron, en qué puertos y cuántos datos transfirieron.</p>
+                <div class="tipo-examples">
+                    <span class="tipo-tag">Firewall logs</span>
+                    <span class="tipo-tag">Proxy logs</span>
+                    <span class="tipo-tag">DNS logs</span>
+                </div>
+            </div>
+
+            <div class="tipo-card tipo-linux">
+                <div class="tipo-header">
+                    <span class="tipo-icon">🐧</span>
+                    <span class="tipo-name">Linux Syslog</span>
+                </div>
+                <p class="tipo-desc">Sistema de logging estándar en Linux. Registra eventos del sistema operativo, servicios y aplicaciones. Clave en servidores web, bases de datos y infraestructura cloud.</p>
+                <div class="tipo-examples">
+                    <span class="tipo-tag">/var/log/syslog</span>
+                    <span class="tipo-tag">/var/log/auth.log</span>
+                    <span class="tipo-tag">/var/log/secure</span>
+                </div>
+            </div>
+
+            <div class="tipo-card tipo-web">
+                <div class="tipo-header">
+                    <span class="tipo-icon">🌍</span>
+                    <span class="tipo-name">Web Server Logs</span>
+                </div>
+                <p class="tipo-desc">Registros de servidores web (Apache, Nginx, IIS). Cada petición HTTP queda registrada con URL, código de respuesta, IP origen y User-Agent. Detectan SQLi, XSS y web shells.</p>
+                <div class="tipo-examples">
+                    <span class="tipo-tag">access.log</span>
+                    <span class="tipo-tag">error.log</span>
+                    <span class="tipo-tag">IIS logs</span>
+                </div>
+            </div>
+
+            <div class="tipo-card tipo-edr">
+                <div class="tipo-header">
+                    <span class="tipo-icon">🛡️</span>
+                    <span class="tipo-name">EDR / AV Logs</span>
+                </div>
+                <p class="tipo-desc">Logs generados por soluciones EDR (CrowdStrike, SentinelOne, Wazuh) y antivirus. Alertas de detección, comportamientos bloqueados y respuestas automáticas.</p>
+                <div class="tipo-examples">
+                    <span class="tipo-tag">Wazuh alerts</span>
+                    <span class="tipo-tag">Detections</span>
+                    <span class="tipo-tag">Quarantine events</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- TAB 3: WINDOWS EVENT LOGS -->
+<div class="learn-tab-content" id="tab-windows">
+
+    <div class="learn-section">
+        <div class="learn-card card-blue">
+            <div class="learn-card-icon">🪟</div>
+            <div class="learn-card-body">
+                <h3>Event IDs críticos para Blue Team</h3>
+                <p>Cada evento en Windows tiene un ID único. Estos son los más importantes que debes conocer como analista SOC:</p>
+            </div>
+        </div>
+
+        <div class="eventids-table">
+            <div class="eventid-row header-row">
+                <span>Event ID</span>
+                <span>Descripción</span>
+                <span>Relevancia</span>
+            </div>
+            <div class="eventid-row">
+                <span class="eid-num blue">4624</span>
+                <span class="eid-desc">Inicio de sesión exitoso</span>
+                <span class="eid-tag tag-medium">Monitorizar</span>
+            </div>
+            <div class="eventid-row">
+                <span class="eid-num red">4625</span>
+                <span class="eid-desc">Fallo de autenticación</span>
+                <span class="eid-tag tag-high">Alta prioridad</span>
+            </div>
+            <div class="eventid-row">
+                <span class="eid-num red">4688</span>
+                <span class="eid-desc">Creación de nuevo proceso</span>
+                <span class="eid-tag tag-high">Alta prioridad</span>
+            </div>
+            <div class="eventid-row">
+                <span class="eid-num amber">4698</span>
+                <span class="eid-desc">Tarea programada creada</span>
+                <span class="eid-tag tag-medium">Persistencia</span>
+            </div>
+            <div class="eventid-row">
+                <span class="eid-num red">4720</span>
+                <span class="eid-desc">Cuenta de usuario creada</span>
+                <span class="eid-tag tag-high">Alta prioridad</span>
+            </div>
+            <div class="eventid-row">
+                <span class="eid-num amber">4732</span>
+                <span class="eid-desc">Usuario añadido a grupo privilegiado</span>
+                <span class="eid-tag tag-high">Alta prioridad</span>
+            </div>
+            <div class="eventid-row">
+                <span class="eid-num blue">4776</span>
+                <span class="eid-desc">Validación de credenciales NTLM</span>
+                <span class="eid-tag tag-medium">Lateral movement</span>
+            </div>
+            <div class="eventid-row">
+                <span class="eid-num red">7045</span>
+                <span class="eid-desc">Nuevo servicio instalado</span>
+                <span class="eid-tag tag-high">Persistencia</span>
+            </div>
+        </div>
+
+        <div class="learn-analogy">
+            <div class="analogy-icon">⚡</div>
+            <div class="analogy-text">
+                <strong>Truco pro:</strong> En Kibana o Splunk, filtra siempre por Event ID 4688 (creación de procesos) para detectar ejecución de malware. Un proceso como <code>powershell.exe</code> siendo hijo de <code>outlook.exe</code> es una señal de alarma inmediata.
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- TAB 4: SIEM -->
+<div class="learn-tab-content" id="tab-siem">
+
+    <div class="learn-section">
+
+        <div class="siem-cards">
+            <div class="siem-tool-card siem-elastic">
+                <div class="siem-tool-header">
+                    <span class="siem-tool-icon">🔍</span>
+                    <span class="siem-tool-name">Elastic Stack (ELK)</span>
+                </div>
+                <p class="siem-tool-desc">Elasticsearch + Kibana es el SIEM open-source más usado en el mundo. Los logs se indexan en Elasticsearch y se visualizan en Kibana con dashboards y búsquedas KQL.</p>
+                <div class="siem-query-box">
+                    <span class="query-label">Ejemplo KQL — Buscar proceso sospechoso:</span>
+                    <code>process.name: "powershell.exe" AND process.parent.name: "outlook.exe"</code>
+                </div>
+            </div>
+
+            <div class="siem-tool-card siem-splunk">
+                <div class="siem-tool-header">
+                    <span class="siem-tool-icon">📊</span>
+                    <span class="siem-tool-name">Splunk</span>
+                </div>
+                <p class="siem-tool-desc">El SIEM más demandado en ofertas de trabajo SOC. Usa SPL (Splunk Processing Language) para buscar y correlacionar eventos. Muy potente para detección de anomalías.</p>
+                <div class="siem-query-box">
+                    <span class="query-label">Ejemplo SPL — Fallos de login por usuario:</span>
+                    <code>index=security EventCode=4625 | stats count by Account_Name | where count > 10</code>
+                </div>
+            </div>
+
+            <div class="siem-tool-card siem-wazuh">
+                <div class="siem-tool-header">
+                    <span class="siem-tool-icon">🛡️</span>
+                    <span class="siem-tool-name">Wazuh</span>
+                </div>
+                <p class="siem-tool-desc">SIEM + EDR open-source. Combina análisis de logs con detección de intrusiones en endpoints. Muy usado en PYMEs y gobiernos. Incluye compliance con PCI-DSS y GDPR.</p>
+                <div class="siem-query-box">
+                    <span class="query-label">Regla Wazuh — Detectar conexión C2:</span>
+                    <code>rule id="100001" — dst_ip not in whitelist AND dst_port=443 AND process=svchost</code>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- TAB 5: IOCs -->
+<div class="learn-tab-content" id="tab-iocs">
+
+    <div class="learn-section">
+        <div class="learn-card card-red">
+            <div class="learn-card-icon">🚨</div>
+            <div class="learn-card-body">
+                <h3>Indicadores de Compromiso (IOCs) en logs</h3>
+                <p>Un IOC es cualquier artefacto observado en logs que indica con alta probabilidad que un sistema ha sido comprometido. Saber identificarlos es la habilidad central de un analista SOC.</p>
+            </div>
+        </div>
+
+        <div class="iocs-grid">
+            <div class="ioc-card">
+                <div class="ioc-header ioc-red">
+                    <span>🔴</span>
+                    <span>IOCs de Alta Criticidad</span>
+                </div>
+                <ul class="ioc-list">
+                    <li>Proceso ejecutado desde <code>C:\Users\Public\</code> o <code>C:\Temp\</code></li>
+                    <li>PowerShell con parámetro <code>-enc</code> (base64 ofuscado)</li>
+                    <li>Proceso padre inusual — <code>outlook.exe</code> → <code>cmd.exe</code></li>
+                    <li>Conexión saliente a IP Tor o conocida C2</li>
+                    <li>Modificación de clave <code>Run</code> en registro</li>
+                    <li>Nuevo servicio instalado fuera de horario</li>
+                </ul>
+            </div>
+
+            <div class="ioc-card">
+                <div class="ioc-header ioc-amber">
+                    <span>🟡</span>
+                    <span>IOCs de Media Criticidad</span>
+                </div>
+                <ul class="ioc-list">
+                    <li>Múltiples fallos de login seguidos de éxito</li>
+                    <li>Acceso a archivos fuera de horario laboral</li>
+                    <li>User-Agent obsoleto o inusual en tráfico web</li>
+                    <li>Escaneo de puertos desde IP interna</li>
+                    <li>Transferencia inusualmente grande de datos</li>
+                    <li>DNS query a dominio recién registrado (DGA)</li>
+                </ul>
+            </div>
+
+            <div class="ioc-card">
+                <div class="ioc-header ioc-blue">
+                    <span>🔵</span>
+                    <span>Falsos Positivos Comunes</span>
+                </div>
+                <ul class="ioc-list">
+                    <li>Administrador ejecutando scripts de mantenimiento</li>
+                    <li>Escáner de vulnerabilidades interno autorizado</li>
+                    <li>Backup nocturno transfiriendo datos masivamente</li>
+                    <li>Usuario olvidando contraseña repetidamente</li>
+                    <li>Software de monitorización generando conexiones</li>
+                    <li>Actualización automática de software</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function showTab(tabId) {
+    document.querySelectorAll('.learn-tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.learn-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+
+{% endblock %}
