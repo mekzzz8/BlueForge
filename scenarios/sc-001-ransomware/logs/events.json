@@ -1,36 +1,26 @@
 [
   {
-    "timestamp": "2025-11-14T00:02:04Z",
-    "tipo": "login_fallido",
-    "host": "WKSTN-033",
-    "usuario": "c.fernandez",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — c.fernandez introdujo contrasena incorrecta",
+    "timestamp": "2025-11-14T00:02:16Z",
+    "tipo": "dns_query",
+    "host": "WKSTN-001",
+    "usuario": "a.garcia",
+    "event_id": 22,
+    "descripcion": "Consulta DNS legitima — teams.microsoft.com",
     "es_malicioso": false,
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:02:08Z",
+    "timestamp": "2025-11-14T00:02:17Z",
     "tipo": "dns_query",
-    "host": "WKSTN-033",
-    "usuario": "a.garcia",
+    "host": "SRV-PRINT02",
+    "usuario": "r.sanchez",
     "event_id": 22,
     "descripcion": "Consulta DNS legitima — microsoft.com",
     "es_malicioso": false,
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:05:15Z",
-    "tipo": "dns_query",
-    "host": "WKSTN-015",
-    "usuario": "p.rodriguez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — office.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:06:21Z",
+    "timestamp": "2025-11-14T00:07:49Z",
     "tipo": "scan_red",
     "host": "SRV-MONITOR01",
     "usuario": "svc_monitor",
@@ -40,59 +30,59 @@
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:11:09Z",
-    "tipo": "login_fallido",
-    "host": "WKSTN-015",
-    "usuario": "c.fernandez",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — c.fernandez introdujo contrasena incorrecta",
+    "timestamp": "2025-11-14T00:07:57Z",
+    "tipo": "scan_red",
+    "host": "SRV-MONITOR01",
+    "usuario": "svc_monitor",
+    "event_id": 5156,
+    "descripcion": "Escaneo de red interno autorizado",
     "es_malicioso": false,
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:11:18Z",
+    "timestamp": "2025-11-14T00:12:25Z",
+    "tipo": "scan_red",
+    "host": "SRV-MONITOR01",
+    "usuario": "svc_monitor",
+    "event_id": 5156,
+    "descripcion": "Escaneo de red interno autorizado",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:12:30Z",
+    "tipo": "login_fallido",
+    "host": "WKSTN-015",
+    "usuario": "m.lopez",
+    "event_id": 4625,
+    "descripcion": "Fallo de autenticacion — m.lopez introdujo contrasena incorrecta",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:15:39Z",
     "tipo": "acceso_archivo",
-    "host": "WKSTN-033",
-    "usuario": "r.sanchez",
+    "host": "WKSTN-001",
+    "usuario": "c.fernandez",
     "event_id": 4663,
     "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
     "es_malicioso": false,
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:12:03Z",
-    "tipo": "login_fallido",
+    "timestamp": "2025-11-14T00:17:00Z",
+    "tipo": "scan_red",
+    "host": "SRV-MONITOR01",
+    "usuario": "svc_monitor",
+    "event_id": 5156,
+    "descripcion": "Escaneo de red interno autorizado",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:17:10Z",
+    "tipo": "dns_query",
     "host": "WKSTN-015",
-    "usuario": "c.fernandez",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — c.fernandez introdujo contrasena incorrecta",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:16:12Z",
-    "tipo": "dns_query",
-    "host": "SRV-FILE01",
-    "usuario": "r.sanchez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — office.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:18:09Z",
-    "tipo": "acceso_archivo",
-    "host": "SRV-PRINT02",
-    "usuario": "a.garcia",
-    "event_id": 4663,
-    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:19:15Z",
-    "tipo": "dns_query",
-    "host": "WKSTN-033",
     "usuario": "p.rodriguez",
     "event_id": 22,
     "descripcion": "Consulta DNS legitima — microsoft.com",
@@ -100,19 +90,19 @@
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:20:26Z",
-    "tipo": "login_fallido",
+    "timestamp": "2025-11-14T00:19:02Z",
+    "tipo": "dns_query",
     "host": "SRV-PRINT02",
-    "usuario": "c.fernandez",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — c.fernandez introdujo contrasena incorrecta",
+    "usuario": "m.lopez",
+    "event_id": 22,
+    "descripcion": "Consulta DNS legitima — microsoft.com",
     "es_malicioso": false,
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:25:29Z",
+    "timestamp": "2025-11-14T00:19:12Z",
     "tipo": "login_fallido",
-    "host": "WKSTN-001",
+    "host": "SRV-PRINT02",
     "usuario": "p.rodriguez",
     "event_id": 4625,
     "descripcion": "Fallo de autenticacion — p.rodriguez introdujo contrasena incorrecta",
@@ -120,47 +110,7 @@
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:33:15Z",
-    "tipo": "dns_query",
-    "host": "SRV-PRINT02",
-    "usuario": "r.sanchez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — microsoft.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:36:27Z",
-    "tipo": "login_fallido",
-    "host": "SRV-PRINT02",
-    "usuario": "m.lopez",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — m.lopez introdujo contrasena incorrecta",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:39:42Z",
-    "tipo": "acceso_archivo",
-    "host": "SRV-FILE01",
-    "usuario": "c.fernandez",
-    "event_id": 4663,
-    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:41:05Z",
-    "tipo": "login_fallido",
-    "host": "WKSTN-033",
-    "usuario": "m.lopez",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — m.lopez introdujo contrasena incorrecta",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:48:28Z",
+    "timestamp": "2025-11-14T00:19:31Z",
     "tipo": "scan_red",
     "host": "SRV-MONITOR01",
     "usuario": "svc_monitor",
@@ -170,9 +120,259 @@
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:49:09Z",
+    "timestamp": "2025-11-14T00:20:13Z",
+    "tipo": "dns_query",
+    "host": "WKSTN-001",
+    "usuario": "c.fernandez",
+    "event_id": 22,
+    "descripcion": "Consulta DNS legitima — office.com",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:20:41Z",
+    "tipo": "acceso_archivo",
+    "host": "SRV-PRINT02",
+    "usuario": "c.fernandez",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:27:40Z",
+    "tipo": "acceso_archivo",
+    "host": "SRV-FILE01",
+    "usuario": "c.fernandez",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:28:05Z",
+    "tipo": "dns_query",
+    "host": "WKSTN-015",
+    "usuario": "p.rodriguez",
+    "event_id": 22,
+    "descripcion": "Consulta DNS legitima — microsoft.com",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:32:04Z",
+    "tipo": "scan_red",
+    "host": "SRV-MONITOR01",
+    "usuario": "svc_monitor",
+    "event_id": 5156,
+    "descripcion": "Escaneo de red interno autorizado",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:38:41Z",
+    "tipo": "acceso_archivo",
+    "host": "WKSTN-033",
+    "usuario": "a.garcia",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:42:10Z",
+    "tipo": "login_fallido",
+    "host": "SRV-PRINT02",
+    "usuario": "r.sanchez",
+    "event_id": 4625,
+    "descripcion": "Fallo de autenticacion — r.sanchez introdujo contrasena incorrecta",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:46:04Z",
+    "tipo": "acceso_archivo",
+    "host": "WKSTN-015",
+    "usuario": "p.rodriguez",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:48:56Z",
+    "tipo": "scan_red",
+    "host": "SRV-MONITOR01",
+    "usuario": "svc_monitor",
+    "event_id": 5156,
+    "descripcion": "Escaneo de red interno autorizado",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:53:15Z",
+    "tipo": "dns_query",
+    "host": "WKSTN-033",
+    "usuario": "r.sanchez",
+    "event_id": 22,
+    "descripcion": "Consulta DNS legitima — teams.microsoft.com",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T00:57:04Z",
+    "tipo": "login_fallido",
+    "host": "WKSTN-033",
+    "usuario": "a.garcia",
+    "event_id": 4625,
+    "descripcion": "Fallo de autenticacion — a.garcia introdujo contrasena incorrecta",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:01:10Z",
     "tipo": "dns_query",
     "host": "SRV-PRINT02",
+    "usuario": "a.garcia",
+    "event_id": 22,
+    "descripcion": "Consulta DNS legitima — microsoft.com",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:01:23Z",
+    "tipo": "acceso_archivo",
+    "host": "WKSTN-001",
+    "usuario": "r.sanchez",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:04:09Z",
+    "tipo": "acceso_archivo",
+    "host": "WKSTN-033",
+    "usuario": "r.sanchez",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:06:45Z",
+    "tipo": "acceso_archivo",
+    "host": "WKSTN-001",
+    "usuario": "a.garcia",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:08:20Z",
+    "tipo": "acceso_archivo",
+    "host": "SRV-FILE01",
+    "usuario": "p.rodriguez",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:12:29Z",
+    "tipo": "acceso_archivo",
+    "host": "WKSTN-015",
+    "usuario": "a.garcia",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:16:11Z",
+    "tipo": "login_fallido",
+    "host": "WKSTN-015",
+    "usuario": "p.rodriguez",
+    "event_id": 4625,
+    "descripcion": "Fallo de autenticacion — p.rodriguez introdujo contrasena incorrecta",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:21:25Z",
+    "tipo": "scan_red",
+    "host": "SRV-MONITOR01",
+    "usuario": "svc_monitor",
+    "event_id": 5156,
+    "descripcion": "Escaneo de red interno autorizado",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:24:19Z",
+    "tipo": "login_fallido",
+    "host": "SRV-FILE01",
+    "usuario": "m.lopez",
+    "event_id": 4625,
+    "descripcion": "Fallo de autenticacion — m.lopez introdujo contrasena incorrecta",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:26:19Z",
+    "tipo": "acceso_archivo",
+    "host": "WKSTN-015",
+    "usuario": "c.fernandez",
+    "event_id": 4663,
+    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:28:49Z",
+    "tipo": "scan_red",
+    "host": "SRV-MONITOR01",
+    "usuario": "svc_monitor",
+    "event_id": 5156,
+    "descripcion": "Escaneo de red interno autorizado",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:33:20Z",
+    "tipo": "scan_red",
+    "host": "SRV-MONITOR01",
+    "usuario": "svc_monitor",
+    "event_id": 5156,
+    "descripcion": "Escaneo de red interno autorizado",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:36:02Z",
+    "tipo": "dns_query",
+    "host": "WKSTN-015",
+    "usuario": "m.lopez",
+    "event_id": 22,
+    "descripcion": "Consulta DNS legitima — microsoft.com",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:36:39Z",
+    "tipo": "scan_red",
+    "host": "SRV-MONITOR01",
+    "usuario": "svc_monitor",
+    "event_id": 5156,
+    "descripcion": "Escaneo de red interno autorizado",
+    "es_malicioso": false,
+    "fase": "ruido"
+  },
+  {
+    "timestamp": "2025-11-14T01:37:16Z",
+    "tipo": "dns_query",
+    "host": "SRV-FILE01",
     "usuario": "r.sanchez",
     "event_id": 22,
     "descripcion": "Consulta DNS legitima — office.com",
@@ -180,222 +380,22 @@
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T00:50:10Z",
-    "tipo": "login_fallido",
-    "host": "WKSTN-033",
-    "usuario": "a.garcia",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — a.garcia introdujo contrasena incorrecta",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:54:00Z",
-    "tipo": "login_fallido",
-    "host": "SRV-PRINT02",
-    "usuario": "a.garcia",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — a.garcia introdujo contrasena incorrecta",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T00:59:03Z",
-    "tipo": "dns_query",
-    "host": "WKSTN-001",
-    "usuario": "c.fernandez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — teams.microsoft.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:00:08Z",
-    "tipo": "scan_red",
-    "host": "SRV-MONITOR01",
-    "usuario": "svc_monitor",
-    "event_id": 5156,
-    "descripcion": "Escaneo de red interno autorizado",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:01:12Z",
-    "tipo": "dns_query",
-    "host": "WKSTN-033",
-    "usuario": "p.rodriguez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — microsoft.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:01:20Z",
-    "tipo": "login_fallido",
-    "host": "WKSTN-033",
-    "usuario": "r.sanchez",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — r.sanchez introdujo contrasena incorrecta",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:06:34Z",
-    "tipo": "acceso_archivo",
-    "host": "WKSTN-033",
-    "usuario": "a.garcia",
-    "event_id": 4663,
-    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:07:02Z",
-    "tipo": "login_fallido",
-    "host": "WKSTN-015",
-    "usuario": "a.garcia",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — a.garcia introdujo contrasena incorrecta",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:16:13Z",
-    "tipo": "dns_query",
-    "host": "WKSTN-015",
-    "usuario": "p.rodriguez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — microsoft.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:21:11Z",
-    "tipo": "login_fallido",
-    "host": "WKSTN-033",
-    "usuario": "r.sanchez",
-    "event_id": 4625,
-    "descripcion": "Fallo de autenticacion — r.sanchez introdujo contrasena incorrecta",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:24:04Z",
-    "tipo": "dns_query",
-    "host": "SRV-PRINT02",
-    "usuario": "r.sanchez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — teams.microsoft.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:25:24Z",
-    "tipo": "acceso_archivo",
-    "host": "WKSTN-033",
-    "usuario": "a.garcia",
-    "event_id": 4663,
-    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:30:13Z",
-    "tipo": "scan_red",
-    "host": "SRV-MONITOR01",
-    "usuario": "svc_monitor",
-    "event_id": 5156,
-    "descripcion": "Escaneo de red interno autorizado",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:32:23Z",
-    "tipo": "acceso_archivo",
-    "host": "WKSTN-015",
-    "usuario": "m.lopez",
-    "event_id": 4663,
-    "descripcion": "Acceso a fichero compartido — nominas_2025.xlsx",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:41:04Z",
-    "tipo": "dns_query",
-    "host": "SRV-FILE01",
-    "usuario": "m.lopez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — microsoft.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:43:04Z",
-    "tipo": "dns_query",
-    "host": "SRV-PRINT02",
-    "usuario": "c.fernandez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — microsoft.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:44:01Z",
-    "tipo": "scan_red",
-    "host": "SRV-MONITOR01",
-    "usuario": "svc_monitor",
-    "event_id": 5156,
-    "descripcion": "Escaneo de red interno autorizado",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:45:09Z",
+    "timestamp": "2025-11-14T01:49:13Z",
     "tipo": "dns_query",
     "host": "WKSTN-015",
     "usuario": "m.lopez",
     "event_id": 22,
-    "descripcion": "Consulta DNS legitima — teams.microsoft.com",
+    "descripcion": "Consulta DNS legitima — microsoft.com",
     "es_malicioso": false,
     "fase": "ruido"
   },
   {
-    "timestamp": "2025-11-14T01:47:21Z",
-    "tipo": "scan_red",
-    "host": "SRV-MONITOR01",
-    "usuario": "svc_monitor",
-    "event_id": 5156,
-    "descripcion": "Escaneo de red interno autorizado",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:47:59Z",
-    "tipo": "scan_red",
-    "host": "SRV-MONITOR01",
-    "usuario": "svc_monitor",
-    "event_id": 5156,
-    "descripcion": "Escaneo de red interno autorizado",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:48:19Z",
-    "tipo": "dns_query",
+    "timestamp": "2025-11-14T01:54:19Z",
+    "tipo": "login_fallido",
     "host": "WKSTN-033",
     "usuario": "c.fernandez",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — microsoft.com",
-    "es_malicioso": false,
-    "fase": "ruido"
-  },
-  {
-    "timestamp": "2025-11-14T01:59:17Z",
-    "tipo": "dns_query",
-    "host": "WKSTN-001",
-    "usuario": "a.garcia",
-    "event_id": 22,
-    "descripcion": "Consulta DNS legitima — microsoft.com",
+    "event_id": 4625,
+    "descripcion": "Fallo de autenticacion — c.fernandez introdujo contrasena incorrecta",
     "es_malicioso": false,
     "fase": "ruido"
   },

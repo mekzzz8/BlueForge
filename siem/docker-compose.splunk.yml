@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   splunk:
-    image: splunk/splunk:latest
+    image: splunk/splunk:9.1.2
+    platform: linux/amd64
     environment:
       SPLUNK_START_ARGS: "--accept-license"
       SPLUNK_PASSWORD: "BlueForge2025!"
@@ -10,8 +9,7 @@ services:
       - "8000:8000"
       - "8088:8088"
     volumes:
-      - ./scenarios/sc-001-ransomware/logs:/opt/splunk/etc/apps/blueforge/logs:ro
-      - ./siem/splunk/inputs.conf:/opt/splunk/etc/system/local/inputs.conf:ro
+      - ./scenarios/sc-001-ransomware/logs:/var/log/blueforge:ro
     networks:
       - blueforge-net
 
