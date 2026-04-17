@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Logs — {{ scenario_id | upper }}{% endblock %}
+
+{% block content %}
+
+<div class="logs-header">
+    <div class="logs-meta">
+        <span class="logs-badge">// SIEM VIEWER</span>
+        <span class="logs-count">{{ eventos | length }} eventos cargados</span>
+    </div>
+    <h1>Análisis de Logs</h1>
+    <p class="subtitle">Operación NightCrypt — FinCorp Solutions S.A.</p>
+</div>
+
+<div class="logs-toolbar">
+    <div class="toolbar-left">
+        <input type="text" id="filtro-input" placeholder="Filtrar eventos..." class="filtro-input" oninput="filtrarEventos()">
+        <select id="filtro-tipo" class="filtro-select" onchange="filtrarEventos()">
+            <option value="">Todos los tipos</option>
+            <option value="proceso_creado">Proceso creado</option>
+            <option value="conexion_red">Conexión red</option>
+            <option value="modificacion_registro">Registro</option>
+            <option value="modificacion_archivo">Archivo</option>
+            <option value="login_fallido">Login fallido</option>
+            <option value="scan_red">Scan red</option>
+            <option value="dns_query">DNS</option>
+        </select>
+        <select id="filtro-malicioso" class="filtro-select" onchange="filtrarEventos()">
+            <option value="">Todos</option>
+            <option value="true">Solo sospechosos</option>
+            <option value="false">Solo legítimos</option>
+        </select>
+    </div>
+    <div class="toolbar-right">
+        <span class="toolbar-stat" id="contador">Mostrando {{ eventos | length }} eventos</span>
+    </div>
+</div>
+
+<div class="logs-table-wrap">
+    <table class="logs-table" id="logs-table">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Tipo</th>
+                <th>Host</th>
+                <th>Usuario</th>
+                <th>Descripción</th>
+                <th>MITRE</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody id="logs-body">
+            {% for evento in eventos %}
+            <tr class="log-row {% if evento.es_malicioso %}row-malicious{% else %}row-normal{% endif %}"
+                data-tipo="{{ evento.tipo }}"
+                data-malicioso="{{ evento.es_malicioso | lower }}">
+                <td class="td-time">{{ evento.timestamp | replace('T', ' ') | replace('Z', '') }}</td>
+                <td class="td-tipo">{{ evento.tipo | replace('_', ' ') }}</td>
+                <td class="td-host">{{ evento.host }}</td>
+                <td class="td-user">{{ evento.usuario }}</td>
+                <td class="td-desc">{{ evento.descripcion }}</td>
+                <td class="td-mitre">{{ evento.mitre if evento.mitre is defined else '—' }}</td>
+                <td class="td-status">
+                    {% if evento.es_malicioso %}
+                    <span class="badge-malicious">⚠ Sospechoso</span>
+                    {% else %}
+                    <span class="badge-normal">✓ Legítimo</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="logs-back">
+    <a href="/scenario/{{ scenario_id }}" class="btn-back">← Volver al escenario</a>
+</div>
+
+<script>
+function filtrarEventos() {
+    const texto = document.getElementById('filtro-input').value.toLowerCase();
+    const tipo = document.getElementById('filtro-tipo').value;
+    const malicioso = document.getElementById('filtro-malicioso').value;
+    const filas = document.querySelectorAll('.log-row');
+    let visibles = 0;
+
+    filas.forEach(fila => {
+        const contenido = fila.textContent.toLowerCase();
+        const filaTipo = fila.dataset.tipo;
+        const filaMal = fila.dataset.malicioso;
+
+        const pasaTexto = texto === '' || contenido.includes(texto);
+        const pasaTipo = tipo === '' || filaTipo === tipo;
+        const pasaMal = malicioso === '' || filaMal === malicioso;
+
+        if (pasaTexto && pasaTipo && pasaMal) {
+            fila.style.display = '';
+            visibles++;
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+
+    document.getElementById('contador').textContent = `Mostrando ${visibles} eventos`;
+}
+</script>
+
+{% endblock %}

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
+import os
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blueforge.db'
@@ -219,6 +220,20 @@ def get_hint(scenario_id, obj_id, nivel):
         "nivel": nivel,
         "ya_usado": False
     })
+
+@app.route('/logs/<scenario_id>')
+def ver_logs(scenario_id):
+    import json as json_module
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    logs_path = os.path.join(base_dir, 'scenarios', 'sc-001-ransomware', 'logs', 'events.json')
+    
+    try:
+        with open(logs_path, 'r', encoding='utf-8') as f:
+            eventos = json_module.load(f)
+    except FileNotFoundError:
+        eventos = []
+
+    return render_template('logs.html', eventos=eventos, scenario_id=scenario_id)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)

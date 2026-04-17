@@ -617,3 +617,227 @@ footer {
     color: var(--red);
     background: rgba(239,68,68,0.05);
 }
+
+/* ── LOGS PAGE ── */
+.logs-header {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.logs-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.logs-badge {
+    font-family: 'Courier New', monospace;
+    font-size: 0.68rem;
+    color: var(--blue);
+    letter-spacing: 0.15em;
+    background: rgba(14,165,233,0.08);
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    border: 1px solid rgba(14,165,233,0.2);
+}
+
+.logs-count {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: var(--text3);
+}
+
+.logs-header h1 {
+    font-size: 2rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+/* ── TOOLBAR ── */
+.logs-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    flex-wrap: wrap;
+}
+
+.toolbar-left {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filtro-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.5rem 0.9rem;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    width: 220px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filtro-input:focus { border-color: var(--blue); }
+
+.filtro-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    color: var(--text2);
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.toolbar-stat {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: var(--text3);
+}
+
+/* ── TABLE ── */
+.logs-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+}
+
+.logs-table thead th {
+    background: var(--bg2);
+    color: var(--text3);
+    font-family: 'Courier New', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.log-row td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+}
+
+.log-row:hover td { background: rgba(255,255,255,0.02); }
+
+.row-malicious td { border-left: 2px solid var(--red); }
+.row-malicious:hover td { background: rgba(239,68,68,0.03); }
+
+.td-time {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: var(--text3);
+    white-space: nowrap;
+}
+
+.td-tipo {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: var(--blue);
+    white-space: nowrap;
+}
+
+.td-host {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: var(--amber);
+    white-space: nowrap;
+}
+
+.td-user {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.td-mitre {
+    font-family: 'Courier New', monospace;
+    font-size: 0.68rem;
+    color: var(--purple, #8b5cf6);
+    white-space: nowrap;
+}
+
+.badge-malicious {
+    font-family: 'Courier New', monospace;
+    font-size: 0.65rem;
+    color: var(--red);
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.badge-normal {
+    font-family: 'Courier New', monospace;
+    font-size: 0.65rem;
+    color: var(--green);
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.logs-back {
+    margin-top: 1rem;
+}
+
+.btn-back {
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: var(--text2);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    color: var(--blue);
+    border-color: var(--blue);
+}
+
+/* ── LOGS LINK ── */
+.logs-link { margin-top: 0.5rem; }
+
+.btn-logs {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: var(--blue);
+    text-decoration: none;
+    border: 1px solid rgba(14,165,233,0.3);
+    background: rgba(14,165,233,0.05);
+    padding: 0.65rem 1.25rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+}
+
+.btn-logs:hover {
+    background: rgba(14,165,233,0.1);
+    border-color: var(--blue);
+}
