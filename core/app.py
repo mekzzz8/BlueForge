@@ -350,5 +350,9 @@ def evidence(scenario_id):
 def learn():
     return render_template('learn.html')
 
+@app.route('/phishing')
+def phishing():
+    return render_template('phishing.html')
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)

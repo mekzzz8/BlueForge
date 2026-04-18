@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  blueforge:
+    build: .
+    ports:
+      - "5001:5001"
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - blueforge-net
+
+networks:
+  blueforge-net:
+    driver: bridge

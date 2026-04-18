@@ -1,0 +1,743 @@
+{% extends 'base.html' %}
+
+{% block title %}Phishing SOC{% endblock %}
+
+{% block content %}
+
+<div class="phishing-hero">
+    <div class="phishing-hero-left">
+        <div class="phishing-badge">🎣 Phishing SOC Module</div>
+        <h1>Cola de Tickets — Phishing</h1>
+        <p>Investiga cada email como analista SOC. Analiza cabeceras, URLs, archivos adjuntos y logs de endpoint antes de dar tu veredicto.</p>
+    </div>
+    <div class="phishing-hero-right">
+        <div class="phishing-stat-grid">
+            <div class="phishing-stat">
+                <span class="phishing-stat-num">4</span>
+                <span class="phishing-stat-label">Tickets activos</span>
+            </div>
+            <div class="phishing-stat">
+                <span class="phishing-stat-num">6</span>
+                <span class="phishing-stat-label">Fases por ticket</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TICKET SELECTOR -->
+<div class="ticket-selector">
+    <div class="section-header">
+        <h2>Cola de incidentes</h2>
+        <span class="section-tag">4 tickets pendientes</span>
+    </div>
+    <div class="ticket-queue">
+        <div class="queue-item active" onclick="abrirTicket('phi-001')">
+            <div class="queue-item-left">
+                <span class="queue-id">PHI-001</span>
+                <span class="phi-level easy">EASY</span>
+            </div>
+            <div class="queue-item-center">
+                <span class="queue-title">Email sospechoso de RRHH — FinCorp</span>
+                <span class="queue-sender">rrhh-notificaciones@fincorp-spain.net</span>
+            </div>
+            <div class="queue-item-right">
+                <span class="queue-time">08:23 UTC</span>
+                <span class="queue-status open">ABIERTO</span>
+            </div>
+        </div>
+        <div class="queue-item" onclick="abrirTicket('phi-002')">
+            <div class="queue-item-left">
+                <span class="queue-id">PHI-002</span>
+                <span class="phi-level easy">EASY</span>
+            </div>
+            <div class="queue-item-center">
+                <span class="queue-title">Actualización crítica VPN Cisco</span>
+                <span class="queue-sender">soporte@cisco-vpn-updates.com</span>
+            </div>
+            <div class="queue-item-right">
+                <span class="queue-time">09:45 UTC</span>
+                <span class="queue-status open">ABIERTO</span>
+            </div>
+        </div>
+        <div class="queue-item" onclick="abrirTicket('phi-003')">
+            <div class="queue-item-left">
+                <span class="queue-id">PHI-003</span>
+                <span class="phi-level expert">EXPERT</span>
+            </div>
+            <div class="queue-item-center">
+                <span class="queue-title">Transferencia urgente — CEO</span>
+                <span class="queue-sender">ceo@fincorp.com</span>
+            </div>
+            <div class="queue-item-right">
+                <span class="queue-time">11:02 UTC</span>
+                <span class="queue-status open">ABIERTO</span>
+            </div>
+        </div>
+        <div class="queue-item" onclick="abrirTicket('phi-004')">
+            <div class="queue-item-left">
+                <span class="queue-id">PHI-004</span>
+                <span class="phi-level expert">EXPERT</span>
+            </div>
+            <div class="queue-item-center">
+                <span class="queue-title">Alerta cuenta Microsoft 365</span>
+                <span class="queue-sender">no-reply@microsoft.com</span>
+            </div>
+            <div class="queue-item-right">
+                <span class="queue-time">13:17 UTC</span>
+                <span class="queue-status open">ABIERTO</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TICKET INVESTIGACION -->
+<div class="ticket-investigation" id="investigation-panel" style="display:none">
+
+    <div class="inv-header">
+        <button class="btn-back-queue" onclick="volverCola()">← Volver a la cola</button>
+        <div class="inv-title-area">
+            <span class="inv-ticket-id" id="inv-ticket-id">PHI-001</span>
+            <h2 class="inv-ticket-title" id="inv-ticket-title">Email sospechoso de RRHH</h2>
+        </div>
+        <div class="inv-progress">
+            <span class="inv-progress-label">Progreso de investigación</span>
+            <div class="inv-progress-bar">
+                <div class="inv-progress-fill" id="inv-progress-fill" style="width:0%"></div>
+            </div>
+            <span class="inv-progress-pct" id="inv-progress-pct">0%</span>
+        </div>
+    </div>
+
+    <!-- PESTAÑAS -->
+    <div class="inv-tabs">
+        <button class="inv-tab active" id="tab-btn-email" onclick="switchTab('email')">
+            <span class="tab-icon">📧</span>
+            <span class="tab-label">Email Viewer</span>
+            <span class="tab-check" id="check-email">○</span>
+        </button>
+        <button class="inv-tab locked" id="tab-btn-headers" onclick="switchTab('headers')">
+            <span class="tab-icon">📋</span>
+            <span class="tab-label">Header Analysis</span>
+            <span class="tab-check" id="check-headers">🔒</span>
+        </button>
+        <button class="inv-tab locked" id="tab-btn-url" onclick="switchTab('url')">
+            <span class="tab-icon">🌐</span>
+            <span class="tab-label">URL & Domain</span>
+            <span class="tab-check" id="check-url">🔒</span>
+        </button>
+        <button class="inv-tab locked" id="tab-btn-file" onclick="switchTab('file')">
+            <span class="tab-icon">📎</span>
+            <span class="tab-label">File Analysis</span>
+            <span class="tab-check" id="check-file">🔒</span>
+        </button>
+        <button class="inv-tab locked" id="tab-btn-endpoint" onclick="switchTab('endpoint')">
+            <span class="tab-icon">📊</span>
+            <span class="tab-label">Endpoint Logs</span>
+            <span class="tab-check" id="check-endpoint">🔒</span>
+        </button>
+        <button class="inv-tab locked" id="tab-btn-verdict" onclick="switchTab('verdict')">
+            <span class="tab-icon">⚖️</span>
+            <span class="tab-label">Veredicto</span>
+            <span class="tab-check" id="check-verdict">🔒</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO DE PESTAÑAS -->
+    <div class="inv-content">
+
+        <!-- EMAIL VIEWER -->
+        <div class="tab-content active" id="tab-email">
+            <div class="tab-intro">
+                <span class="tab-intro-icon">📧</span>
+                <div>
+                    <strong>Email Viewer</strong> — Examina el email completo. Fíjate en el remitente, destinatario, asunto, cuerpo y adjuntos. Busca señales de ingeniería social.
+                </div>
+            </div>
+            <div class="email-viewer" id="email-viewer-content"></div>
+            <div class="tab-questions" id="email-questions"></div>
+        </div>
+
+        <!-- HEADER ANALYSIS -->
+        <div class="tab-content" id="tab-headers">
+            <div class="tab-intro">
+                <span class="tab-intro-icon">📋</span>
+                <div>
+                    <strong>Header Analysis</strong> — Analiza las cabeceras técnicas del email. SPF, DKIM y DMARC revelan si el email es legítimo o fue falsificado.
+                </div>
+            </div>
+            <div class="header-viewer" id="header-viewer-content"></div>
+            <div class="tab-questions" id="header-questions"></div>
+        </div>
+
+        <!-- URL & DOMAIN -->
+        <div class="tab-content" id="tab-url">
+            <div class="tab-intro">
+                <span class="tab-intro-icon">🌐</span>
+                <div>
+                    <strong>URL & Domain Analysis</strong> — Investiga los dominios y URLs presentes en el email. Comprueba antigüedad, reputación y similitud con dominios legítimos.
+                </div>
+            </div>
+            <div class="url-viewer" id="url-viewer-content"></div>
+            <div class="tab-questions" id="url-questions"></div>
+        </div>
+
+        <!-- FILE ANALYSIS -->
+        <div class="tab-content" id="tab-file">
+            <div class="tab-intro">
+                <span class="tab-intro-icon">📎</span>
+                <div>
+                    <strong>File Analysis</strong> — Analiza el archivo adjunto. Hash, tipo real, strings sospechosos y comportamiento esperado.
+                </div>
+            </div>
+            <div class="file-viewer" id="file-viewer-content"></div>
+            <div class="tab-questions" id="file-questions"></div>
+        </div>
+
+        <!-- ENDPOINT LOGS -->
+        <div class="tab-content" id="tab-endpoint">
+            <div class="tab-intro">
+                <span class="tab-intro-icon">📊</span>
+                <div>
+                    <strong>Endpoint Logs</strong> — Revisa qué hizo el usuario tras recibir el email. ¿Hizo clic? ¿Abrió el adjunto? ¿Se ejecutó algún proceso?
+                </div>
+            </div>
+            <div class="endpoint-viewer" id="endpoint-viewer-content"></div>
+            <div class="tab-questions" id="endpoint-questions"></div>
+        </div>
+
+        <!-- VEREDICTO -->
+        <div class="tab-content" id="tab-verdict">
+            <div class="tab-intro">
+                <span class="tab-intro-icon">⚖️</span>
+                <div>
+                    <strong>Veredicto Final</strong> — Has completado todas las fases de análisis. Ahora da tu veredicto y determina las acciones de respuesta.
+                </div>
+            </div>
+            <div class="ioc-summary" id="ioc-summary"></div>
+            <div class="tab-questions" id="verdict-questions"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── DATOS DE TICKETS ────────────────────────────────────────────
+
+const TICKETS = {
+    'phi-001': {
+        id: 'PHI-001',
+        nivel: 'easy',
+        titulo: 'Email sospechoso de RRHH — FinCorp',
+
+        email: {
+            de: 'rrhh-notificaciones@fincorp-spain.net',
+            para: 'j.martinez@fincorp.com',
+            asunto: '⚠️ URGENTE: Actualiza tus datos bancarios para la nómina de noviembre',
+            fecha: '14/11/2025 08:21 UTC',
+            adjunto: 'Formulario_Nomina_Noviembre.xlsm',
+            cuerpo: `Estimado/a empleado/a,<br><br>
+Le informamos que debido a una actualización en nuestro sistema de nóminas, es <strong>OBLIGATORIO</strong> que actualice sus datos bancarios antes del <strong>15 de noviembre a las 12:00h</strong>.<br><br>
+Para ello, descargue y complete el formulario adjunto y envíelo a <span style="color:#dc2626">rrhh@fincorp-spain.net</span> antes de la fecha indicada.<br><br>
+Si no actualiza sus datos, <strong>no podremos procesar su nómina</strong> de este mes.<br><br>
+Atentamente,<br>Departamento de Recursos Humanos<br>FinCorp Solutions`
+        },
+
+        headers: [
+            { key: 'Received', val: 'from mail.fincorp-spain.net (91.108.4.22) by mx.fincorp.com', suspicious: false },
+            { key: 'X-Originating-IP', val: '91.108.4.22 — Registrado en Países Bajos, no en España', suspicious: true },
+            { key: 'Reply-To', val: 'rrhh@fincorp-spain.net — Dominio diferente al corporativo', suspicious: true },
+            { key: 'SPF', val: 'FAIL — fincorp-spain.net no está autorizado por fincorp.com', suspicious: true },
+            { key: 'DKIM', val: 'FAIL — Firma digital inválida', suspicious: true },
+            { key: 'DMARC', val: 'FAIL — Política: reject. Email debería haber sido bloqueado', suspicious: true },
+            { key: 'X-Mailer', val: 'PHPMailer 6.0.0 — Software de envío masivo', suspicious: true }
+        ],
+
+        urls: [
+            { url: 'rrhh-notificaciones@fincorp-spain.net', tipo: 'Dominio remitente', registrado: 'Hace 3 días', registrador: 'Namecheap LLC', ip: '91.108.4.22', reputacion: 'MALICIOSO', similitud: 'fincorp.com → fincorp-spain.net (dominio trampa)' },
+            { url: 'rrhh@fincorp-spain.net', tipo: 'Dominio Reply-To', registrado: 'Hace 3 días', registrador: 'Namecheap LLC', ip: '91.108.4.22', reputacion: 'MALICIOSO', similitud: 'Mismo dominio falso' }
+        ],
+
+        archivo: {
+            nombre: 'Formulario_Nomina_Noviembre.xlsm',
+            tipo_real: 'Microsoft Excel Macro-Enabled Workbook',
+            extension: '.xlsm',
+            tamano: '284 KB',
+            md5: 'a3f8d2c1e4b7890f2a1c3d5e7b9f0a2c',
+            sha256: '4a8f2c1e3d5b7890f1a2c3e4d6b8f0a1c2e3d4f5b6c7d8e9f0a1b2c3d4e5f6',
+            vt_detecciones: '47/72 motores',
+            strings_sospechosos: [
+                'Auto_Open() — Macro se ejecuta automáticamente al abrir',
+                'Shell("cmd.exe /c powershell -enc...")',
+                'URLDownloadToFile — Descarga payload adicional',
+                'CreateObject("WScript.Shell") — Ejecuta comandos del sistema'
+            ],
+            comportamiento: 'Al abrir: ejecuta macro Auto_Open → lanza PowerShell ofuscado → descarga payload de 91.108.4.22/update.exe → establece persistencia en registro'
+        },
+
+        endpoint: [
+            { timestamp: '08:21:03', evento: 'Email recibido en bandeja de entrada', proceso: 'outlook.exe', host: 'WKSTN-042', usuario: 'j.martinez', malicioso: false },
+            { timestamp: '08:23:41', evento: 'Adjunto Formulario_Nomina_Noviembre.xlsm descargado', proceso: 'outlook.exe', host: 'WKSTN-042', usuario: 'j.martinez', malicioso: false },
+            { timestamp: '08:24:15', evento: 'Archivo .xlsm abierto con Excel', proceso: 'EXCEL.EXE', host: 'WKSTN-042', usuario: 'j.martinez', malicioso: false },
+            { timestamp: '08:24:17', evento: 'Macro Auto_Open() ejecutada', proceso: 'EXCEL.EXE', host: 'WKSTN-042', usuario: 'j.martinez', malicioso: true },
+            { timestamp: '08:24:19', evento: 'PowerShell lanzado desde Excel', proceso: 'powershell.exe (padre: EXCEL.EXE)', host: 'WKSTN-042', usuario: 'j.martinez', malicioso: true },
+            { timestamp: '08:24:23', evento: 'Conexión saliente a 91.108.4.22:443', proceso: 'powershell.exe', host: 'WKSTN-042', usuario: 'j.martinez', malicioso: true },
+            { timestamp: '08:24:31', evento: 'Archivo update.exe descargado en C:\\Users\\Public\\', proceso: 'powershell.exe', host: 'WKSTN-042', usuario: 'j.martinez', malicioso: true },
+            { timestamp: '08:24:35', evento: 'update.exe ejecutado', proceso: 'update.exe (padre: powershell.exe)', host: 'WKSTN-042', usuario: 'j.martinez', malicioso: true },
+            { timestamp: '08:24:38', evento: 'Clave de registro Run modificada — persistencia establecida', proceso: 'update.exe', host: 'WKSTN-042', usuario: 'j.martinez', malicioso: true }
+        ],
+
+        iocs: [
+            { tipo: 'Dominio malicioso', valor: 'fincorp-spain.net', severidad: 'alta' },
+            { tipo: 'IP C2', valor: '91.108.4.22', severidad: 'alta' },
+            { tipo: 'Hash MD5 malware', valor: 'a3f8d2c1e4b7890f2a1c3d5e7b9f0a2c', severidad: 'alta' },
+            { tipo: 'Proceso sospechoso', valor: 'EXCEL.EXE → powershell.exe', severidad: 'alta' },
+            { tipo: 'Archivo malicioso', valor: 'C:\\Users\\Public\\update.exe', severidad: 'alta' },
+            { tipo: 'Técnica MITRE', valor: 'T1566.001 — Spearphishing Attachment', severidad: 'media' },
+            { tipo: 'Técnica MITRE', valor: 'T1059.001 — PowerShell', severidad: 'media' },
+            { tipo: 'Técnica MITRE', valor: 'T1547.001 — Registry Run Keys', severidad: 'media' }
+        ],
+
+        preguntas: {
+            email: [
+                {
+                    id: 'e1',
+                    pregunta: '¿El dominio del remitente coincide con el dominio corporativo de FinCorp?',
+                    opciones: [
+                        { id: 'a', texto: 'Sí — ambos son fincorp.com', correcto: false, feedback: 'Incorrecto. El remitente usa fincorp-spain.net, no fincorp.com. Son dominios completamente diferentes.' },
+                        { id: 'b', texto: 'No — fincorp-spain.net ≠ fincorp.com', correcto: true, feedback: '✓ Correcto. fincorp-spain.net es un dominio diferente registrado por el atacante para engañar a empleados.' },
+                    ]
+                },
+                {
+                    id: 'e2',
+                    pregunta: '¿Qué técnica de ingeniería social usa este email?',
+                    opciones: [
+                        { id: 'a', texto: 'Urgencia + amenaza económica (no cobrarás la nómina)', correcto: true, feedback: '✓ Correcto. Crear urgencia artificial y amenazar con consecuencias económicas son las técnicas más efectivas de ingeniería social.' },
+                        { id: 'b', texto: 'Curiosidad — el asunto llama la atención', correcto: false, feedback: 'Incorrecto. El vector principal es la urgencia y la amenaza económica, no la curiosidad.' },
+                        { id: 'c', texto: 'Autoridad — se hace pasar por RRHH', correcto: false, feedback: 'Parcialmente correcto, pero la técnica principal es la urgencia + amenaza. La autoridad es secundaria.' }
+                    ]
+                },
+                {
+                    id: 'e3',
+                    pregunta: '¿Qué tipo de archivo adjunto es Formulario_Nomina_Noviembre.xlsm?',
+                    opciones: [
+                        { id: 'a', texto: 'Excel normal — .xlsx sin macros', correcto: false, feedback: 'Incorrecto. La extensión .xlsm indica Excel con macros habilitadas, significativamente más peligroso que .xlsx.' },
+                        { id: 'b', texto: 'Excel con macros habilitadas — potencialmente peligroso', correcto: true, feedback: '✓ Correcto. .xlsm es Excel Macro-Enabled. Las macros pueden ejecutar código arbitrario al abrir el archivo.' },
+                        { id: 'c', texto: 'PDF disfrazado de Excel', correcto: false, feedback: 'Incorrecto. Es un archivo Excel con macros (.xlsm) real.' }
+                    ]
+                }
+            ],
+            headers: [
+                {
+                    id: 'h1',
+                    pregunta: '¿Qué indica que SPF, DKIM y DMARC fallen simultáneamente?',
+                    opciones: [
+                        { id: 'a', texto: 'Error técnico temporal del servidor de correo', correcto: false, feedback: 'Incorrecto. Un fallo técnico afectaría solo a uno de los tres protocolos. El fallo simultáneo indica spoofing.' },
+                        { id: 'b', texto: 'El email fue enviado desde un servidor no autorizado — spoofing confirmado', correcto: true, feedback: '✓ Correcto. SPF FAIL + DKIM FAIL + DMARC FAIL = el email no proviene de los servidores legítimos de ese dominio. Es spoofing confirmado.' },
+                        { id: 'c', texto: 'FinCorp no tiene configurados estos protocolos', correcto: false, feedback: 'Incorrecto. Si FinCorp no tuviera estos protocolos, los resultados serían NONE, no FAIL.' }
+                    ]
+                },
+                {
+                    id: 'h2',
+                    pregunta: 'La IP de origen es 91.108.4.22 registrada en Países Bajos. FinCorp es una empresa española. ¿Qué conclusión sacas?',
+                    opciones: [
+                        { id: 'a', texto: 'Normal — muchas empresas usan servidores en el extranjero', correcto: false, feedback: 'Incorrecto. Combinado con los fallos SPF/DKIM/DMARC, una IP extranjera es una señal adicional de compromiso.' },
+                        { id: 'b', texto: 'Señal adicional de que el email no proviene de infraestructura corporativa de FinCorp', correcto: true, feedback: '✓ Correcto. Una empresa española cuyos emails provienen de IPs en Países Bajos sin justificación, junto a fallos de autenticación, confirma el origen malicioso.' },
+                    ]
+                },
+                {
+                    id: 'h3',
+                    pregunta: '¿Por qué el X-Mailer PHPMailer es una señal de alerta?',
+                    opciones: [
+                        { id: 'a', texto: 'PHPMailer es software de envío masivo/automatizado, no usado en correo corporativo legítimo', correcto: true, feedback: '✓ Correcto. Las empresas usan Microsoft Exchange, Google Workspace o similar. PHPMailer se usa en campañas de spam y phishing automatizadas.' },
+                        { id: 'b', texto: 'PHPMailer es un virus', correcto: false, feedback: 'Incorrecto. PHPMailer es software legítimo, pero su uso en un contexto corporativo indica automatización sospechosa.' }
+                    ]
+                }
+            ],
+            url: [
+                {
+                    id: 'u1',
+                    pregunta: 'El dominio fincorp-spain.net fue registrado hace 3 días. ¿Qué indica esto?',
+                    opciones: [
+                        { id: 'a', texto: 'Dominio nuevo creado específicamente para esta campaña de phishing', correcto: true, feedback: '✓ Correcto. Los atacantes registran dominios similares a las víctimas justo antes del ataque. Un dominio de 3 días apuntando a una empresa establecida es un IOC crítico.' },
+                        { id: 'b', texto: 'FinCorp acaba de registrar un nuevo dominio para su departamento de RRHH', correcto: false, feedback: 'Incorrecto. Verificar con el equipo de IT confirmaría que FinCorp no registró ese dominio.' }
+                    ]
+                },
+                {
+                    id: 'u2',
+                    pregunta: '¿Cómo se llama la técnica de registrar dominios similares al objetivo?',
+                    opciones: [
+                        { id: 'a', texto: 'Domain Shadowing', correcto: false, feedback: 'Incorrecto. Domain Shadowing es comprometer el DNS de un dominio legítimo.' },
+                        { id: 'b', texto: 'Typosquatting — dominios con pequeñas variaciones del legítimo', correcto: true, feedback: '✓ Correcto. fincorp-spain.net vs fincorp.com es typosquatting. El atacante registra variaciones del dominio legítimo para engañar a usuarios y filtros.' },
+                        { id: 'c', texto: 'DNS Hijacking', correcto: false, feedback: 'Incorrecto. DNS Hijacking implica modificar registros DNS legítimos.' }
+                    ]
+                },
+                {
+                    id: 'u3',
+                    pregunta: 'VirusTotal detecta el dominio como malicioso con 47/72 motores. ¿Qué acción tomas?',
+                    opciones: [
+                        { id: 'a', texto: 'Esperar a que más motores lo detecten antes de actuar', correcto: false, feedback: 'Incorrecto. Con 47/72 detecciones hay suficiente evidencia. Esperar permite más víctimas.' },
+                        { id: 'b', texto: 'Bloquear el dominio en proxy/firewall e indicar el IOC en el SIEM inmediatamente', correcto: true, feedback: '✓ Correcto. Con alta confianza de malicia, bloquear el dominio inmediatamente protege a todos los empleados de FinCorp.' },
+                        { id: 'c', texto: 'Ignorar — puede ser un falso positivo de VirusTotal', correcto: false, feedback: 'Incorrecto. 47/72 motores es una detección muy alta. La probabilidad de falso positivo es mínima.' }
+                    ]
+                }
+            ],
+            file: [
+                {
+                    id: 'f1',
+                    pregunta: 'El archivo tiene una función Auto_Open(). ¿Qué hace exactamente?',
+                    opciones: [
+                        { id: 'a', texto: 'Abre el archivo automáticamente cuando llega al email', correcto: false, feedback: 'Incorrecto. Auto_Open() es una macro de Excel/VBA que se ejecuta automáticamente cuando el usuario abre el archivo.' },
+                        { id: 'b', texto: 'Ejecuta la macro VBA automáticamente al abrir el documento Excel', correcto: true, feedback: '✓ Correcto. Auto_Open() es una función especial de VBA que se dispara sin interacción del usuario al abrir el archivo, si las macros están habilitadas.' },
+                        { id: 'c', texto: 'Abre una URL automáticamente', correcto: false, feedback: 'Incorrecto. Auto_Open() ejecuta código VBA, aunque ese código puede incluir la apertura de URLs.' }
+                    ]
+                },
+                {
+                    id: 'f2',
+                    pregunta: 'El string "URLDownloadToFile" aparece en el código de la macro. ¿Qué implica?',
+                    opciones: [
+                        { id: 'a', texto: 'El malware descarga un payload adicional desde internet', correcto: true, feedback: '✓ Correcto. URLDownloadToFile es una función de Windows que descarga archivos desde URLs. Su presencia en una macro indica dropper de segunda etapa.' },
+                        { id: 'b', texto: 'El archivo sube datos del usuario a un servidor', correcto: false, feedback: 'Incorrecto. URLDownloadToFile descarga archivos, no los sube. Para subir datos se usaría WinHTTP o similar.' }
+                    ]
+                },
+                {
+                    id: 'f3',
+                    pregunta: 'Con 47/72 detecciones en VirusTotal y comportamiento de dropper confirmado, ¿cómo clasificas este archivo?',
+                    opciones: [
+                        { id: 'a', texto: 'Malware tipo Dropper — descarga y ejecuta payload adicional', correcto: true, feedback: '✓ Correcto. Un dropper es malware cuya función principal es descargar y ejecutar el payload real. Este .xlsm actúa como dropper de primera etapa.' },
+                        { id: 'b', texto: 'Ransomware — cifra archivos directamente', correcto: false, feedback: 'Incorrecto. Este archivo es un dropper. El ransomware podría ser el payload que descarga, pero el .xlsm en sí es el vector de acceso inicial.' },
+                        { id: 'c', texto: 'Spyware — roba información del usuario', correcto: false, feedback: 'Incorrecto. Sin analizar el payload descargado no podemos determinarlo, pero el .xlsm es clasificado como dropper.' }
+                    ]
+                }
+            ],
+            endpoint: [
+                {
+                    id: 'ep1',
+                    pregunta: 'A las 08:24:17 la macro Auto_Open() se ejecutó. ¿El host WKSTN-042 está comprometido?',
+                    opciones: [
+                        { id: 'a', texto: 'Sí — la ejecución de la macro y descarga de update.exe confirman compromiso', correcto: true, feedback: '✓ Correcto. La cadena completa está en los logs: macro → PowerShell → descarga → ejecución → persistencia. El host está comprometido.' },
+                        { id: 'b', texto: 'No — abrir el archivo no significa infección automática', correcto: false, feedback: 'Incorrecto. Los logs muestran que la macro SE ejecutó, descargó update.exe Y estableció persistencia en registro. El compromiso está confirmado.' }
+                    ]
+                },
+                {
+                    id: 'ep2',
+                    pregunta: '¿Qué proceso padre-hijo es la señal más crítica en estos logs?',
+                    opciones: [
+                        { id: 'a', texto: 'outlook.exe → EXCEL.EXE (adjunto abierto)', correcto: false, feedback: 'Incorrecto. Outlook abriendo Excel es normal. La señal crítica es el siguiente paso.' },
+                        { id: 'b', texto: 'EXCEL.EXE → powershell.exe (Excel lanzando PowerShell)', correcto: true, feedback: '✓ Correcto. Excel nunca debería lanzar PowerShell en condiciones normales. Esta relación padre-hijo es un IOC crítico y una regla de detección estándar en cualquier SIEM.' },
+                        { id: 'c', texto: 'powershell.exe → update.exe', correcto: false, feedback: 'También es crítico, pero la señal más temprana y detectable es Excel → PowerShell.' }
+                    ]
+                },
+                {
+                    id: 'ep3',
+                    pregunta: '¿Cuánto tiempo tardó el ataque completo desde la apertura del archivo hasta establecer persistencia?',
+                    opciones: [
+                        { id: 'a', texto: 'Menos de 30 segundos (08:24:15 → 08:24:38)', correcto: true, feedback: '✓ Correcto. 23 segundos desde abrir el archivo hasta persistencia establecida. Los ataques automatizados son extremadamente rápidos — la detección debe ser en tiempo real.' },
+                        { id: 'b', texto: 'Varios minutos', correcto: false, feedback: 'Incorrecto. Revisa los timestamps: 08:24:15 (apertura) → 08:24:38 (persistencia) = 23 segundos.' },
+                        { id: 'c', texto: 'Más de una hora', correcto: false, feedback: 'Incorrecto. El ataque completo duró 23 segundos.' }
+                    ]
+                }
+            ],
+            verdict: [
+                {
+                    id: 'v1',
+                    pregunta: '¿Cuál es tu veredicto final sobre este email?',
+                    opciones: [
+                        { id: 'a', texto: 'Phishing confirmado con infección activa en WKSTN-042', correcto: true, feedback: '✓ Correcto. Phishing por email con adjunto malicioso (.xlsm dropper) que resultó en infección activa del endpoint.' },
+                        { id: 'b', texto: 'Phishing sin infección — el usuario no abrió el adjunto', correcto: false, feedback: 'Incorrecto. Los logs de endpoint confirman que el adjunto fue abierto, la macro ejecutada y la persistencia establecida.' },
+                        { id: 'c', texto: 'Falso positivo — email legítimo de RRHH', correcto: false, feedback: 'Incorrecto. Todos los indicadores (SPF/DKIM/DMARC FAIL, dominio de 3 días, macro maliciosa, 47/72 VirusTotal) confirman phishing.' }
+                    ]
+                },
+                {
+                    id: 'v2',
+                    pregunta: '¿Cuál es la acción de contención inmediata más importante?',
+                    opciones: [
+                        { id: 'a', texto: 'Formatear el equipo inmediatamente', correcto: false, feedback: 'Incorrecto. Formatear destruye evidencia forense. Primero aislar, luego preservar evidencia, luego remediar.' },
+                        { id: 'b', texto: 'Aislar WKSTN-042 de la red + bloquear IOCs en SIEM/Firewall', correcto: true, feedback: '✓ Correcto. Aislar el host corta la comunicación C2. Bloquear los IOCs (IP, dominio, hash) protege al resto de la organización.' },
+                        { id: 'c', texto: 'Cambiar la contraseña del usuario', correcto: false, feedback: 'Incorrecto. El cambio de contraseña es necesario pero secundario. La prioridad es cortar el C2 activo aislando el host.' }
+                    ]
+                },
+                {
+                    id: 'v3',
+                    pregunta: '¿A quién debes notificar y en qué orden?',
+                    opciones: [
+                        { id: 'a', texto: 'Solo al usuario afectado', correcto: false, feedback: 'Incorrecto. Un incidente con C2 activo requiere escalado a CISO y activación del proceso IR formal.' },
+                        { id: 'b', texto: 'CISO → IR Team → usuario → RRHH', correcto: true, feedback: '✓ Correcto. Escalar al CISO inmediatamente, activar el equipo IR, notificar al usuario y coordinar con RRHH para alertar a otros empleados.' },
+                        { id: 'c', texto: 'Resolver internamente sin escalar', correcto: false, feedback: 'Incorrecto. Un host comprometido con C2 activo es un incidente de Severidad Alta que requiere escalado obligatorio.' }
+                    ]
+                }
+            ]
+        }
+    }
+};
+
+// ── ESTADO ────────────────────────────────────────────────────────
+let ticketActual = null;
+let tabsCompletadas = new Set();
+let respuestasTicket = {};
+const ORDEN_TABS = ['email', 'headers', 'url', 'file', 'endpoint', 'verdict'];
+
+// ── FUNCIONES ─────────────────────────────────────────────────────
+
+function abrirTicket(ticketId) {
+    if (!TICKETS[ticketId]) {
+        alert('Este ticket estará disponible próximamente.');
+        return;
+    }
+
+    ticketActual = ticketId;
+    tabsCompletadas = new Set();
+    respuestasTicket = {};
+
+    const ticket = TICKETS[ticketId];
+
+    document.getElementById('inv-ticket-id').textContent = ticket.id;
+    document.getElementById('inv-ticket-title').textContent = ticket.titulo;
+
+    document.querySelectorAll('.queue-item').forEach(q => q.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    document.querySelector('.ticket-selector').style.display = 'none';
+    document.getElementById('investigation-panel').style.display = 'block';
+
+    resetearTabs();
+    renderTab('email');
+    actualizarProgreso();
+}
+
+function volverCola() {
+    document.querySelector('.ticket-selector').style.display = 'block';
+    document.getElementById('investigation-panel').style.display = 'none';
+    ticketActual = null;
+}
+
+function resetearTabs() {
+    ORDEN_TABS.forEach(tab => {
+        const btn = document.getElementById('tab-btn-' + tab);
+        const check = document.getElementById('check-' + tab);
+        btn.classList.remove('active', 'completed');
+        if (tab === 'email') {
+            btn.classList.remove('locked');
+            btn.classList.add('active');
+            check.textContent = '○';
+        } else {
+            btn.classList.add('locked');
+            check.textContent = '🔒';
+        }
+    });
+}
+
+function switchTab(tab) {
+    const btn = document.getElementById('tab-btn-' + tab);
+    if (btn.classList.contains('locked')) return;
+
+    document.querySelectorAll('.inv-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+
+    renderTab(tab);
+}
+
+function renderTab(tab) {
+    const ticket = TICKETS[ticketActual];
+
+    if (tab === 'email') renderEmail(ticket);
+    else if (tab === 'headers') renderHeaders(ticket);
+    else if (tab === 'url') renderURL(ticket);
+    else if (tab === 'file') renderFile(ticket);
+    else if (tab === 'endpoint') renderEndpoint(ticket);
+    else if (tab === 'verdict') renderVerdict(ticket);
+}
+
+function renderEmail(ticket) {
+    const e = ticket.email;
+    document.getElementById('email-viewer-content').innerHTML = `
+        <div class="ev-header">
+            <div class="ev-field"><span class="ev-label">De:</span><span class="ev-val suspicious-val">${e.de}</span></div>
+            <div class="ev-field"><span class="ev-label">Para:</span><span class="ev-val">${e.para}</span></div>
+            <div class="ev-field"><span class="ev-label">Asunto:</span><span class="ev-val">${e.asunto}</span></div>
+            <div class="ev-field"><span class="ev-label">Fecha:</span><span class="ev-val">${e.fecha}</span></div>
+            <div class="ev-field"><span class="ev-label">Adjunto:</span><span class="ev-val suspicious-val">📎 ${e.adjunto}</span></div>
+        </div>
+        <div class="ev-body">${e.cuerpo}</div>
+    `;
+    renderPreguntas('email-questions', ticket.preguntas.email, 'email');
+}
+
+function renderHeaders(ticket) {
+    const rows = ticket.headers.map(h => `
+        <div class="hv-row ${h.suspicious ? 'hv-suspicious' : ''}">
+            <span class="hv-key">${h.key}</span>
+            <span class="hv-val ${h.suspicious ? 'hv-val-red' : ''}">${h.val}</span>
+        </div>
+    `).join('');
+    document.getElementById('header-viewer-content').innerHTML = `<div class="hv-table">${rows}</div>`;
+    renderPreguntas('header-questions', ticket.preguntas.headers, 'headers');
+}
+
+function renderURL(ticket) {
+    const rows = ticket.urls.map(u => `
+        <div class="url-card">
+            <div class="url-card-header">
+                <span class="url-tipo">${u.tipo}</span>
+                <span class="url-rep ${u.reputacion === 'MALICIOSO' ? 'rep-mal' : 'rep-ok'}">${u.reputacion}</span>
+            </div>
+            <div class="url-detail"><span class="url-dl">URL/Dominio:</span><span class="url-dv suspicious-val">${u.url}</span></div>
+            <div class="url-detail"><span class="url-dl">Registrado:</span><span class="url-dv">${u.registrado}</span></div>
+            <div class="url-detail"><span class="url-dl">Registrador:</span><span class="url-dv">${u.registrador}</span></div>
+            <div class="url-detail"><span class="url-dl">IP:</span><span class="url-dv suspicious-val">${u.ip}</span></div>
+            <div class="url-detail"><span class="url-dl">Similitud:</span><span class="url-dv">${u.similitud}</span></div>
+        </div>
+    `).join('');
+    document.getElementById('url-viewer-content').innerHTML = `<div class="url-cards">${rows}</div>`;
+    renderPreguntas('url-questions', ticket.preguntas.url, 'url');
+}
+
+function renderFile(ticket) {
+    const f = ticket.archivo;
+    const strings = f.strings_sospechosos.map(s => `<div class="file-string">⚠ ${s}</div>`).join('');
+    document.getElementById('file-viewer-content').innerHTML = `
+        <div class="file-meta">
+            <div class="fm-grid">
+                <div class="fm-item"><span class="fm-label">Nombre</span><span class="fm-val">${f.nombre}</span></div>
+                <div class="fm-item"><span class="fm-label">Tipo real</span><span class="fm-val">${f.tipo_real}</span></div>
+                <div class="fm-item"><span class="fm-label">Tamaño</span><span class="fm-val">${f.tamano}</span></div>
+                <div class="fm-item"><span class="fm-label">VirusTotal</span><span class="fm-val suspicious-val">🔴 ${f.vt_detecciones}</span></div>
+                <div class="fm-item fm-full"><span class="fm-label">MD5</span><span class="fm-val mono">${f.md5}</span></div>
+                <div class="fm-item fm-full"><span class="fm-label">SHA256</span><span class="fm-val mono">${f.sha256}</span></div>
+            </div>
+        </div>
+        <div class="file-strings-section">
+            <div class="file-strings-header">⚠ Strings sospechosos detectados</div>
+            ${strings}
+        </div>
+        <div class="file-behavior">
+            <div class="file-behavior-header">🔬 Comportamiento dinámico</div>
+            <div class="file-behavior-content">${f.comportamiento}</div>
+        </div>
+    `;
+    renderPreguntas('file-questions', ticket.preguntas.file, 'file');
+}
+
+function renderEndpoint(ticket) {
+    const rows = ticket.endpoint.map(e => `
+        <div class="ep-row ${e.malicioso ? 'ep-malicious' : ''}">
+            <span class="ep-time">${e.timestamp}</span>
+            <span class="ep-proceso mono">${e.proceso}</span>
+            <span class="ep-evento">${e.evento}</span>
+            <span class="ep-badge ${e.malicioso ? 'ep-bad' : 'ep-ok'}">${e.malicioso ? '⚠ Malicioso' : '✓ Normal'}</span>
+        </div>
+    `).join('');
+    document.getElementById('endpoint-viewer-content').innerHTML = `
+        <div class="ep-header-row">
+            <span>Timestamp</span><span>Proceso</span><span>Evento</span><span>Estado</span>
+        </div>
+        <div class="ep-table">${rows}</div>
+    `;
+    renderPreguntas('endpoint-questions', ticket.preguntas.endpoint, 'endpoint');
+}
+
+function renderVerdict(ticket) {
+    const iocs = ticket.iocs.map(ioc => `
+        <div class="ioc-final-item sev-${ioc.severidad}">
+            <span class="ioc-final-tipo">${ioc.tipo}</span>
+            <span class="ioc-final-val">${ioc.valor}</span>
+        </div>
+    `).join('');
+    document.getElementById('ioc-summary').innerHTML = `
+        <div class="ioc-summary-box">
+            <div class="ioc-summary-header">🔍 IOCs identificados durante la investigación</div>
+            <div class="ioc-summary-list">${iocs}</div>
+        </div>
+    `;
+    renderPreguntas('verdict-questions', ticket.preguntas.verdict, 'verdict');
+}
+
+function renderPreguntas(containerId, preguntas, tabId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const ya = respuestasTicket[tabId] || {};
+
+    container.innerHTML = preguntas.map(p => {
+        const respondida = ya[p.id];
+        const opcionesHTML = p.opciones.map(o => `
+            <button class="phi-opt ${respondida ? (o.correcto ? 'phi-opt-correct' : 'phi-opt-wrong-dim') : ''} ${respondida === o.id ? (o.correcto ? 'phi-opt-correct' : 'phi-opt-wrong') : ''}"
+                onclick="responder('${tabId}', '${p.id}', '${o.id}', ${o.correcto}, this)"
+                ${respondida ? 'disabled' : ''}>
+                ${o.texto}
+            </button>
+        `).join('');
+
+        const feedbackHTML = respondida ? `
+            <div class="phi-feedback ${p.opciones.find(o=>o.id===respondida).correcto ? 'phi-correct' : 'phi-wrong'}">
+                ${p.opciones.find(o=>o.id===respondida).feedback}
+            </div>
+        ` : '';
+
+        return `
+            <div class="phi-question">
+                <p class="phi-q-text">${p.pregunta}</p>
+                <div class="phi-options">${opcionesHTML}</div>
+                ${feedbackHTML}
+            </div>
+        `;
+    }).join('');
+}
+
+function responder(tabId, preguntaId, opcionId, correcto, btn) {
+    const ticket = TICKETS[ticketActual];
+    const preguntas = ticket.preguntas[tabId];
+    const pregunta = preguntas.find(p => p.id === preguntaId);
+    const opcion = pregunta.opciones.find(o => o.id === opcionId);
+
+    if (!respuestasTicket[tabId]) respuestasTicket[tabId] = {};
+    respuestasTicket[tabId][preguntaId] = opcionId;
+
+    const container = btn.closest('.phi-question');
+    container.querySelectorAll('.phi-opt').forEach(b => {
+        b.disabled = true;
+        const esCorrecta = pregunta.opciones.find(o => o.texto === b.textContent.trim())?.correcto;
+        if (esCorrecta) b.classList.add('phi-opt-correct');
+    });
+
+    if (!correcto) btn.classList.add('phi-opt-wrong');
+
+    const feedback = document.createElement('div');
+    feedback.className = `phi-feedback ${correcto ? 'phi-correct' : 'phi-wrong'}`;
+    feedback.textContent = opcion.feedback;
+    container.appendChild(feedback);
+
+    verificarTabCompleta(tabId, preguntas);
+}
+
+function verificarTabCompleta(tabId, preguntas) {
+    const respondidas = respuestasTicket[tabId] || {};
+    if (Object.keys(respondidas).length === preguntas.length) {
+        tabsCompletadas.add(tabId);
+
+        const check = document.getElementById('check-' + tabId);
+        check.textContent = '✓';
+        document.getElementById('tab-btn-' + tabId).classList.add('completed');
+
+        const idx = ORDEN_TABS.indexOf(tabId);
+        if (idx < ORDEN_TABS.length - 1) {
+            const siguiente = ORDEN_TABS[idx + 1];
+            const btnSig = document.getElementById('tab-btn-' + siguiente);
+            btnSig.classList.remove('locked');
+            document.getElementById('check-' + siguiente).textContent = '○';
+        }
+
+        actualizarProgreso();
+    }
+}
+
+function actualizarProgreso() {
+    const pct = Math.round((tabsCompletadas.size / ORDEN_TABS.length) * 100);
+    document.getElementById('inv-progress-fill').style.width = pct + '%';
+    document.getElementById('inv-progress-pct').textContent = pct + '%';
+}
+</script>
+
+{% endblock %}
