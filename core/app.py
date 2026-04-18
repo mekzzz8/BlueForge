@@ -354,5 +354,30 @@ def learn():
 def phishing():
     return render_template('phishing.html')
 
+@app.route('/api/phishing/guardar', methods=['POST'])
+def guardar_phishing():
+    data = request.get_json()
+    if 'phishing_progreso' not in session:
+        session['phishing_progreso'] = {}
+    
+    ticket_id = data.get('ticket_id')
+    tab_id = data.get('tab_id')
+    pregunta_id = data.get('pregunta_id')
+    opcion_id = data.get('opcion_id')
+
+    if ticket_id not in session['phishing_progreso']:
+        session['phishing_progreso'][ticket_id] = {}
+    if tab_id not in session['phishing_progreso'][ticket_id]:
+        session['phishing_progreso'][ticket_id][tab_id] = {}
+
+    session['phishing_progreso'][ticket_id][tab_id][pregunta_id] = opcion_id
+    session.modified = True
+
+    return jsonify({"ok": True})
+
+@app.route('/api/phishing/progreso')
+def progreso_phishing():
+    return jsonify(session.get('phishing_progreso', {}))
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)

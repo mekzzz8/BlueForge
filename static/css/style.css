@@ -1907,7 +1907,7 @@ footer {
 .tab-questions { display: flex; flex-direction: column; gap: 1.25rem; }
 
 .phi-question { display: flex; flex-direction: column; gap: 0.75rem; }
-.phi-q-text { font-size: 0.95rem; font-weight: 700; color: var(--text); line-height: 1.5; }
+.phi-q-text { font-size: 0.95rem; font-weight: 700; color: #e2e8f0; line-height: 1.5; }
 .phi-opt {
   background: rgba(255,255,255,0.04);
   border: 2px solid var(--border);
