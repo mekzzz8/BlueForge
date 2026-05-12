@@ -3,31 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlueForge — {% block title %}Panel{% endblock %}</title>
+    <title>BlueForge — {% block title %}SOC{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-    <nav>
-        <div class="nav-logo">BlueForge</div>
+<nav class="navbar">
+    <div class="nav-inner">
+        <a href="/" class="nav-logo">
+            <span class="logo-icon">⬡</span>
+            <span class="logo-text">BlueForge</span>
+            <span class="logo-version">v2.0</span>
+        </a>
         <ul class="nav-links">
-            <li><a href="/">Dashboard</a></li>
-            <li><a href="/scenarios">Escenarios</a></li>
-            <li><a href="/progress">Progreso</a></li>
-            <li><a href="/learn">📚 Aprender</a></li>
-            <li><a href="/phishing">🎣 Phishing SOC</a></li>
+            <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                <span class="nl-icon">🖥</span> SOC
+            </a></li>
+            <li><a href="/progress" class="nav-link {% if request.path == '/progress' %}active{% endif %}">
+                <span class="nl-icon">📊</span> Progreso
+            </a></li>
+            <li><a href="/learn" class="nav-link {% if request.path == '/learn' %}active{% endif %}">
+                <span class="nl-icon">📚</span> Aprender
+            </a></li>
         </ul>
-    </nav>
+        <div class="nav-analyst">
+            <span class="analyst-dot"></span>
+            <span class="analyst-label">Analista · Online</span>
+        </div>
+    </div>
+</nav>
 
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
+<main>
+    {% block content %}{% endblock %}
+</main>
 
-    <footer>
-        <p>BlueForge — Blue Team Training Platform</p>
-    </footer>
+<footer>
+    <span>BlueForge v2.0</span>
+    <span class="footer-sep">·</span>
+    <span>Blue Team Training Platform</span>
+    <span class="footer-sep">·</span>
+    <span>100% local · Docker · Open Source</span>
+</footer>
 
 </body>
 </html>

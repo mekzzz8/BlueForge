@@ -1,0 +1,58 @@
+{
+  "mensaje": {
+    "de_nombre": "Agencia Tributaria - Notificaciones",
+    "de_email": "notificaciones@agencia-tributaria.gob-es.com",
+    "para": "l.garcia@contosofinancial.es",
+    "asunto": "[URGENTE] Requerimiento Hacienda Ref: RT-2025-00834",
+    "fecha": "Lunes, 3 de marzo de 2025 · 09:14:23",
+    "cuerpo": "Estimada Laura García,\n\nLe informamos que tiene pendiente una notificación importante de la Agencia Tributaria con referencia RT-2025-00834.\n\nDebido a una discrepancia detectada en su declaración trimestral del IRPF, es necesario que revise el documento adjunto en un plazo de 48 horas hábiles para evitar posibles sanciones económicas.\n\nPuede acceder a los detalles de su expediente pulsando el siguiente enlace:\n\n    → ACCEDER A MI EXPEDIENTE OFICIAL\n\nAlternativamente, encontrará el documento oficial adjunto a este correo.\n\nAtentamente,\nServicio de Notificaciones Electrónicas\nAgencia Tributaria · Ministerio de Hacienda\n\n---\nEste mensaje es confidencial. Si no es el destinatario previsto, elimínelo."
+  },
+  "headers": [
+    {"clave": "From",            "valor": "notificaciones@agencia-tributaria.gob-es.com", "sospechoso": true,  "nota": "Dominio falso — el real es agenciatributaria.gob.es"},
+    {"clave": "Reply-To",        "valor": "no-reply@taxnotify-secure.net",                "sospechoso": true,  "nota": "Dominio de respuesta diferente al remitente"},
+    {"clave": "Return-Path",     "valor": "<bounce@mailing-bulk-003.ru>",                 "sospechoso": true,  "nota": "Servidor de rebote ruso"},
+    {"clave": "Received",        "valor": "from mail-bulk-003.ru (185.234.219.47) by mx.contosofinancial.es", "sospechoso": true, "nota": "Origen real: servidor en Rusia"},
+    {"clave": "X-Originating-IP","valor": "185.234.219.47",                               "sospechoso": true,  "nota": "IP rusa, no corresponde a infraestructura de Hacienda"},
+    {"clave": "Message-ID",      "valor": "<20250303081423.847392@gob-es.com>",           "sospechoso": false, "nota": ""},
+    {"clave": "X-Mailer",        "valor": "PHPMailer 6.6.0",                              "sospechoso": false, "nota": "Herramienta legítima usada para envío masivo"},
+    {"clave": "DKIM-Signature",  "valor": "NINGUNA — dominio no firmado digitalmente",    "sospechoso": true,  "nota": "Hacienda siempre firma sus emails con DKIM"},
+    {"clave": "SPF",             "valor": "FAIL — 185.234.219.47 no autorizada para gob-es.com", "sospechoso": true, "nota": "El servidor no está autorizado para enviar en nombre del dominio"},
+    {"clave": "DMARC",           "valor": "FAIL — política reject no aplicada",           "sospechoso": true,  "nota": "El email no supera la validación DMARC"},
+    {"clave": "X-Spam-Score",    "valor": "8.4 / 10 (spam probable)",                    "sospechoso": true,  "nota": "Puntuación de spam elevada, debería haber sido filtrado"}
+  ],
+  "urls": [
+    {
+      "texto": "ACCEDER A MI EXPEDIENTE OFICIAL",
+      "url": "http://agencia-tributaria.gob-es.com.expediente-rt2025.xyz/acceder?ref=RT-2025-00834&user=lgarcia",
+      "tipo": "Enlace principal",
+      "reputacion": "MALICIOSO",
+      "detalles": [
+        {"campo": "Dominio real", "valor": "expediente-rt2025.xyz (no es gob.es)"},
+        {"campo": "Registrado",   "valor": "2025-03-01 — 2 días antes del ataque"},
+        {"campo": "Registrador",  "valor": "NameCheap — pago anónimo con criptomoneda"},
+        {"campo": "IP destino",   "valor": "185.220.101.47"},
+        {"campo": "País / ASN",   "valor": "Rusia — AS-60558 (Bulletproof hosting)"},
+        {"campo": "Redirige a",   "valor": "http://cdn-delivery-proxy.net/dl/documento_hacienda_2025.docm"},
+        {"campo": "VirusTotal",   "valor": "47/72 motores detectan malware"}
+      ]
+    }
+  ],
+  "adjuntos": [
+    {
+      "nombre": "NOTIFICACION_RT-2025-00834.docm",
+      "tipo": "Word con macros (Office Open XML)",
+      "tamano": "487 KB",
+      "md5":    "a4b2c8d9e1f3a5b7c9d2e4f6a8b1c3d5",
+      "sha256": "3a7f2b9c1d5e8f4a2b6c9d3e7f1a5b8c2d6e9f3a7b1c4d8e2f5a9b3c6d1e4f7",
+      "tiene_macros": true,
+      "detalles": [
+        {"campo": "Tipo MIME",       "valor": "application/vnd.ms-word.document.macroEnabled.12", "peligro": true},
+        {"campo": "Macro detectada", "valor": "AutoOpen() — se ejecuta al abrir el documento",   "peligro": true},
+        {"campo": "Acción macro",    "valor": "Lanza cmd.exe → PowerShell -EncodedCommand [base64]", "peligro": true},
+        {"campo": "Payload descarg", "valor": "cdn-delivery-proxy.net/win/update32.exe",          "peligro": true},
+        {"campo": "VirusTotal",      "valor": "38/72 motores detectan macro maliciosa",           "peligro": true},
+        {"campo": "Firma digital",   "valor": "NO — documento sin firma",                         "peligro": false}
+      ]
+    }
+  ]
+}

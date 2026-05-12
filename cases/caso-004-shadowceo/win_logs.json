@@ -1,0 +1,203 @@
+{
+  "descripcion": "Logs del Domain Controller (DC-01), servidores Exchange y endpoints. Período: 26 feb – 28 feb 2025. Especial atención a WKSTN-FIN-03 (r.vidal), CEO-LAPTOP-01 (a.morales) y MAIL-SRV-01. Los eventos incluyen logs de Windows Security, Sysmon y Exchange Audit exportados al SIEM.",
+  "eventos": [
+    {
+      "timestamp": "26 feb · 23:47",
+      "event_id": "4624",
+      "host": "WKSTN-FIN-03",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Logon exitoso — Type 3 (Network) — IP origen: 10.10.0.157 (VPN corporativa, rango doméstico) — WorkstationName: WKSTN-FIN-03",
+      "malicioso": true,
+      "nota": "Login de red a las 23:47 del viernes — r.vidal accede a su puesto desde casa fuera de horario laboral. Su jornada habitual es 09:00-18:00. Dos días antes de la transferencia"
+    },
+    {
+      "timestamp": "26 feb · 23:52",
+      "event_id": "4663",
+      "host": "FILESVR-01",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Object Access — ReadData+ListDirectory — Object: \\\\FILESVR-01\\Finanzas\\Presupuestos\\2025_Q1_Consolidado.xlsx — ProcessName: EXCEL.EXE",
+      "malicioso": true,
+      "nota": "r.vidal accede al presupuesto consolidado de 2025. Dentro de su acceso habitual pero a hora anómala. Posible reconocimiento de límites de autorización"
+    },
+    {
+      "timestamp": "26 feb · 23:57",
+      "event_id": "4663",
+      "host": "FILESVR-01",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Object Access — ReadData — Object: \\\\FILESVR-01\\Finanzas\\Transferencias\\Formulario_SEPA_Internacional_v3.docx — ProcessName: WINWORD.EXE",
+      "malicioso": true,
+      "nota": "PRIMER ACCESO AL FORMULARIO SEPA — el mismo documento que se usará el día 28 para autorizar la transferencia de 380.000€. Primera señal directa de preparación"
+    },
+    {
+      "timestamp": "26 feb · 23:59",
+      "event_id": "4663",
+      "host": "FILESVR-01",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Object Access — ReadData — Object: \\\\FILESVR-01\\RRHH\\Confidencial\\Organigrama_Ejecutivos_2025.xlsx — ProcessName: EXCEL.EXE — ACCESO DENEGADO NORMALMENTE",
+      "malicioso": true,
+      "nota": "r.vidal accede a la carpeta de RRHH que normalmente está restringida a su perfil de Finanzas. Accedió con permisos heredados. Objetivo: identificar quién tiene firma autorizada para transferencias internacionales (i.fernandez)"
+    },
+    {
+      "timestamp": "27 feb · 00:14",
+      "event_id": "4663",
+      "host": "FILESVR-01",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Object Access — WriteData — Object: \\\\FILESVR-01\\Finanzas\\Transferencias\\Formulario_SEPA_Internacional_v3.docx — ProcessName: WINWORD.EXE",
+      "malicioso": true,
+      "nota": "MODIFICACIÓN DEL FORMULARIO SEPA a las 00:14 de la madrugada — r.vidal escribe datos en el documento que se usará para la transferencia. La edición se confirma con los metadatos del fichero (Last-Modified: MEDIGROUP\\r.vidal)"
+    },
+    {
+      "timestamp": "27 feb · 00:31",
+      "event_id": "4634",
+      "host": "WKSTN-FIN-03",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Logoff — sesión de 44 minutos — Type 3 (Network)",
+      "malicioso": false,
+      "nota": "r.vidal cierra la sesión remota tras 44 minutos de actividad nocturna"
+    },
+    {
+      "timestamp": "27 feb · 09:21",
+      "event_id": "Sysmon 1",
+      "host": "CEO-LAPTOP-01",
+      "usuario": "MEDIGROUP\\a.morales",
+      "descripcion": "Process Create — Image: C:\\Program Files\\Google\\Chrome\\chrome.exe — CommandLine: chrome.exe --url \"https://login.microsoftonline.com/oauth2/v2.0/authorize?client_id=8f3a2c1d-97e4-4a2b-bc8f-2e1a3b4c5d6e&scope=Mail.Read+Mail.Send+Contacts.Read+offline_access&response_type=code\" — ParentImage: OUTLOOK.EXE",
+      "malicioso": true,
+      "nota": "PHISHING DE CONSENTIMIENTO OAUTH — el CEO abrió un enlace desde Outlook que cargó una página real de Microsoft pidiendo permisos para la app 'InvoiceAssist Pro'. Al hacer clic en Aceptar, el atacante obtuvo un token OAuth permanente sin necesitar la contraseña"
+    },
+    {
+      "timestamp": "27 feb · 09:24",
+      "event_id": "Exchange-Audit",
+      "host": "MAIL-SRV-01",
+      "usuario": "a.morales@medigroup.es",
+      "descripcion": "OAuthAppConsent — AppDisplayName: InvoiceAssist Pro — AppID: 8f3a2c1d-97e4-4a2b-bc8f-2e1a3b4c5d6e — GrantedPermissions: Mail.Read, Mail.Send, Contacts.Read, offline_access — ConsentType: User — ClientIP: 10.10.10.5",
+      "malicioso": true,
+      "nota": "LA CUENTA DEL CEO QUEDA COMPROMETIDA — el CEO concedió voluntariamente acceso a una app maliciosa. offline_access permite al atacante usar el token indefinidamente sin nueva autenticación. No se disparó ninguna alerta de MFA"
+    },
+    {
+      "timestamp": "27 feb · 10:18",
+      "event_id": "Exchange-Audit",
+      "host": "MAIL-SRV-01",
+      "usuario": "a.morales@medigroup.es (via OAuth)",
+      "descripcion": "MailboxItemsAccessed — OperationProperties: Graph API — ClientIP: 165.73.48.22 — ItemsRead: 47 — Folders: Inbox, SentItems — UserAgent: python-requests/2.31.0",
+      "malicioso": true,
+      "nota": "El atacante lee 47 emails del buzón del CEO vía Graph API desde Amsterdam. UserAgent 'python-requests' delata un script automatizado, no un navegador humano. Objetivo: entender el tono del CEO y los contactos financieros"
+    },
+    {
+      "timestamp": "27 feb · 10:22",
+      "event_id": "Exchange-Audit",
+      "host": "MAIL-SRV-01",
+      "usuario": "a.morales@medigroup.es (via OAuth)",
+      "descripcion": "ContactsAccessed — OperationProperties: Graph API — ClientIP: 165.73.48.22 — ContactsRead: 148 — Incluye: i.fernandez, r.vidal, consejo@medigroup.es — UserAgent: python-requests/2.31.0",
+      "malicioso": true,
+      "nota": "El atacante extrae la libreta de contactos completa del CEO — identifica a i.fernandez (directora financiera con autorización de transferencias) y a r.vidal (contacto con 'contexto previo')"
+    },
+    {
+      "timestamp": "28 feb · 06:14",
+      "event_id": "Exchange-Audit",
+      "host": "MAIL-SRV-01",
+      "usuario": "a.morales@medigroup.es (via OAuth)",
+      "descripcion": "MailboxItemsAccessed — ClientIP: 165.73.48.22 — ItemsRead: 12 — Folders: Inbox — Subjects: RE: Vuelo Londres, Confirmacion hotel Marriott, Agenda conferencia MedPharm",
+      "malicioso": true,
+      "nota": "RECONOCIMIENTO FINAL — el atacante confirma que el CEO está fuera de la oficina ese día (emails de vuelo y hotel). La ausencia del CEO hace inviable una verificación telefónica directa. Momento perfecto para ejecutar el fraude"
+    },
+    {
+      "timestamp": "28 feb · 08:33",
+      "event_id": "4663",
+      "host": "FILESVR-01",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Object Access — ReadData+WriteData — Object: \\\\FILESVR-01\\Finanzas\\Transferencias\\Formulario_SEPA_Internacional_v3.docx — ProcessName: WINWORD.EXE",
+      "malicioso": true,
+      "nota": "SEGUNDO ACCESO AL FORMULARIO — r.vidal abre y modifica el formulario SEPA en horario laboral, horas antes del email fraudulento. Esta vez termina de rellenar los datos bancarios (HELIOS TRADING LTD, IBAN CY89...)"
+    },
+    {
+      "timestamp": "28 feb · 14:33",
+      "event_id": "Exchange-Audit",
+      "host": "MAIL-SRV-01",
+      "usuario": "a.morales@medigroup.es (via OAuth)",
+      "descripcion": "MessageSent — ClientIP: 165.73.48.22 — To: i.fernandez@medigroup.es — CC: r.vidal@medigroup.es — Subject: URGENTE CONFIDENCIAL — Transferencia operacion adquisicion — UserAgent: python-requests/2.31.0",
+      "malicioso": true,
+      "nota": "EMAIL FRAUDULENTO ENVIADO — el atacante lo envía vía Graph API desde Amsterdam mientras el CEO está en Londres. r.vidal en CC no es accidental: es la instrucción para que 'ayude' a i.fernandez con el formulario que ya preparó"
+    },
+    {
+      "timestamp": "28 feb · 14:35",
+      "event_id": "Exchange-Audit",
+      "host": "MAIL-SRV-01",
+      "usuario": "a.morales@medigroup.es (via OAuth)",
+      "descripcion": "MessageDeleted — ClientIP: 165.73.48.22 — MessageSubject: URGENTE CONFIDENCIAL — MovedTo: RecoverableItems\\Purges — Method: Graph API DELETE /messages/{id}",
+      "malicioso": true,
+      "nota": "EL ATACANTE BORRA EL RASTRO — elimina el email de Elementos Enviados del CEO vía Graph API. Si el CEO revisara su buzón, no encontraría nada. Combinado con la regla de reenvío, la operación queda completamente oculta"
+    },
+    {
+      "timestamp": "28 feb · 14:48",
+      "event_id": "4663",
+      "host": "FILESVR-01",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Object Access — WriteData+AppendData — Object: \\\\FILESVR-01\\Finanzas\\Transferencias\\Formulario_SEPA_Internacional_v3.docx — ProcessName: WINWORD.EXE",
+      "malicioso": true,
+      "nota": "r.vidal añade la firma digital y referencia interna al formulario, preparándolo para enviárselo a i.fernandez como 'apoyo' a la instrucción del CEO. Minutos después de recibir el email fraudulento"
+    },
+    {
+      "timestamp": "28 feb · 14:52",
+      "event_id": "Sysmon 1",
+      "host": "WKSTN-FIN-03",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Process Create — Image: C:\\Windows\\System32\\print.exe — CommandLine: print /d:\\\\PRINT-SRV-01\\PRN-FIN-03 \"C:\\Users\\r.vidal\\Documents\\Formulario_SEPA_Internacional_v3.docx\" — ParentImage: WINWORD.EXE",
+      "malicioso": true,
+      "nota": "r.vidal imprime el formulario de transferencia — el documento físico se lleva a i.fernandez para su firma manual, creando una cadena de papel que parece legítima"
+    },
+    {
+      "timestamp": "28 feb · 15:08",
+      "event_id": "Sysmon 1",
+      "host": "WKSTN-FIN-03",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Process Create — Image: C:\\Windows\\System32\\RunDll32.exe — CommandLine: RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 4351 — ParentImage: explorer.exe",
+      "malicioso": true,
+      "nota": "BORRADO DE HISTORIAL — r.vidal ejecuta el comando para limpiar el historial de Internet Explorer/Edge (flags 4351 = historial + cookies + caché + contraseñas + formularios). Justo después de que la transferencia fue procesada"
+    },
+    {
+      "timestamp": "28 feb · 15:11",
+      "event_id": "4688",
+      "host": "WKSTN-FIN-03",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Process Create — NewProcessName: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe — CommandLine: powershell.exe -Command \"Remove-Item 'C:\\Users\\r.vidal\\AppData\\Roaming\\Microsoft\\Outlook\\RoamCache\\*' -Force -Recurse\"",
+      "malicioso": true,
+      "nota": "r.vidal borra la caché de Outlook — elimina el historial de destinatarios sugeridos y correos vistos recientemente que podrían mostrar la cadena de comunicación con el CEO comprometido"
+    },
+    {
+      "timestamp": "28 feb · 15:14",
+      "event_id": "4688",
+      "host": "WKSTN-FIN-03",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "Process Create — NewProcessName: powershell.exe — CommandLine: powershell.exe -Command \"Clear-RecycleBin -Force; Remove-Item 'C:\\Users\\r.vidal\\Recent\\*' -Force\"",
+      "malicioso": true,
+      "nota": "r.vidal vacía la Papelera y borra los Archivos Recientes de Windows — los últimos vestigios de los documentos que manipuló desaparecen del sistema de archivos de su workstation"
+    },
+    {
+      "timestamp": "28 feb · 15:15",
+      "event_id": "EDR-Alert",
+      "host": "WKSTN-FIN-03",
+      "usuario": "MEDIGROUP\\r.vidal",
+      "descripcion": "BEHAVIORAL ALERT — Eliminación masiva de artefactos forenses — powershell.exe (PID 8821) ejecutó 3 comandos de borrado en 7 minutos — Affected: Papelera, historial IE, caché Outlook, archivos recientes — CrowdStrike Score: 71/100 — Severidad: ALTA",
+      "malicioso": true,
+      "nota": "El EDR detectó el patrón de borrado pero no lo bloqueó automáticamente (umbral de bloqueo: 85/100). La alerta quedó en cola sin ser atendida hasta la investigación post-fraude. Gap de visibilidad crítico"
+    },
+    {
+      "timestamp": "28 feb · 17:33",
+      "event_id": "4624",
+      "host": "WKSTN-FIN-01",
+      "usuario": "MEDIGROUP\\i.fernandez",
+      "descripcion": "Logon interactivo — Type 2 — i.fernandez accede al sistema bancario corporativo para procesar la transferencia a HELIOS TRADING LTD — 380.000€",
+      "malicioso": false,
+      "nota": "i.fernandez procesó la transferencia de buena fe, siguiendo las instrucciones del 'CEO' y el formulario firmado facilitado por r.vidal. Victima del fraude, no cómplice"
+    },
+    {
+      "timestamp": "03 mar · 08:47",
+      "event_id": "4624",
+      "host": "CEO-LAPTOP-01",
+      "usuario": "MEDIGROUP\\a.morales",
+      "descripcion": "Logon interactivo — a.morales regresa del viaje a Londres — Outlook muestra 0 emails en Elementos Enviados del viernes (borrados por el atacante) pero i.fernandez le pregunta por la 'operación Phoenix'",
+      "malicioso": false,
+      "nota": "El CEO descubre el fraude al ser preguntado por i.fernandez. Inicio de la investigación forense. La transferencia llegó a Chipre hace 72 horas. Probabilidad de recuperación: muy baja"
+    }
+  ]
+}

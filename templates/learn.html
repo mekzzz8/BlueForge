@@ -1,355 +1,783 @@
 {% extends 'base.html' %}
-
 {% block title %}Centro de Aprendizaje{% endblock %}
 
 {% block content %}
 
+{# ══ HERO ══ #}
 <div class="learn-hero">
-    <div class="learn-hero-badge">📚 Centro Educativo</div>
-    <h1>Guía de Logs para Blue Team</h1>
-    <p>Todo lo que necesitas saber sobre logs de seguridad, desde cero hasta nivel analista SOC.</p>
+    <div class="learn-hero-left">
+        <div class="learn-hero-badge">📚 Base de Conocimiento · Blue Team</div>
+        <h1>Centro de Aprendizaje</h1>
+        <p>Guías técnicas sobre análisis de logs, email forense, red y marcos de respuesta a incidentes. Diseñado para analistas SOC en formación.</p>
+        <div class="learn-hero-chips">
+            <span class="lhc">Windows Logs</span>
+            <span class="lhc">Email Forense</span>
+            <span class="lhc">Red & Proxy</span>
+            <span class="lhc">MITRE ATT&CK</span>
+            <span class="lhc">IR Playbooks</span>
+        </div>
+    </div>
+    <div class="learn-hero-right">
+        <div class="learn-hero-stat">
+            <span class="lhs-num">6</span>
+            <span class="lhs-label">módulos</span>
+        </div>
+        <div class="learn-hero-stat">
+            <span class="lhs-num">30+</span>
+            <span class="lhs-label">Event IDs</span>
+        </div>
+        <div class="learn-hero-stat">
+            <span class="lhs-num">15+</span>
+            <span class="lhs-label">técnicas MITRE</span>
+        </div>
+    </div>
 </div>
 
-<div class="learn-nav">
-    <button class="learn-tab active" onclick="showTab('que-son')">¿Qué son los logs?</button>
-    <button class="learn-tab" onclick="showTab('tipos')">Tipos de logs</button>
-    <button class="learn-tab" onclick="showTab('windows')">Windows Event Logs</button>
-    <button class="learn-tab" onclick="showTab('siem')">Logs en el SIEM</button>
-    <button class="learn-tab" onclick="showTab('iocs')">IOCs en logs</button>
+{# ══ TAB NAV ══ #}
+<div class="learn-nav" id="learn-nav">
+    <button class="learn-tab active" data-tab="fundamentos">🔍 Fundamentos</button>
+    <button class="learn-tab" data-tab="windows">🪟 Windows Logs</button>
+    <button class="learn-tab" data-tab="email">📧 Email Forense</button>
+    <button class="learn-tab" data-tab="red">🌐 Logs de Red</button>
+    <button class="learn-tab" data-tab="mitre">⚔️ MITRE ATT&CK</button>
+    <button class="learn-tab" data-tab="ir">🚨 Respuesta IR</button>
 </div>
 
-<!-- TAB 1: QUÉ SON -->
-<div class="learn-tab-content active" id="tab-que-son">
+{# ══════════════════════════
+   TAB 1 — FUNDAMENTOS
+══════════════════════════ #}
+<div class="learn-tab-content active" id="tab-fundamentos">
+<div class="learn-section">
 
-    <div class="learn-section">
-        <div class="learn-card card-blue">
-            <div class="learn-card-icon">📋</div>
-            <div class="learn-card-body">
-                <h3>¿Qué es un log?</h3>
-                <p>Un log es un registro cronológico de eventos que ocurren en un sistema. Cada vez que alguien inicia sesión, accede a un archivo, ejecuta un proceso o establece una conexión de red, el sistema genera un evento que queda registrado.</p>
-                <p>Para un analista Blue Team, los logs son la fuente principal de evidencia. Son el equivalente digital de las huellas que deja un atacante al moverse por una red.</p>
+    <div class="learn-card card-blue">
+        <div class="learn-card-icon">📋</div>
+        <div class="learn-card-body">
+            <h3>¿Qué es un log?</h3>
+            <p>Un log es un registro cronológico de eventos generado automáticamente por sistemas operativos, aplicaciones y dispositivos de red. Cada acción — inicio de sesión, apertura de archivo, conexión de red, ejecución de proceso — genera un evento que queda almacenado.</p>
+            <p>Para un analista Blue Team los logs son la fuente primaria de evidencia forense: el rastro digital que deja cualquier actor, legítimo o malicioso, al interactuar con una infraestructura.</p>
+        </div>
+    </div>
+
+    <div class="learn-analogy">
+        <div class="analogy-icon">💡</div>
+        <div class="analogy-text">
+            <strong>Analogía:</strong> Un hotel registra cada entrada, uso del ascensor, apertura de habitación y consumo del minibar. Si alguien roba algo, el investigador reconstruye la secuencia de eventos. Los logs son ese registro — y la correlación entre fuentes es lo que convierte datos en evidencia.
+        </div>
+    </div>
+
+    <div class="lf-anatomy">
+        <div class="lfa-header">
+            <span class="lfa-icon">🔬</span>
+            <span class="lfa-title">Anatomía de un evento de Windows</span>
+        </div>
+        <div class="lfa-log">
+            <div class="lfa-line">
+                <span class="lfa-field ts">TimeCreated</span><span class="lfa-sep">:</span><span class="lfa-val ts-val">2025-02-28T14:33:12.487Z</span>
+                <span class="lfa-note">→ Timestamp UTC — siempre normalizar a UTC</span>
+            </div>
+            <div class="lfa-line">
+                <span class="lfa-field eid">EventID</span><span class="lfa-sep">:</span><span class="lfa-val eid-val">4688</span>
+                <span class="lfa-note">→ Tipo de evento — clave para el triage</span>
+            </div>
+            <div class="lfa-line">
+                <span class="lfa-field host">Computer</span><span class="lfa-sep">:</span><span class="lfa-val">WKSTN-FIN-03.medigroup.local</span>
+                <span class="lfa-note">→ Equipo origen del evento</span>
+            </div>
+            <div class="lfa-line">
+                <span class="lfa-field user">SubjectUserName</span><span class="lfa-sep">:</span><span class="lfa-val sus">r.vidal</span>
+                <span class="lfa-note">→ Usuario que generó el evento</span>
+            </div>
+            <div class="lfa-line">
+                <span class="lfa-field proc">NewProcessName</span><span class="lfa-sep">:</span><span class="lfa-val sus">C:\Windows\System32\cmd.exe</span>
+                <span class="lfa-note">→ Proceso creado</span>
+            </div>
+            <div class="lfa-line">
+                <span class="lfa-field cmd">CommandLine</span><span class="lfa-sep">:</span><span class="lfa-val sus">cmd.exe /c "RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 255"</span>
+                <span class="lfa-note">→ Línea de comandos completa (requiere Sysmon o audit policy)</span>
             </div>
         </div>
+    </div>
 
-        <div class="learn-analogy">
-            <div class="analogy-icon">💡</div>
-            <div class="analogy-text">
-                <strong>Analogía:</strong> Imagina un hotel. Cada vez que alguien entra por la puerta, sube al ascensor, abre una habitación o usa la wifi, el sistema del hotel lo registra. Los logs son ese registro. Si alguien roba algo, el investigador revisa los registros para saber quién estuvo, cuándo y dónde.
-            </div>
+    <div class="learn-grid-3">
+        <div class="learn-mini-card mini-blue">
+            <span class="mini-icon">⏱️</span>
+            <span class="mini-title">Timestamp</span>
+            <span class="mini-desc">Cuándo ocurrió exactamente. Siempre en UTC — los logs locales engañan en entornos distribuidos.</span>
         </div>
+        <div class="learn-mini-card mini-amber">
+            <span class="mini-icon">🔢</span>
+            <span class="mini-title">Event ID</span>
+            <span class="mini-desc">Código que identifica el tipo de evento. Es el primer filtro en cualquier investigación.</span>
+        </div>
+        <div class="learn-mini-card mini-purple">
+            <span class="mini-icon">🖥️</span>
+            <span class="mini-title">Hostname</span>
+            <span class="mini-desc">Sistema que generó el evento. Permite rastrear el movimiento lateral entre equipos.</span>
+        </div>
+        <div class="learn-mini-card mini-red">
+            <span class="mini-icon">👤</span>
+            <span class="mini-title">Usuario</span>
+            <span class="mini-desc">Cuenta bajo la que se ejecutó la acción. Distinguir entre SYSTEM, servicio y usuario humano.</span>
+        </div>
+        <div class="learn-mini-card mini-green">
+            <span class="mini-icon">⚡</span>
+            <span class="mini-title">Proceso</span>
+            <span class="mini-desc">Qué ejecutable realizó la acción. La cadena padre → hijo revela comportamiento malicioso.</span>
+        </div>
+        <div class="learn-mini-card mini-cyan">
+            <span class="mini-icon">🔗</span>
+            <span class="mini-title">Correlación</span>
+            <span class="mini-desc">El verdadero análisis cruza múltiples fuentes y construye una línea de tiempo coherente.</span>
+        </div>
+    </div>
 
-        <div class="learn-grid-3">
-            <div class="learn-mini-card mini-blue">
-                <span class="mini-icon">⏱️</span>
-                <span class="mini-title">Timestamp</span>
-                <span class="mini-desc">Cuándo ocurrió el evento exactamente</span>
-            </div>
-            <div class="learn-mini-card mini-green">
-                <span class="mini-icon">🖥️</span>
-                <span class="mini-title">Origen</span>
-                <span class="mini-desc">Qué sistema o aplicación lo generó</span>
-            </div>
-            <div class="learn-mini-card mini-amber">
-                <span class="mini-icon">📝</span>
-                <span class="mini-title">Descripción</span>
-                <span class="mini-desc">Qué acción se realizó exactamente</span>
-            </div>
-            <div class="learn-mini-card mini-red">
-                <span class="mini-icon">👤</span>
-                <span class="mini-title">Usuario</span>
-                <span class="mini-desc">Quién realizó la acción</span>
-            </div>
-            <div class="learn-mini-card mini-purple">
-                <span class="mini-icon">🌐</span>
-                <span class="mini-title">IP / Host</span>
-                <span class="mini-desc">Desde dónde se realizó</span>
-            </div>
-            <div class="learn-mini-card mini-cyan">
-                <span class="mini-icon">🔢</span>
-                <span class="mini-title">Event ID</span>
-                <span class="mini-desc">Código único que identifica el tipo de evento</span>
+    <div class="lf-timeline-card">
+        <div class="lftc-header">
+            <span class="lftc-icon">📅</span>
+            <span class="lftc-title">La línea de tiempo como herramienta de investigación</span>
+        </div>
+        <div class="lftc-body">
+            <p>El análisis forense no consiste en examinar eventos aislados, sino en construir una secuencia coherente. Preguntas clave:</p>
+            <div class="lf-questions">
+                <div class="lfq-item"><span class="lfq-n">1</span><span>¿Qué ocurrió <strong>primero</strong>? El orden causal es clave — un evento no puede ser consecuencia de otro que ocurrió después.</span></div>
+                <div class="lfq-item"><span class="lfq-n">2</span><span>¿Cuánto tiempo <strong>entre eventos</strong>? 2 minutos entre login y exfiltración indica automatización; 2 horas indica operación manual.</span></div>
+                <div class="lfq-item"><span class="lfq-n">3</span><span>¿El horario es <strong>coherente</strong>? Actividad a las 3:00 AM de un empleado de oficina es una anomalía que requiere explicación.</span></div>
+                <div class="lfq-item"><span class="lfq-n">4</span><span>¿Hay <strong>solapamiento</strong>? Si el CEO está en un vuelo y su cuenta envía emails simultáneamente, la cuenta está comprometida.</span></div>
             </div>
         </div>
     </div>
 
 </div>
-
-<!-- TAB 2: TIPOS -->
-<div class="learn-tab-content" id="tab-tipos">
-
-    <div class="learn-section">
-        <div class="tipos-grid">
-
-            <div class="tipo-card tipo-windows">
-                <div class="tipo-header">
-                    <span class="tipo-icon">🪟</span>
-                    <span class="tipo-name">Windows Event Logs</span>
-                </div>
-                <p class="tipo-desc">Registros nativos de Windows. Cubren autenticación, procesos, acceso a archivos y cambios de configuración. Son la fuente principal en entornos empresariales Windows.</p>
-                <div class="tipo-examples">
-                    <span class="tipo-tag">Security.evtx</span>
-                    <span class="tipo-tag">System.evtx</span>
-                    <span class="tipo-tag">Application.evtx</span>
-                </div>
-            </div>
-
-            <div class="tipo-card tipo-sysmon">
-                <div class="tipo-header">
-                    <span class="tipo-icon">🔬</span>
-                    <span class="tipo-name">Sysmon</span>
-                </div>
-                <p class="tipo-desc">Herramienta de Microsoft que amplía los logs nativos. Registra creación de procesos con línea de comandos completa, conexiones de red, modificaciones de registro y mucho más.</p>
-                <div class="tipo-examples">
-                    <span class="tipo-tag">ProcessCreate</span>
-                    <span class="tipo-tag">NetworkConnect</span>
-                    <span class="tipo-tag">RegistryEvent</span>
-                </div>
-            </div>
-
-            <div class="tipo-card tipo-network">
-                <div class="tipo-header">
-                    <span class="tipo-icon">🌐</span>
-                    <span class="tipo-name">Logs de Red</span>
-                </div>
-                <p class="tipo-desc">Registros generados por firewalls, proxies y dispositivos de red. Muestran qué IPs se comunicaron, en qué puertos y cuántos datos transfirieron.</p>
-                <div class="tipo-examples">
-                    <span class="tipo-tag">Firewall logs</span>
-                    <span class="tipo-tag">Proxy logs</span>
-                    <span class="tipo-tag">DNS logs</span>
-                </div>
-            </div>
-
-            <div class="tipo-card tipo-linux">
-                <div class="tipo-header">
-                    <span class="tipo-icon">🐧</span>
-                    <span class="tipo-name">Linux Syslog</span>
-                </div>
-                <p class="tipo-desc">Sistema de logging estándar en Linux. Registra eventos del sistema operativo, servicios y aplicaciones. Clave en servidores web, bases de datos y infraestructura cloud.</p>
-                <div class="tipo-examples">
-                    <span class="tipo-tag">/var/log/syslog</span>
-                    <span class="tipo-tag">/var/log/auth.log</span>
-                    <span class="tipo-tag">/var/log/secure</span>
-                </div>
-            </div>
-
-            <div class="tipo-card tipo-web">
-                <div class="tipo-header">
-                    <span class="tipo-icon">🌍</span>
-                    <span class="tipo-name">Web Server Logs</span>
-                </div>
-                <p class="tipo-desc">Registros de servidores web (Apache, Nginx, IIS). Cada petición HTTP queda registrada con URL, código de respuesta, IP origen y User-Agent. Detectan SQLi, XSS y web shells.</p>
-                <div class="tipo-examples">
-                    <span class="tipo-tag">access.log</span>
-                    <span class="tipo-tag">error.log</span>
-                    <span class="tipo-tag">IIS logs</span>
-                </div>
-            </div>
-
-            <div class="tipo-card tipo-edr">
-                <div class="tipo-header">
-                    <span class="tipo-icon">🛡️</span>
-                    <span class="tipo-name">EDR / AV Logs</span>
-                </div>
-                <p class="tipo-desc">Logs generados por soluciones EDR (CrowdStrike, SentinelOne, Wazuh) y antivirus. Alertas de detección, comportamientos bloqueados y respuestas automáticas.</p>
-                <div class="tipo-examples">
-                    <span class="tipo-tag">Wazuh alerts</span>
-                    <span class="tipo-tag">Detections</span>
-                    <span class="tipo-tag">Quarantine events</span>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
 </div>
 
-<!-- TAB 3: WINDOWS EVENT LOGS -->
+{# ══════════════════════════
+   TAB 2 — WINDOWS LOGS
+══════════════════════════ #}
 <div class="learn-tab-content" id="tab-windows">
+<div class="learn-section">
 
-    <div class="learn-section">
-        <div class="learn-card card-blue">
-            <div class="learn-card-icon">🪟</div>
-            <div class="learn-card-body">
-                <h3>Event IDs críticos para Blue Team</h3>
-                <p>Cada evento en Windows tiene un ID único. Estos son los más importantes que debes conocer como analista SOC:</p>
+    <div class="learn-card card-blue">
+        <div class="learn-card-icon">🪟</div>
+        <div class="learn-card-body">
+            <h3>Windows Security Event Log</h3>
+            <p>El canal Security en el Visor de Eventos de Windows es la fuente de verdad para autenticación, gestión de cuentas y acceso a objetos. Los eventos se identifican por un EventID único. Sin una política de auditoría adecuada (<code>Advanced Audit Policy</code>), muchos no se generan.</p>
+        </div>
+    </div>
+
+    {# — Tabla Event IDs completa — #}
+    <div class="wl-section-label">Event IDs de autenticación y sesión</div>
+    <div class="eventids-table">
+        <div class="eventid-row header-row"><span>Event ID</span><span>Descripción</span><span>Relevancia SOC</span></div>
+        <div class="eventid-row"><span class="eid-num blue">4624</span><span class="eid-desc">Inicio de sesión exitoso — incluye tipo de logon (2=interactivo, 3=red, 10=remoto)</span><span class="eid-tag tag-medium">Monitorizar</span></div>
+        <div class="eventid-row"><span class="eid-num red">4625</span><span class="eid-desc">Fallo de autenticación — múltiples 4625 seguidos de 4624 → brute force exitoso</span><span class="eid-tag tag-high">Alta prioridad</span></div>
+        <div class="eventid-row"><span class="eid-num blue">4634</span><span class="eid-desc">Cierre de sesión — correlacionar con 4624 para calcular duración de sesión</span><span class="eid-tag tag-low">Contextual</span></div>
+        <div class="eventid-row"><span class="eid-num amber">4648</span><span class="eid-desc">Logon con credenciales explícitas (runas, pass-the-hash, movimiento lateral)</span><span class="eid-tag tag-high">Alta prioridad</span></div>
+        <div class="eventid-row"><span class="eid-num red">4672</span><span class="eid-desc">Privilegios especiales asignados al nuevo logon — indica acceso de administrador</span><span class="eid-tag tag-medium">Monitorizar</span></div>
+        <div class="eventid-row"><span class="eid-num amber">4776</span><span class="eid-desc">Validación de credenciales NTLM — clave para detectar Pass-the-Hash lateral</span><span class="eid-tag tag-medium">Lateral movement</span></div>
+    </div>
+
+    <div class="wl-section-label">Event IDs de procesos (requieren Audit Process Creation)</div>
+    <div class="eventids-table">
+        <div class="eventid-row header-row"><span>Event ID</span><span>Descripción</span><span>Relevancia SOC</span></div>
+        <div class="eventid-row"><span class="eid-num red">4688</span><span class="eid-desc">Creación de nuevo proceso — con Command Line Logging activo revela toda la cadena de ejecución</span><span class="eid-tag tag-high">Crítico</span></div>
+        <div class="eventid-row"><span class="eid-num blue">4689</span><span class="eid-desc">Proceso terminado — permite calcular tiempo de vida del proceso</span><span class="eid-tag tag-low">Contextual</span></div>
+        <div class="eventid-row"><span class="eid-num red">1 (Sysmon)</span><span class="eid-desc">ProcessCreate (Sysmon) — incluye hash MD5/SHA256 del ejecutable, PPID y línea completa</span><span class="eid-tag tag-high">Crítico</span></div>
+        <div class="eventid-row"><span class="eid-num amber">3 (Sysmon)</span><span class="eid-desc">NetworkConnection — proceso que genera conexión de red, IP, puerto destino</span><span class="eid-tag tag-high">C2 detection</span></div>
+        <div class="eventid-row"><span class="eid-num amber">11 (Sysmon)</span><span class="eid-desc">FileCreate — creación de archivos, útil para detectar dropers y webshells</span><span class="eid-tag tag-medium">Persistencia</span></div>
+        <div class="eventid-row"><span class="eid-num amber">13 (Sysmon)</span><span class="eid-desc">RegistryValue Set — modificaciones de claves de registro, clave para detectar persistencia Run/RunOnce</span><span class="eid-tag tag-high">Persistencia</span></div>
+    </div>
+
+    <div class="wl-section-label">Event IDs de gestión de cuentas y objetos</div>
+    <div class="eventids-table">
+        <div class="eventid-row header-row"><span>Event ID</span><span>Descripción</span><span>Relevancia SOC</span></div>
+        <div class="eventid-row"><span class="eid-num red">4720</span><span class="eid-desc">Nueva cuenta de usuario creada — especialmente sospechoso fuera de RRHH</span><span class="eid-tag tag-high">Alta prioridad</span></div>
+        <div class="eventid-row"><span class="eid-num red">4732</span><span class="eid-desc">Usuario añadido al grupo Administradores u otro grupo privilegiado</span><span class="eid-tag tag-high">Escalada</span></div>
+        <div class="eventid-row"><span class="eid-num amber">4698</span><span class="eid-desc">Tarea programada creada — técnica de persistencia muy común en malware</span><span class="eid-tag tag-medium">Persistencia</span></div>
+        <div class="eventid-row"><span class="eid-num red">7045</span><span class="eid-desc">Nuevo servicio instalado en el sistema — otro mecanismo de persistencia</span><span class="eid-tag tag-high">Persistencia</span></div>
+        <div class="eventid-row"><span class="eid-num blue">4663</span><span class="eid-desc">Acceso a objeto (archivo/directorio) con auditoría SACL configurada</span><span class="eid-tag tag-medium">Exfiltración</span></div>
+        <div class="eventid-row"><span class="eid-num amber">4657</span><span class="eid-desc">Valor de registro modificado — detectar modificaciones en Run, Services, etc.</span><span class="eid-tag tag-medium">Persistencia</span></div>
+    </div>
+
+    <div class="wl-logon-types">
+        <div class="wl-section-label">Tipos de Logon en EventID 4624</div>
+        <div class="logon-types-grid">
+            <div class="lt-card lt-normal">
+                <span class="lt-num">2</span>
+                <span class="lt-name">Interactive</span>
+                <span class="lt-desc">Inicio de sesión local directo en el equipo (teclado físico o consola)</span>
+            </div>
+            <div class="lt-card lt-normal">
+                <span class="lt-num">3</span>
+                <span class="lt-name">Network</span>
+                <span class="lt-desc">Acceso a recurso compartido de red (SMB, carpetas compartidas). Muy común en lateral movement</span>
+            </div>
+            <div class="lt-card lt-warn">
+                <span class="lt-num">4</span>
+                <span class="lt-name">Batch</span>
+                <span class="lt-desc">Logon de tarea programada. Si el usuario no es una cuenta de servicio, es sospechoso</span>
+            </div>
+            <div class="lt-card lt-warn">
+                <span class="lt-num">5</span>
+                <span class="lt-name">Service</span>
+                <span class="lt-desc">Logon de servicio de Windows. Nuevo servicio con cuenta humana → persistencia</span>
+            </div>
+            <div class="lt-card lt-danger">
+                <span class="lt-num">9</span>
+                <span class="lt-name">NewCredentials</span>
+                <span class="lt-desc">runas /netonly — las credenciales solo se usan para acceso de red. Señal de Pass-the-Hash</span>
+            </div>
+            <div class="lt-card lt-danger">
+                <span class="lt-num">10</span>
+                <span class="lt-name">RemoteInteractive</span>
+                <span class="lt-desc">RDP — inicio de sesión remoto. Con herramientas de administración legítimas o acceso no autorizado</span>
             </div>
         </div>
+    </div>
 
-        <div class="eventids-table">
-            <div class="eventid-row header-row">
-                <span>Event ID</span>
-                <span>Descripción</span>
-                <span>Relevancia</span>
-            </div>
-            <div class="eventid-row">
-                <span class="eid-num blue">4624</span>
-                <span class="eid-desc">Inicio de sesión exitoso</span>
-                <span class="eid-tag tag-medium">Monitorizar</span>
-            </div>
-            <div class="eventid-row">
-                <span class="eid-num red">4625</span>
-                <span class="eid-desc">Fallo de autenticación</span>
-                <span class="eid-tag tag-high">Alta prioridad</span>
-            </div>
-            <div class="eventid-row">
-                <span class="eid-num red">4688</span>
-                <span class="eid-desc">Creación de nuevo proceso</span>
-                <span class="eid-tag tag-high">Alta prioridad</span>
-            </div>
-            <div class="eventid-row">
-                <span class="eid-num amber">4698</span>
-                <span class="eid-desc">Tarea programada creada</span>
-                <span class="eid-tag tag-medium">Persistencia</span>
-            </div>
-            <div class="eventid-row">
-                <span class="eid-num red">4720</span>
-                <span class="eid-desc">Cuenta de usuario creada</span>
-                <span class="eid-tag tag-high">Alta prioridad</span>
-            </div>
-            <div class="eventid-row">
-                <span class="eid-num amber">4732</span>
-                <span class="eid-desc">Usuario añadido a grupo privilegiado</span>
-                <span class="eid-tag tag-high">Alta prioridad</span>
-            </div>
-            <div class="eventid-row">
-                <span class="eid-num blue">4776</span>
-                <span class="eid-desc">Validación de credenciales NTLM</span>
-                <span class="eid-tag tag-medium">Lateral movement</span>
-            </div>
-            <div class="eventid-row">
-                <span class="eid-num red">7045</span>
-                <span class="eid-desc">Nuevo servicio instalado</span>
-                <span class="eid-tag tag-high">Persistencia</span>
-            </div>
-        </div>
-
-        <div class="learn-analogy">
-            <div class="analogy-icon">⚡</div>
-            <div class="analogy-text">
-                <strong>Truco pro:</strong> En Kibana o Splunk, filtra siempre por Event ID 4688 (creación de procesos) para detectar ejecución de malware. Un proceso como <code>powershell.exe</code> siendo hijo de <code>outlook.exe</code> es una señal de alarma inmediata.
-            </div>
+    <div class="learn-analogy">
+        <div class="analogy-icon">⚡</div>
+        <div class="analogy-text">
+            <strong>Regla de oro:</strong> Busca primero por EventID 4688 (o Sysmon 1) filtrando por procesos hijos inusuales. <code>outlook.exe</code> → <code>cmd.exe</code>, <code>excel.exe</code> → <code>powershell.exe</code>, o cualquier proceso lanzado desde <code>C:\Users\Public\</code> o <code>C:\Temp\</code> son señales de alarma inmediata. El árbol de procesos no miente.
         </div>
     </div>
 
 </div>
+</div>
 
-<!-- TAB 4: SIEM -->
-<div class="learn-tab-content" id="tab-siem">
+{# ══════════════════════════
+   TAB 3 — EMAIL FORENSE
+══════════════════════════ #}
+<div class="learn-tab-content" id="tab-email">
+<div class="learn-section">
 
-    <div class="learn-section">
+    <div class="learn-card card-blue">
+        <div class="learn-card-icon">📧</div>
+        <div class="learn-card-body">
+            <h3>Anatomía de un email — cómo viaja un mensaje</h3>
+            <p>Un email no es un documento simple. Es un paquete de datos con una <strong>cabecera técnica</strong> que registra cada salto entre servidores. Esta cabecera es invisible en los clientes de correo normales, pero contiene toda la información forense relevante: IP origen real, ruta de tránsito, mecanismos de autenticación y marcas de tiempo.</p>
+        </div>
+    </div>
 
-        <div class="siem-cards">
-            <div class="siem-tool-card siem-elastic">
-                <div class="siem-tool-header">
-                    <span class="siem-tool-icon">🔍</span>
-                    <span class="siem-tool-name">Elastic Stack (ELK)</span>
+    <div class="email-flow-diagram">
+        <div class="efd-step">
+            <div class="efd-circle blue">1</div>
+            <div class="efd-label">Remitente<br><span>MUA (Outlook, Gmail)</span></div>
+        </div>
+        <div class="efd-arrow">→</div>
+        <div class="efd-step">
+            <div class="efd-circle amber">2</div>
+            <div class="efd-label">Servidor origen<br><span>MTA / SMTP</span></div>
+        </div>
+        <div class="efd-arrow">→</div>
+        <div class="efd-step">
+            <div class="efd-circle amber">3</div>
+            <div class="efd-label">DNS / MX lookup<br><span>Resolución de destino</span></div>
+        </div>
+        <div class="efd-arrow">→</div>
+        <div class="efd-step">
+            <div class="efd-circle amber">4</div>
+            <div class="efd-label">Servidor destino<br><span>MTA receptor</span></div>
+        </div>
+        <div class="efd-arrow">→</div>
+        <div class="efd-step">
+            <div class="efd-circle green">5</div>
+            <div class="efd-label">Destinatario<br><span>MDA / Bandeja</span></div>
+        </div>
+    </div>
+
+    <div class="ef-headers-section">
+        <div class="wl-section-label">Cabeceras críticas para análisis forense</div>
+        <div class="ef-headers-table">
+            <div class="efh-row efh-header">
+                <span>Cabecera</span><span>Qué revela</span><span>Señal de alerta</span>
+            </div>
+            <div class="efh-row">
+                <span class="efh-key">From:</span>
+                <span class="efh-desc">Nombre y dirección del remitente visible al usuario. Puede ser falso en spoofing.</span>
+                <span class="efh-alert warn">Display name ≠ dirección real</span>
+            </div>
+            <div class="efh-row">
+                <span class="efh-key">Reply-To:</span>
+                <span class="efh-desc">Dirección a la que van las respuestas si es diferente de From. Campo clásico en BEC.</span>
+                <span class="efh-alert danger">Dominio diferente al de From</span>
+            </div>
+            <div class="efh-row">
+                <span class="efh-key">Return-Path:</span>
+                <span class="efh-desc">Dirección técnica de rebote SMTP. Debe coincidir con el dominio del remitente.</span>
+                <span class="efh-alert warn">Dominio no relacionado</span>
+            </div>
+            <div class="efh-row">
+                <span class="efh-key">Received:</span>
+                <span class="efh-desc">Cada salto SMTP añade una línea. Leer de abajo a arriba para reconstruir la ruta real.</span>
+                <span class="efh-alert danger">IP privada o VPN como origen</span>
+            </div>
+            <div class="efh-row">
+                <span class="efh-key">X-Originating-IP:</span>
+                <span class="efh-desc">IP real del equipo que envió el email. Campo añadido por muchos servidores SMTP.</span>
+                <span class="efh-alert danger">IP diferente a la del dominio</span>
+            </div>
+            <div class="efh-row">
+                <span class="efh-key">Authentication-Results:</span>
+                <span class="efh-desc">Resultado de SPF, DKIM y DMARC. El receptor lo añade tras validar el email entrante.</span>
+                <span class="efh-alert warn">spf=fail o dkim=fail</span>
+            </div>
+            <div class="efh-row">
+                <span class="efh-key">Message-ID:</span>
+                <span class="efh-desc">Identificador único del email. El dominio del Message-ID debe coincidir con el del remitente.</span>
+                <span class="efh-alert warn">Dominio diferente al de From</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ef-auth-cards">
+        <div class="wl-section-label">SPF · DKIM · DMARC — el triángulo de autenticación de email</div>
+        <div class="ef-auth-grid">
+            <div class="ef-auth-card auth-spf">
+                <div class="ef-auth-header">
+                    <span class="ef-auth-icon">🛡️</span>
+                    <div>
+                        <span class="ef-auth-name">SPF</span>
+                        <span class="ef-auth-full">Sender Policy Framework</span>
+                    </div>
                 </div>
-                <p class="siem-tool-desc">Elasticsearch + Kibana es el SIEM open-source más usado en el mundo. Los logs se indexan en Elasticsearch y se visualizan en Kibana con dashboards y búsquedas KQL.</p>
-                <div class="siem-query-box">
-                    <span class="query-label">Ejemplo KQL — Buscar proceso sospechoso:</span>
-                    <code>process.name: "powershell.exe" AND process.parent.name: "outlook.exe"</code>
+                <p class="ef-auth-desc">Registro DNS TXT que lista qué IPs pueden enviar email en nombre del dominio. Si el email llega desde una IP no autorizada, SPF falla.</p>
+                <div class="ef-auth-example">
+                    <span class="efae-label">Registro SPF en DNS:</span>
+                    <code>v=spf1 include:_spf.google.com ip4:203.0.113.5 ~all</code>
+                </div>
+                <div class="ef-auth-bypass">
+                    <span class="efab-icon">⚠️</span>
+                    <span>En BEC el email sale del servidor legítimo del CEO comprometido → <strong>SPF pasa</strong>. No es garantía de legitimidad.</span>
                 </div>
             </div>
-
-            <div class="siem-tool-card siem-splunk">
-                <div class="siem-tool-header">
-                    <span class="siem-tool-icon">📊</span>
-                    <span class="siem-tool-name">Splunk</span>
+            <div class="ef-auth-card auth-dkim">
+                <div class="ef-auth-header">
+                    <span class="ef-auth-icon">✍️</span>
+                    <div>
+                        <span class="ef-auth-name">DKIM</span>
+                        <span class="ef-auth-full">DomainKeys Identified Mail</span>
+                    </div>
                 </div>
-                <p class="siem-tool-desc">El SIEM más demandado en ofertas de trabajo SOC. Usa SPL (Splunk Processing Language) para buscar y correlacionar eventos. Muy potente para detección de anomalías.</p>
-                <div class="siem-query-box">
-                    <span class="query-label">Ejemplo SPL — Fallos de login por usuario:</span>
-                    <code>index=security EventCode=4625 | stats count by Account_Name | where count > 10</code>
+                <p class="ef-auth-desc">Firma criptográfica añadida a la cabecera del email. Garantiza que el email no fue modificado en tránsito y que lo firmó el servidor del dominio.</p>
+                <div class="ef-auth-example">
+                    <span class="efae-label">Cabecera DKIM-Signature:</span>
+                    <code>v=1; a=rsa-sha256; d=medigroup.es; s=mail2025; b=AbCdEf...</code>
+                </div>
+                <div class="ef-auth-bypass">
+                    <span class="efab-icon">⚠️</span>
+                    <span>Si el atacante controla la cuenta (OAuth, credenciales), el servidor firma el email legítimamente → <strong>DKIM pasa</strong>.</span>
                 </div>
             </div>
-
-            <div class="siem-tool-card siem-wazuh">
-                <div class="siem-tool-header">
-                    <span class="siem-tool-icon">🛡️</span>
-                    <span class="siem-tool-name">Wazuh</span>
+            <div class="ef-auth-card auth-dmarc">
+                <div class="ef-auth-header">
+                    <span class="ef-auth-icon">📋</span>
+                    <div>
+                        <span class="ef-auth-name">DMARC</span>
+                        <span class="ef-auth-full">Domain-based Message Authentication</span>
+                    </div>
                 </div>
-                <p class="siem-tool-desc">SIEM + EDR open-source. Combina análisis de logs con detección de intrusiones en endpoints. Muy usado en PYMEs y gobiernos. Incluye compliance con PCI-DSS y GDPR.</p>
-                <div class="siem-query-box">
-                    <span class="query-label">Regla Wazuh — Detectar conexión C2:</span>
-                    <code>rule id="100001" — dst_ip not in whitelist AND dst_port=443 AND process=svchost</code>
+                <p class="ef-auth-desc">Política que define qué hacer si SPF o DKIM fallan. Puede instruir a rechazar (reject), poner en cuarentena (quarantine) o solo reportar (none).</p>
+                <div class="ef-auth-example">
+                    <span class="efae-label">Registro DMARC en DNS:</span>
+                    <code>v=DMARC1; p=reject; rua=mailto:dmarc@medigroup.es</code>
+                </div>
+                <div class="ef-auth-bypass">
+                    <span class="efab-icon">⚠️</span>
+                    <span>Si SPF y DKIM pasan (cuenta comprometida), <strong>DMARC también pasa</strong>. Triple pass ≠ email legítimo en BEC.</span>
                 </div>
             </div>
         </div>
+    </div>
 
+    <div class="learn-card card-red">
+        <div class="learn-card-icon">🎭</div>
+        <div class="learn-card-body">
+            <h3>Business Email Compromise (BEC) — el fraude que supera todas las defensas</h3>
+            <p>En BEC el atacante no falsifica el email — <strong>envía desde la cuenta real del ejecutivo</strong>. Técnica más común: OAuth Consent Phishing. El CEO hace clic en un enlace real de Microsoft que solicita permisos para una app maliciosa. El atacante recibe un <code>refresh_token</code> permanente.</p>
+            <p>El <code>offline_access</code> scope en OAuth emite tokens que persisten aunque el CEO cambie su contraseña o MFA. Los únicos indicadores están en las cabeceras X-MS, los logs de auditoría O365 y la IP de origen de la sesión — no en los controles de email tradicionales.</p>
+        </div>
     </div>
 
 </div>
+</div>
 
-<!-- TAB 5: IOCs -->
-<div class="learn-tab-content" id="tab-iocs">
+{# ══════════════════════════
+   TAB 4 — LOGS DE RED
+══════════════════════════ #}
+<div class="learn-tab-content" id="tab-red">
+<div class="learn-section">
 
-    <div class="learn-section">
-        <div class="learn-card card-red">
-            <div class="learn-card-icon">🚨</div>
-            <div class="learn-card-body">
-                <h3>Indicadores de Compromiso (IOCs) en logs</h3>
-                <p>Un IOC es cualquier artefacto observado en logs que indica con alta probabilidad que un sistema ha sido comprometido. Saber identificarlos es la habilidad central de un analista SOC.</p>
-            </div>
+    <div class="learn-card card-blue">
+        <div class="learn-card-icon">🌐</div>
+        <div class="learn-card-body">
+            <h3>Fuentes de logs de red</h3>
+            <p>Los logs de red capturan la comunicación entre sistemas. A diferencia de los logs de host (que registran qué pasa dentro de un equipo), los logs de red registran <strong>quién habla con quién, cuándo y cuántos datos transfiere</strong>. Son la fuente principal para detectar exfiltración, C2 y movimiento lateral.</p>
         </div>
-
-        <div class="iocs-grid">
-            <div class="ioc-card">
-                <div class="ioc-header ioc-red">
-                    <span>🔴</span>
-                    <span>IOCs de Alta Criticidad</span>
-                </div>
-                <ul class="ioc-list">
-                    <li>Proceso ejecutado desde <code>C:\Users\Public\</code> o <code>C:\Temp\</code></li>
-                    <li>PowerShell con parámetro <code>-enc</code> (base64 ofuscado)</li>
-                    <li>Proceso padre inusual — <code>outlook.exe</code> → <code>cmd.exe</code></li>
-                    <li>Conexión saliente a IP Tor o conocida C2</li>
-                    <li>Modificación de clave <code>Run</code> en registro</li>
-                    <li>Nuevo servicio instalado fuera de horario</li>
-                </ul>
-            </div>
-
-            <div class="ioc-card">
-                <div class="ioc-header ioc-amber">
-                    <span>🟡</span>
-                    <span>IOCs de Media Criticidad</span>
-                </div>
-                <ul class="ioc-list">
-                    <li>Múltiples fallos de login seguidos de éxito</li>
-                    <li>Acceso a archivos fuera de horario laboral</li>
-                    <li>User-Agent obsoleto o inusual en tráfico web</li>
-                    <li>Escaneo de puertos desde IP interna</li>
-                    <li>Transferencia inusualmente grande de datos</li>
-                    <li>DNS query a dominio recién registrado (DGA)</li>
-                </ul>
-            </div>
-
-            <div class="ioc-card">
-                <div class="ioc-header ioc-blue">
-                    <span>🔵</span>
-                    <span>Falsos Positivos Comunes</span>
-                </div>
-                <ul class="ioc-list">
-                    <li>Administrador ejecutando scripts de mantenimiento</li>
-                    <li>Escáner de vulnerabilidades interno autorizado</li>
-                    <li>Backup nocturno transfiriendo datos masivamente</li>
-                    <li>Usuario olvidando contraseña repetidamente</li>
-                    <li>Software de monitorización generando conexiones</li>
-                    <li>Actualización automática de software</li>
-                </ul>
-            </div>
-        </div>
-
     </div>
 
+    <div class="net-sources-grid">
+        <div class="net-source-card">
+            <div class="nsc-header nsc-fw">
+                <span class="nsc-icon">🔥</span>
+                <span class="nsc-name">Firewall / NGFirewall</span>
+            </div>
+            <p class="nsc-desc">Registra conexiones permitidas y bloqueadas entre segmentos de red. Campos clave: src_ip, dst_ip, dst_port, bytes, acción (ALLOW/DENY).</p>
+            <div class="nsc-fields">
+                <span class="nsc-tag">src/dst IP</span>
+                <span class="nsc-tag">puerto</span>
+                <span class="nsc-tag">protocolo</span>
+                <span class="nsc-tag">bytes</span>
+                <span class="nsc-tag">ALLOW/DENY</span>
+            </div>
+            <div class="nsc-alert">Detecta: escaneos, accesos no autorizados, tráfico inusual por puerto</div>
+        </div>
+        <div class="net-source-card">
+            <div class="nsc-header nsc-proxy">
+                <span class="nsc-icon">🔄</span>
+                <span class="nsc-name">Proxy / Web Gateway</span>
+            </div>
+            <p class="nsc-desc">Intercepta tráfico HTTP/S de los endpoints. Registra URL completa, User-Agent, código de respuesta, categoría de dominio y bytes transferidos.</p>
+            <div class="nsc-fields">
+                <span class="nsc-tag">URL completa</span>
+                <span class="nsc-tag">User-Agent</span>
+                <span class="nsc-tag">HTTP code</span>
+                <span class="nsc-tag">categoría</span>
+            </div>
+            <div class="nsc-alert">Detecta: phishing, C2 HTTP, exfiltración web, dominios maliciosos</div>
+        </div>
+        <div class="net-source-card">
+            <div class="nsc-header nsc-dns">
+                <span class="nsc-icon">📡</span>
+                <span class="nsc-name">DNS Logs</span>
+            </div>
+            <p class="nsc-desc">Cada resolución DNS queda registrada. Dominio solicitado, IP cliente, respuesta. Crítico para detectar DGA (Domain Generation Algorithms) y DNS tunneling.</p>
+            <div class="nsc-fields">
+                <span class="nsc-tag">dominio</span>
+                <span class="nsc-tag">tipo query</span>
+                <span class="nsc-tag">IP respuesta</span>
+                <span class="nsc-tag">TTL</span>
+            </div>
+            <div class="nsc-alert">Detecta: C2 por DNS, DGA malware, exfiltración DNS</div>
+        </div>
+        <div class="net-source-card">
+            <div class="nsc-header nsc-o365">
+                <span class="nsc-icon">☁️</span>
+                <span class="nsc-name">Cloud Audit (O365/Azure)</span>
+            </div>
+            <p class="nsc-desc">Registros de Microsoft 365 Unified Audit Log y Azure AD Sign-in Logs. Muestran accesos desde fuera del firewall corporativo — esenciales para detectar compromisos de cuentas cloud.</p>
+            <div class="nsc-fields">
+                <span class="nsc-tag">IP origen</span>
+                <span class="nsc-tag">UserAgent</span>
+                <span class="nsc-tag">operación</span>
+                <span class="nsc-tag">resultado</span>
+            </div>
+            <div class="nsc-alert">Detecta: acceso desde VPN/Tor, OAuth abuse, exfiltración correo</div>
+        </div>
+    </div>
+
+    <div class="wl-section-label">Patrones de red que indican compromiso</div>
+    <div class="net-patterns-list">
+        <div class="net-pattern danger">
+            <div class="np-left">
+                <span class="np-severity danger-badge">CRÍTICO</span>
+                <span class="np-name">Beacon C2</span>
+            </div>
+            <div class="np-desc">Conexiones periódicas a la misma IP/dominio con intervalo regular (ej: cada 60s). El malware hace "check-in" con el servidor de comando. Busca en el firewall conexiones repetidas con bytes similares.</div>
+        </div>
+        <div class="net-pattern danger">
+            <div class="np-left">
+                <span class="np-severity danger-badge">CRÍTICO</span>
+                <span class="np-name">Exfiltración masiva</span>
+            </div>
+            <div class="np-desc">Volumen de bytes salientes inusualmente alto desde un endpoint específico. Especialmente sospechoso si el destino es cloud personal (Dropbox, Mega, Google Drive) fuera del horario laboral.</div>
+        </div>
+        <div class="net-pattern warn">
+            <div class="np-left">
+                <span class="np-severity warn-badge">ALTO</span>
+                <span class="np-name">User-Agent sospechoso</span>
+            </div>
+            <div class="np-desc"><code>python-requests</code>, <code>curl</code>, <code>Go-http-client</code> o strings vacíos en tráfico de usuario indican scripts automatizados, no navegación humana. Muy común en explotación de APIs.</div>
+        </div>
+        <div class="net-pattern warn">
+            <div class="np-left">
+                <span class="np-severity warn-badge">ALTO</span>
+                <span class="np-name">Dominio recién registrado</span>
+            </div>
+            <div class="np-desc">Dominios creados hace menos de 30 días contactados por equipos corporativos. Los atacantes registran dominios frescos para evitar reputación negativa. Verifica con whois o VirusTotal Creation Date.</div>
+        </div>
+        <div class="net-pattern info">
+            <div class="np-left">
+                <span class="np-severity info-badge">MEDIO</span>
+                <span class="np-name">Puertos no estándar</span>
+            </div>
+            <div class="np-desc">Tráfico HTTPS sobre puertos distintos al 443 (ej: 8443, 4433, 8080) puede indicar C2. También conexiones salientes en puertos de servicios internos (22, 3389, 445) hacia IPs externas.</div>
+        </div>
+        <div class="net-pattern info">
+            <div class="np-left">
+                <span class="np-severity info-badge">MEDIO</span>
+                <span class="np-name">Geolocalización anómala</span>
+            </div>
+            <div class="np-desc">Cuenta de usuario accedida desde dos países con diferencia de tiempo físicamente imposible (Impossible Travel). O acceso desde Tor/VPN comercial no autorizado por política.</div>
+        </div>
+    </div>
+
+    <div class="learn-analogy">
+        <div class="analogy-icon">💡</div>
+        <div class="analogy-text">
+            <strong>Correlación red + host:</strong> Los logs de red te dicen <em>qué IP envió datos</em>, pero no <em>qué proceso</em> los envió. Para eso necesitas correlacionar con Sysmon EventID 3 (NetworkConnection) en el host. La correlación por timestamp + IP + puerto identifica el proceso exacto responsable de la conexión.
+        </div>
+    </div>
+
+</div>
+</div>
+
+{# ══════════════════════════
+   TAB 5 — MITRE ATT&CK
+══════════════════════════ #}
+<div class="learn-tab-content" id="tab-mitre">
+<div class="learn-section">
+
+    <div class="learn-card card-blue">
+        <div class="learn-card-icon">⚔️</div>
+        <div class="learn-card-body">
+            <h3>MITRE ATT&CK — el lenguaje universal del adversario</h3>
+            <p>MITRE ATT&CK es una base de conocimiento de tácticas y técnicas usadas por atacantes reales, basada en observaciones de incidentes reales. No describe vulnerabilidades — describe <strong>comportamiento adversarial</strong>. Permite al Blue Team comunicar, detectar y priorizar amenazas con un lenguaje común.</p>
+            <p>La estructura es: <strong>Táctica</strong> (el objetivo del atacante) → <strong>Técnica</strong> (cómo lo consigue) → <strong>Sub-técnica</strong> (variante específica).</p>
+        </div>
+    </div>
+
+    <div class="mitre-tactics-grid">
+        <div class="wl-section-label">Las 14 tácticas de Enterprise ATT&CK</div>
+        <div class="mtg-grid">
+            <div class="mtg-card ta-recon"><span class="mtg-id">TA0043</span><span class="mtg-name">Reconnaissance</span><span class="mtg-desc">Recopilar información sobre el objetivo antes del ataque</span></div>
+            <div class="mtg-card ta-resource"><span class="mtg-id">TA0042</span><span class="mtg-name">Resource Development</span><span class="mtg-desc">Preparar infraestructura — dominios, cuentas, malware</span></div>
+            <div class="mtg-card ta-initial"><span class="mtg-id">TA0001</span><span class="mtg-name">Initial Access</span><span class="mtg-desc">Obtener el primer punto de apoyo en la red objetivo</span></div>
+            <div class="mtg-card ta-exec"><span class="mtg-id">TA0002</span><span class="mtg-name">Execution</span><span class="mtg-desc">Ejecutar código malicioso en el sistema comprometido</span></div>
+            <div class="mtg-card ta-persist"><span class="mtg-id">TA0003</span><span class="mtg-name">Persistence</span><span class="mtg-desc">Mantener acceso tras reinicios y cambios de credenciales</span></div>
+            <div class="mtg-card ta-privesc"><span class="mtg-id">TA0004</span><span class="mtg-name">Privilege Escalation</span><span class="mtg-desc">Obtener permisos más elevados que los iniciales</span></div>
+            <div class="mtg-card ta-def"><span class="mtg-id">TA0005</span><span class="mtg-name">Defense Evasion</span><span class="mtg-desc">Evitar detección — borrar logs, ofuscar código</span></div>
+            <div class="mtg-card ta-cred"><span class="mtg-id">TA0006</span><span class="mtg-name">Credential Access</span><span class="mtg-desc">Robar credenciales — hashes, tokens, contraseñas</span></div>
+            <div class="mtg-card ta-disc"><span class="mtg-id">TA0007</span><span class="mtg-name">Discovery</span><span class="mtg-desc">Mapear el entorno — usuarios, hosts, servicios</span></div>
+            <div class="mtg-card ta-lat"><span class="mtg-id">TA0008</span><span class="mtg-name">Lateral Movement</span><span class="mtg-desc">Moverse de sistema a sistema dentro de la red</span></div>
+            <div class="mtg-card ta-coll"><span class="mtg-id">TA0009</span><span class="mtg-name">Collection</span><span class="mtg-desc">Reunir datos de interés antes de la exfiltración</span></div>
+            <div class="mtg-card ta-c2"><span class="mtg-id">TA0011</span><span class="mtg-name">Command & Control</span><span class="mtg-desc">Comunicar con sistemas comprometidos desde exterior</span></div>
+            <div class="mtg-card ta-exfil"><span class="mtg-id">TA0010</span><span class="mtg-name">Exfiltration</span><span class="mtg-desc">Transferir datos robados fuera de la organización</span></div>
+            <div class="mtg-card ta-impact"><span class="mtg-id">TA0040</span><span class="mtg-name">Impact</span><span class="mtg-desc">Manipular, interrumpir o destruir sistemas o datos</span></div>
+        </div>
+    </div>
+
+    <div class="wl-section-label">Técnicas clave en los casos de BlueForge</div>
+    <div class="mitre-tech-table">
+        <div class="mtt-header">
+            <span>Técnica</span><span>Descripción</span><span>Táctica</span><span>Cómo detectarlo</span>
+        </div>
+        <div class="mtt-row">
+            <span class="mtt-id">T1566.002</span>
+            <span class="mtt-desc">Spearphishing Link — email con enlace a sitio malicioso de alta credibilidad</span>
+            <span class="mtt-tactic tac-initial">Initial Access</span>
+            <span class="mtt-detect">URL reciente no categorizada en proxy, dominio &lt;30 días</span>
+        </div>
+        <div class="mtt-row">
+            <span class="mtt-id">T1528</span>
+            <span class="mtt-desc">Steal Application Access Token — OAuth Consent Phishing para obtener tokens</span>
+            <span class="mtt-tactic tac-cred">Credential Access</span>
+            <span class="mtt-detect">OAuthAppConsent en Exchange-Audit, scope offline_access</span>
+        </div>
+        <div class="mtt-row">
+            <span class="mtt-id">T1078.004</span>
+            <span class="mtt-desc">Valid Accounts: Cloud Accounts — usar credenciales de cuenta cloud comprometida</span>
+            <span class="mtt-tactic tac-initial">Initial Access / Persist.</span>
+            <span class="mtt-detect">Acceso desde IP inesperada, horario anómalo, UserAgent script</span>
+        </div>
+        <div class="mtt-row">
+            <span class="mtt-id">T1114.002</span>
+            <span class="mtt-desc">Email Collection: Remote Email Collection — leer correo via Graph API</span>
+            <span class="mtt-tactic tac-coll">Collection</span>
+            <span class="mtt-detect">GET /messages desde IP externa, python-requests UserAgent</span>
+        </div>
+        <div class="mtt-row">
+            <span class="mtt-id">T1048</span>
+            <span class="mtt-desc">Exfiltration Over Alternative Protocol — usar Dropbox, Drive u otro canal</span>
+            <span class="mtt-tactic tac-exfil">Exfiltration</span>
+            <span class="mtt-detect">DLP: upload masivo a personal cloud, bytes salientes anómalos</span>
+        </div>
+        <div class="mtt-row">
+            <span class="mtt-id">T1070.004</span>
+            <span class="mtt-desc">Indicator Removal: File Deletion — borrar artefactos forenses tras el ataque</span>
+            <span class="mtt-tactic tac-def">Defense Evasion</span>
+            <span class="mtt-detect">RunDll32 ClearMyTracksByProcess, PowerShell Clear-RecycleBin</span>
+        </div>
+        <div class="mtt-row">
+            <span class="mtt-id">T1110.001</span>
+            <span class="mtt-desc">Brute Force: Password Guessing — múltiples intentos de login fallidos</span>
+            <span class="mtt-tactic tac-cred">Credential Access</span>
+            <span class="mtt-detect">EventID 4625 repetido &gt;10 veces en &lt;1 min desde misma IP</span>
+        </div>
+        <div class="mtt-row">
+            <span class="mtt-id">T1021.001</span>
+            <span class="mtt-desc">Remote Services: Remote Desktop Protocol — acceso RDP lateral entre hosts</span>
+            <span class="mtt-tactic tac-lat">Lateral Movement</span>
+            <span class="mtt-detect">EventID 4624 Logon Type 10, port 3389, nuevas sesiones en DC</span>
+        </div>
+        <div class="mtt-row">
+            <span class="mtt-id">T1059.001</span>
+            <span class="mtt-desc">Command &amp; Scripting: PowerShell — ejecución de scripts ofuscados</span>
+            <span class="mtt-tactic tac-exec">Execution</span>
+            <span class="mtt-detect">4688/Sysmon 1: powershell.exe -enc, -w hidden, -nop, IEX</span>
+        </div>
+    </div>
+
+    <div class="learn-analogy">
+        <div class="analogy-icon">🎯</div>
+        <div class="analogy-text">
+            <strong>Cómo usar ATT&CK en la práctica:</strong> Cuando detectas un comportamiento sospechoso, busca la técnica correspondiente en attack.mitre.org. Cada técnica incluye procedimientos de actores reales conocidos, mitigaciones recomendadas y fuentes de datos para la detección. Es el punto de partida para escribir reglas de detección (Sigma, Yara, KQL).
+        </div>
+    </div>
+
+</div>
+</div>
+
+{# ══════════════════════════
+   TAB 6 — RESPUESTA IR
+══════════════════════════ #}
+<div class="learn-tab-content" id="tab-ir">
+<div class="learn-section">
+
+    <div class="learn-card card-blue">
+        <div class="learn-card-icon">🚨</div>
+        <div class="learn-card-body">
+            <h3>Ciclo de Respuesta a Incidentes (NIST SP 800-61)</h3>
+            <p>El marco de respuesta a incidentes del NIST define un proceso estructurado de 4 fases principales que todo equipo Blue Team debe seguir. El objetivo no es solo contener el incidente sino aprender de él y mejorar la postura de seguridad.</p>
+        </div>
+    </div>
+
+    <div class="ir-phases">
+        <div class="ir-phase phase-prep">
+            <div class="ir-phase-num">1</div>
+            <div class="ir-phase-body">
+                <div class="ir-phase-name">Preparación</div>
+                <div class="ir-phase-desc">Antes de que ocurra el incidente: establecer políticas, playbooks, herramientas y canales de comunicación. Un equipo que improvisa durante un incidente comete errores.</div>
+                <div class="ir-phase-items">
+                    <span>📋 Playbooks por tipo de incidente</span>
+                    <span>🛠️ Herramientas de forensia listas</span>
+                    <span>📞 Árbol de escalado definido</span>
+                    <span>💾 Backups verificados y aislados</span>
+                </div>
+            </div>
+        </div>
+        <div class="ir-phase phase-detect">
+            <div class="ir-phase-num">2</div>
+            <div class="ir-phase-body">
+                <div class="ir-phase-name">Detección &amp; Análisis</div>
+                <div class="ir-phase-desc">Identificar que el incidente está ocurriendo, establecer su alcance y prioridad. La velocidad de detección (MTTD) es crítica — cada hora cuenta en un ransomware o BEC.</div>
+                <div class="ir-phase-items">
+                    <span>🔍 Análisis de alertas SIEM</span>
+                    <span>📊 Construcción de línea de tiempo</span>
+                    <span>🎯 Identificación de sistemas afectados</span>
+                    <span>⚖️ Clasificación de severidad (P1–P4)</span>
+                </div>
+            </div>
+        </div>
+        <div class="ir-phase phase-contain">
+            <div class="ir-phase-num">3</div>
+            <div class="ir-phase-body">
+                <div class="ir-phase-name">Contención, Erradicación &amp; Recuperación</div>
+                <div class="ir-phase-desc">Aislar los sistemas afectados, eliminar el acceso del atacante y restaurar operaciones. El orden importa: contener primero para evitar propagación, luego erradicar, luego recuperar.</div>
+                <div class="ir-phase-items">
+                    <span>🔒 Aislamiento de red (quarantine)</span>
+                    <span>🚫 Revocar tokens y credenciales</span>
+                    <span>🧹 Eliminar artefactos maliciosos</span>
+                    <span>🔄 Restaurar desde backup limpio</span>
+                </div>
+            </div>
+        </div>
+        <div class="ir-phase phase-post">
+            <div class="ir-phase-num">4</div>
+            <div class="ir-phase-body">
+                <div class="ir-phase-name">Post-Incidente &amp; Lessons Learned</div>
+                <div class="ir-phase-desc">Documentar todo, analizar qué falló y mejorar controles. El informe post-incidente es el artefacto más valioso — transforma un ataque en mejora de seguridad.</div>
+                <div class="ir-phase-items">
+                    <span>📝 Informe técnico completo</span>
+                    <span>🔎 Root cause analysis</span>
+                    <span>🛡️ Nuevas reglas de detección</span>
+                    <span>📚 Formación del equipo</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="wl-section-label">Triage de alertas — priorización en el SOC</div>
+    <div class="ir-triage-grid">
+        <div class="ir-triage-card triage-p1">
+            <div class="it-header"><span class="it-priority">P1 — Crítico</span><span class="it-sla">SLA: &lt;15 min</span></div>
+            <ul class="it-list">
+                <li>Ransomware activo en sistemas de producción</li>
+                <li>Exfiltración masiva de datos en curso</li>
+                <li>Acceso no autorizado a sistemas críticos (DC, BBDD)</li>
+                <li>Cuenta de administrador de dominio comprometida</li>
+            </ul>
+        </div>
+        <div class="ir-triage-card triage-p2">
+            <div class="it-header"><span class="it-priority">P2 — Alto</span><span class="it-sla">SLA: &lt;1 hora</span></div>
+            <ul class="it-list">
+                <li>BEC detectado — transferencia bancaria en proceso</li>
+                <li>Malware detectado en endpoint de usuario con datos sensibles</li>
+                <li>Acceso desde país no autorizado a cuenta de alto privilegio</li>
+                <li>Brute force exitoso en servicio expuesto</li>
+            </ul>
+        </div>
+        <div class="ir-triage-card triage-p3">
+            <div class="it-header"><span class="it-priority">P3 — Medio</span><span class="it-sla">SLA: &lt;4 horas</span></div>
+            <ul class="it-list">
+                <li>Phishing recibido — sin clic confirmado</li>
+                <li>Escaneo de puertos desde IP interna</li>
+                <li>Cuenta bloqueada por múltiples fallos (potencial brute force)</li>
+                <li>Software no autorizado instalado por usuario</li>
+            </ul>
+        </div>
+        <div class="ir-triage-card triage-p4">
+            <div class="it-header"><span class="it-priority">P4 — Bajo</span><span class="it-sla">SLA: &lt;24 horas</span></div>
+            <ul class="it-list">
+                <li>Violación de política de uso aceptable</li>
+                <li>Alerta de DLP por documento enviado externamente</li>
+                <li>Acceso fuera de horario a recurso no crítico</li>
+                <li>Software desactualizado con vulnerabilidad sin exploit activo</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="ir-checklist-card">
+        <div class="icc-header">
+            <span class="icc-icon">✅</span>
+            <span class="icc-title">Checklist BEC — Respuesta inmediata</span>
+            <span class="icc-sub">Primeras 30 minutos tras confirmar Business Email Compromise</span>
+        </div>
+        <div class="icc-steps">
+            <div class="icc-step"><span class="icc-n">1</span><div><strong>Revocar todos los tokens OAuth</strong> de la cuenta comprometida en Azure AD → Enterprise Apps → Revocar sesiones. Un cambio de contraseña NO revoca refresh_tokens de apps OAuth.</div></div>
+            <div class="icc-step"><span class="icc-n">2</span><div><strong>Contactar banco inmediatamente</strong> si la transferencia aún no se ha ejecutado. Ventana típica: &lt;2 horas. Incluir número de referencia, importe y banco destino.</div></div>
+            <div class="icc-step"><span class="icc-n">3</span><div><strong>Preservar evidencias antes de remediar</strong> — exportar logs de O365, Exchange Audit, Azure Sign-in. Una vez eliminada la sesión, algunos logs se pierden.</div></div>
+            <div class="icc-step"><span class="icc-n">4</span><div><strong>Buscar reglas de inbox creadas</strong> por el atacante — mover respuestas a Eliminados es una técnica estándar para ocultar la conversación al CEO real.</div></div>
+            <div class="icc-step"><span class="icc-n">5</span><div><strong>Identificar al posible cómplice interno</strong> — en BEC con insider, alguien facilitó información (horario del CEO, proceso de transferencias). Revisar accesos a documentos financieros en los 7 días anteriores.</div></div>
+            <div class="icc-step"><span class="icc-n">6</span><div><strong>Notificación legal y regulatoria</strong> — si hay datos personales comprometidos, el RGPD obliga a notificar a la AEPD en &lt;72 horas desde la detección.</div></div>
+        </div>
+    </div>
+
+</div>
 </div>
 
 <script>
-function showTab(tabId) {
-    document.querySelectorAll('.learn-tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.learn-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + tabId).classList.add('active');
-    event.target.classList.add('active');
-}
+(function() {
+    var tabs = document.querySelectorAll('.learn-tab');
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            var id = this.dataset.tab;
+            document.querySelectorAll('.learn-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.learn-tab-content').forEach(function(c) { c.classList.remove('active'); });
+            this.classList.add('active');
+            document.getElementById('tab-' + id).classList.add('active');
+        });
+    });
+})();
 </script>
 
 {% endblock %}

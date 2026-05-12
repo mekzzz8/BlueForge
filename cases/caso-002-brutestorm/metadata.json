@@ -1,0 +1,26 @@
+{
+  "id": "caso-002",
+  "codename": "BruteStorm",
+  "nombre": "Operación BruteStorm",
+  "empresa": "GovCloud Ministerio de Industria",
+  "sector": "Administración Pública",
+  "tipo": "Brute Force + Acceso No Autorizado",
+  "dificultad": "medium",
+  "puntos_max": 1200,
+  "tiempo_estimado": "35–55 min",
+  "descripcion": "A las 22:47 el SIEM detectó 4.832 intentos de login fallidos contra el servidor RDP público en 8 minutos. Uno tuvo éxito.",
+  "briefing": "El 15 de marzo a las 22:47 el SIEM generó una alerta crítica: 4.832 intentos de autenticación fallidos contra rdp.govcloud-min.es en 8 minutos procedentes de 23 IPs de una misma subred. A las 23:01 un login exitoso. El atacante estuvo dentro 47 minutos antes de ser detectado. Analiza los logs de Windows y de red para reconstruir qué hizo.",
+  "fases": ["win_logs", "net_logs", "verdict"],
+  "fase_puntos": {
+    "win_logs": 200,
+    "net_logs": 200,
+    "verdict": 800
+  },
+  "fecha_incidente": "2025-03-15T22:47:00Z",
+  "fecha_legible": "15 mar 2025 · 22:47",
+  "host_afectado": "SRV-RDP-01",
+  "usuario_afectado": "j.rodriguez",
+  "mitre_attack": ["T1110.001", "T1078", "T1021.001", "T1136"],
+  "tags": ["RDP", "Brute Force", "Credential Access", "Persistence"],
+  "bloqueado": false
+}

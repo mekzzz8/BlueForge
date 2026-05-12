@@ -1,0 +1,100 @@
+{
+  "intro": "Con la investigación completada, es hora de emitir tu veredicto como analista SOC. Las respuestas incorrectas penalizan tu puntuación. Usa las evidencias que has analizado.",
+  "preguntas": [
+    {
+      "id": "Q1",
+      "texto": "¿Cuál fue el vector de acceso inicial utilizado por el atacante?",
+      "opciones": [
+        {"id": "A", "texto": "Explotación de vulnerabilidad en el servidor web corporativo"},
+        {"id": "B", "texto": "Email de phishing con documento Word malicioso con macros"},
+        {"id": "C", "texto": "Credenciales comprometidas mediante brute force en RDP"},
+        {"id": "D", "texto": "Acceso físico al equipo de la víctima"}
+      ],
+      "respuesta_correcta": "B",
+      "puntos": 75,
+      "penalizacion": -25,
+      "feedback_correcto": "Correcto. El ataque comenzó con un email de phishing suplantando a la Agencia Tributaria. El usuario abrió el documento .docm adjunto, cuyas macros ejecutaron PowerShell y descargaron el payload.",
+      "feedback_incorrecto": "Incorrecto. Revisa el análisis del email: el ataque comenzó con un .docm adjunto con macros maliciosas que el usuario ejecutó al abrir el documento.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "La respuesta está en la primera fase de investigación. ¿Qué recibió la empleada y qué hizo con ello?"},
+        {"nivel": 2, "coste": 30, "contenido": "El log de red muestra la primera conexión a las 09:14:31, justo después de que el usuario leyó el email. ¿Qué archivo se descargó?"}
+      ]
+    },
+    {
+      "id": "Q2",
+      "texto": "¿Cuál es la IP del servidor C2 (Command & Control) con el que se comunicó el malware?",
+      "opciones": [
+        {"id": "A", "texto": "10.10.5.107"},
+        {"id": "B", "texto": "52.96.184.100"},
+        {"id": "C", "texto": "185.220.101.47"},
+        {"id": "D", "texto": "185.234.219.47"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 75,
+      "penalizacion": -25,
+      "feedback_correcto": "Correcto. 185.220.101.47 es el servidor C2 en Rusia (AS-60558, bulletproof hosting). El malware mantenía dos conexiones persistentes a esta IP en el puerto 443.",
+      "feedback_incorrecto": "Incorrecto. 10.10.5.107 es la IP interna de WKSTN-FIN-07. 52.96.184.100 es Microsoft 365. 185.234.219.47 es el servidor de origen del email. Revisa el netstat y los logs de red.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "Busca en el terminal forense: el comando netstat muestra conexiones ESTABLISHED con un PID sospechoso."},
+        {"nivel": 2, "coste": 30, "contenido": "PID 4821 (update32.exe) mantiene conexiones a una IP externa en el puerto 443. ¿Cuál es esa IP?"}
+      ]
+    },
+    {
+      "id": "Q3",
+      "texto": "¿Qué mecanismo usó el malware para establecer persistencia en el sistema?",
+      "opciones": [
+        {"id": "A", "texto": "Servicio de Windows creado con privilegios de SYSTEM"},
+        {"id": "B", "texto": "Tarea programada en el Administrador de tareas"},
+        {"id": "C", "texto": "Clave de registro HKCU\\...\\CurrentVersion\\Run"},
+        {"id": "D", "texto": "DLL hijacking en una aplicación corporativa"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 75,
+      "penalizacion": -25,
+      "feedback_correcto": "Correcto. El malware añadió la clave 'WindowsUpdate' en HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run apuntando a update32.exe — nombre diseñado para confundirse con actualizaciones legítimas.",
+      "feedback_incorrecto": "Incorrecto. Revisa el análisis de registro en el terminal forense. El malware no necesitó privilegios de SYSTEM para establecer persistencia.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "En el terminal, uno de los comandos consulta el registro de Windows. ¿Qué entradas aparecen en la clave Run?"},
+        {"nivel": 2, "coste": 30, "contenido": "HKCU\\...\\CurrentVersion\\Run ejecuta programas al iniciar sesión. Fíjate en qué clave añadió el malware y qué nombre le puso."}
+      ]
+    },
+    {
+      "id": "Q4",
+      "texto": "¿Qué acción de contención DEBES realizar primero como analista SOC?",
+      "opciones": [
+        {"id": "A", "texto": "Apagar el servidor de ficheros SRV-FILES-01 para evitar propagación"},
+        {"id": "B", "texto": "Aislar WKSTN-FIN-07 de la red para cortar la comunicación C2"},
+        {"id": "C", "texto": "Eliminar update32.exe y la clave de registro antes de recopilar evidencias"},
+        {"id": "D", "texto": "Ignorar la alerta hasta confirmar con la usuaria si es una actualización legítima"}
+      ],
+      "respuesta_correcta": "B",
+      "puntos": 75,
+      "penalizacion": -50,
+      "feedback_correcto": "Correcto. Aislar el host corta la comunicación C2 activa y detiene la exfiltración de datos sin destruir evidencias forenses ni afectar al resto de sistemas.",
+      "feedback_incorrecto": "Incorrecto. Apagar SRV-FILES-01 causa impacto de negocio innecesario. Eliminar el malware sin preservar evidencias destruye la cadena de custodia. Ignorar la alerta con C2 activo es negligencia grave.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "El malware tiene C2 activo y está exfiltrando datos. ¿Cuál es la acción mínima que corta el daño inmediato sin destruir evidencias?"},
+        {"nivel": 2, "coste": 30, "contenido": "La prioridad en IR es: Contener → Preservar evidencias → Erradicar. Aislar el host cumple el primer paso sin comprometer los demás."}
+      ]
+    },
+    {
+      "id": "Q5",
+      "texto": "¿Qué dominio usó el atacante para el servidor de descarga del payload?",
+      "opciones": [
+        {"id": "A", "texto": "agencia-tributaria.gob-es.com"},
+        {"id": "B", "texto": "expediente-rt2025.xyz"},
+        {"id": "C", "texto": "cdn-delivery-proxy.net"},
+        {"id": "D", "texto": "update-svc.microsoft-cdn.net"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 50,
+      "penalizacion": -15,
+      "feedback_correcto": "Correcto. cdn-delivery-proxy.net fue el servidor de distribución del malware. El dominio phishing (expediente-rt2025.xyz) redirigió al usuario hacia este CDN falso para descargar el .docm y después el .exe.",
+      "feedback_incorrecto": "Incorrecto. Hay múltiples dominios maliciosos en este caso. El dominio del email es distinto al de descarga del payload. Revisa los logs de red y el análisis de URL del email.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "En los logs de red hay dos descargas: el .docm y el .exe. ¿Desde qué host se descargaron ambos?"},
+        {"nivel": 2, "coste": 20, "contenido": "Busca las peticiones GET con rutas /dl/ y /win/ en los logs de red — ambas van al mismo dominio."}
+      ]
+    }
+  ]
+}

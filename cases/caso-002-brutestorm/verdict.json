@@ -1,0 +1,100 @@
+{
+  "intro": "Has revisado los logs de Windows y de red del servidor SRV-RDP-01. Es hora de emitir tu veredicto. Las respuestas incorrectas penalizan. Usa los Event IDs y los logs de red como evidencia.",
+  "preguntas": [
+    {
+      "id": "Q1",
+      "texto": "¿Cuánto tiempo permaneció el atacante en el sistema antes de ser detectado?",
+      "opciones": [
+        {"id": "A", "texto": "8 minutos — desde el primer intento hasta la detección"},
+        {"id": "B", "texto": "14 minutos — desde el login exitoso hasta la creación del backdoor"},
+        {"id": "C", "texto": "47 minutos — desde el login exitoso (23:01) hasta la alerta del EDR (23:48)"},
+        {"id": "D", "texto": "61 minutos — desde el inicio del brute force (22:47) hasta la detección"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 150,
+      "penalizacion": -50,
+      "feedback_correcto": "Correcto. El atacante accedió a las 23:01:52 (EventID 4624) y fue detectado a las 23:48:31 por el EDR. 47 minutos de dwell time — tiempo más que suficiente para establecer persistencia y exfiltrar datos.",
+      "feedback_incorrecto": "Incorrecto. El dwell time se mide desde el acceso exitoso hasta la detección, no desde el inicio del brute force. Busca el EventID 4624 (login exitoso) y la alerta del EDR.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "El dwell time es el tiempo que el atacante estuvo dentro del sistema. Busca el EventID 4624 (acceso exitoso) y el último evento de detección."},
+        {"nivel": 2, "coste": 40, "contenido": "EventID 4624 a las 23:01:52 → alerta EDR a las 23:48:31. Calcula la diferencia."}
+      ]
+    },
+    {
+      "id": "Q2",
+      "texto": "¿Qué técnica de evasión usó el atacante para evitar el bloqueo de cuenta durante el brute force?",
+      "opciones": [
+        {"id": "A", "texto": "Usó VPN para cambiar su IP pública entre intentos"},
+        {"id": "B", "texto": "Distribuyó los intentos entre 23 IPs distintas para no superar el umbral de lockout por IP"},
+        {"id": "C", "texto": "Esperó el reset automático del lockout de 30 minutos antes de continuar con j.rodriguez"},
+        {"id": "D", "texto": "Usó credenciales distintas en cada intento para no activar el contador de fallos"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 200,
+      "penalizacion": -75,
+      "feedback_correcto": "Correcto. La cuenta j.rodriguez fue bloqueada (EventID 4740) a las 22:48:41 tras 5 intentos fallidos. El atacante esperó exactamente 30 minutos — el tiempo de la política de reset de lockout — y retomó el ataque a las 23:01:14 tras el desbloqueo automático (EventID 4767).",
+      "feedback_incorrecto": "Incorrecto. La distribución por IPs es técnica de evasión de firewall, no de lockout. La evasión de lockout se basa en conocer la política: cuántos intentos y cuánto tiempo de reset. Busca los EventIDs 4740 y 4767.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "Fíjate en el EventID 4740 — ¿qué ocurre con la cuenta de j.rodriguez a las 22:48? ¿Y qué evento ocurre 13 minutos después a las 23:01?"},
+        {"nivel": 2, "coste": 50, "contenido": "EventID 4740 = cuenta bloqueada. EventID 4767 = cuenta desbloqueada. La diferencia de tiempo entre ambos revela cuánto esperó el atacante y por qué."}
+      ]
+    },
+    {
+      "id": "Q3",
+      "texto": "¿Qué mecanismo de persistencia estableció el atacante tras conseguir acceso?",
+      "opciones": [
+        {"id": "A", "texto": "Instaló un servicio de Windows que ejecuta una reverse shell al arrancar"},
+        {"id": "B", "texto": "Creó la cuenta svc_update$ y la añadió al grupo Administrators local"},
+        {"id": "C", "texto": "Modificó la clave Run del registro para ejecutar un payload en cada login"},
+        {"id": "D", "texto": "Habilitó WinRM para acceso remoto alternativo al RDP"}
+      ],
+      "respuesta_correcta": "B",
+      "puntos": 200,
+      "penalizacion": -75,
+      "feedback_correcto": "Correcto. EventID 4720 muestra la creación de svc_update$ por j.rodriguez a las 23:07:22. EventID 4732 confirma que fue añadida al grupo Administrators a las 23:01:23. El nombre simula una cuenta de servicio legítima de Windows Update.",
+      "feedback_incorrecto": "Incorrecto. Busca los EventIDs relacionados con gestión de cuentas: 4720 (cuenta creada) y 4732 (miembro añadido a grupo). ¿Qué nombre tiene la nueva cuenta y a qué grupo se añade?",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "EventID 4720 indica creación de cuenta. EventID 4732 indica adición a grupo. ¿Qué cuenta aparece en ambos eventos y alrededor de las 23:07?"},
+        {"nivel": 2, "coste": 50, "contenido": "El atacante creó 'svc_update$' — un nombre diseñado para parecer una cuenta de servicio de Windows Update. La añadió al grupo Administrators para tener acceso futuro con privilegios."}
+      ]
+    },
+    {
+      "id": "Q4",
+      "texto": "¿Cuál fue la primera acción que ejecutó el atacante tras conseguir acceso a la sesión RDP?",
+      "opciones": [
+        {"id": "A", "texto": "Exfiltrar documentos del directorio de Administrator a su servidor"},
+        {"id": "B", "texto": "Crear la cuenta backdoor svc_update$"},
+        {"id": "C", "texto": "Ejecutar whoami /all para identificar sus privilegios actuales"},
+        {"id": "D", "texto": "Escanear la red interna en busca de otros hosts vulnerables"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 150,
+      "penalizacion": -50,
+      "feedback_correcto": "Correcto. A las 23:02:08 (16 segundos después del acceso), el primer proceso lanzado fue cmd.exe con 'whoami /all'. Este es el patrón clásico post-explotación: primero identificar contexto y privilegios antes de actuar.",
+      "feedback_incorrecto": "Incorrecto. Revisa los EventIDs 4688 en orden cronológico inmediatamente después del login exitoso (23:01:52). El primer proceso creado revela la primera acción del atacante.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "Busca los EventIDs 4688 (creación de proceso) justo después del 4624 (login exitoso) a las 23:01:52. El primer proceso creado es la primera acción."},
+        {"nivel": 2, "coste": 40, "contenido": "A las 23:02:08 se crea cmd.exe con el argumento 'whoami /all'. Este comando enumera el usuario actual, sus grupos y privilegios — reconocimiento estándar post-acceso."}
+      ]
+    },
+    {
+      "id": "Q5",
+      "texto": "¿Qué IP realizó el login RDP exitoso y a qué país/ASN pertenece según los logs de red?",
+      "opciones": [
+        {"id": "A", "texto": "91.213.50.12 — primera IP del bloque atacante"},
+        {"id": "B", "texto": "10.20.8.5 — equipo interno del equipo de sistemas"},
+        {"id": "C", "texto": "91.213.50.147 — Rusia, proxy/VPN (AS-205090)"},
+        {"id": "D", "texto": "203.0.113.45 — IP pública del propio servidor"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 100,
+      "penalizacion": -25,
+      "feedback_correcto": "Correcto. 91.213.50.147 es la única IP que estableció una sesión RDP completa (no solo SYN). Los logs de red muestran 'CONEXIÓN EXITOSA — sesión establecida — duración: 47 min'. Pertenece al AS-205090 ruso, probablemente un VPS o nodo de proxy bulletproof.",
+      "feedback_incorrecto": "Incorrecto. 91.213.50.12 solo hizo el primer intento fallido. 10.20.8.5 es tráfico legítimo previo al ataque. 203.0.113.45 es la IP pública del servidor víctima. Busca qué IP establece la sesión completa en los logs de red.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "En los logs de red, la mayoría de conexiones RDP son intentos fallidos (SYN sin sesión completa). Busca la entrada que indica 'CONEXIÓN EXITOSA'."},
+        {"nivel": 2, "coste": 25, "contenido": "La entrada con 'sesión establecida — duración: 47 min' en los logs de red muestra la IP del atacante que consiguió acceso. Es la única del bloque 91.213.50.x que logró una sesión real."}
+      ]
+    }
+  ]
+}

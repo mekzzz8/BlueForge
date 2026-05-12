@@ -1,0 +1,27 @@
+{
+  "id": "caso-001",
+  "codename": "DarkMail",
+  "nombre": "Operación DarkMail",
+  "empresa": "Contoso Financial S.L.",
+  "sector": "Banca y Finanzas",
+  "tipo": "Phishing + Malware",
+  "dificultad": "easy",
+  "puntos_max": 800,
+  "tiempo_estimado": "25–40 min",
+  "descripcion": "Una empleada del departamento financiero clickó un enlace de un email falso de Hacienda. El EDR detectó actividad anómala 12 minutos después.",
+  "briefing": "Bienvenido, Analista. Esta mañana a las 09:14 la empleada Laura García (l.garcia) del departamento de Cuentas por Pagar reportó un email sospechoso. Doce minutos después, el EDR de Contoso Financial alertó sobre comportamiento anómalo en WKSTN-FIN-07. Tu misión: analizar el email original, revisar los logs de red y terminal para determinar el alcance del compromiso.",
+  "fases": ["email", "net_logs", "terminal", "verdict"],
+  "fase_puntos": {
+    "email": 150,
+    "net_logs": 150,
+    "terminal": 150,
+    "verdict": 350
+  },
+  "fecha_incidente": "2025-03-03T09:14:00Z",
+  "fecha_legible": "3 mar 2025 · 09:14",
+  "host_afectado": "WKSTN-FIN-07",
+  "usuario_afectado": "l.garcia",
+  "mitre_attack": ["T1566.001", "T1204.002", "T1059.001", "T1041"],
+  "tags": ["Phishing", "Macro", "PowerShell", "Exfiltración"],
+  "bloqueado": false
+}

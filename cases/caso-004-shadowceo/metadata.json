@@ -1,0 +1,27 @@
+{
+  "id": "caso-004",
+  "codename": "ShadowCEO",
+  "nombre": "Operación ShadowCEO",
+  "empresa": "MediGroup Ibérica S.A.",
+  "sector": "Salud y Farmacéutica",
+  "tipo": "BEC + Insider Threat",
+  "dificultad": "expert",
+  "puntos_max": 3500,
+  "tiempo_estimado": "90–120 min",
+  "descripcion": "Alguien suplantó al CEO mediante email comprometido y ordenó una transferencia de 380.000€. Hay indicios de colaboración interna.",
+  "briefing": "El 28 de febrero a las 14:33 el departamento de finanzas de MediGroup recibió instrucciones del 'CEO' para una transferencia urgente de 380.000€ a una cuenta en Chipre. La transferencia se ejecutó. 72 horas después se descubrió el fraude. Los logs muestran que alguien con acceso interno facilitó información privilegiada. Esta es una investigación de BEC con posible insider threat.",
+  "fases": ["email", "win_logs", "net_logs", "verdict"],
+  "fase_puntos": {
+    "email": 500,
+    "win_logs": 500,
+    "net_logs": 500,
+    "verdict": 2000
+  },
+  "fecha_incidente": "2025-02-28T14:33:00Z",
+  "fecha_legible": "28 feb 2025 · 14:33",
+  "host_afectado": "MAIL-SRV-01, WKSTN-FIN-03",
+  "usuario_afectado": "ceo@medigroup.es (comprometido)",
+  "mitre_attack": ["T1566.002", "T1078.004", "T1048", "T1539", "T1114"],
+  "tags": ["BEC", "CEO Fraud", "Wire Transfer", "Insider", "Email Compromise"],
+  "bloqueado": false
+}

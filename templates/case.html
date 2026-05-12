@@ -1,0 +1,1070 @@
+{% extends 'base.html' %}
+{% block title %}{{ caso.nombre }}{% endblock %}
+
+{% block content %}
+
+{# ── Cálculo de progreso ── #}
+{% set total_fases = caso.fases | length %}
+{% set ns = namespace(completadas=0, pts=0) %}
+{% for fase in caso.fases %}
+  {% set k = caso.id + ':' + fase %}
+  {% if k in progreso %}
+    {% set ns.completadas = ns.completadas + 1 %}
+    {% set ns.pts = ns.pts + progreso[k].puntos %}
+  {% endif %}
+{% endfor %}
+{% set pct_progress = ((ns.completadas / total_fases) * 100) | round | int %}
+
+{# ── Breadcrumb ── #}
+<div class="case-breadcrumb">
+    <a href="/" class="bc-link">← Cola de alertas</a>
+    <span class="bc-sep">/</span>
+    <span class="bc-id">{{ caso.id | upper }}</span>
+    <span class="bc-sep">/</span>
+    <span class="bc-name">{{ caso.codename }}</span>
+</div>
+
+{# ── HERO ── #}
+<div class="case-hero">
+    <div class="hero-main">
+        <div class="hero-badges">
+            <span class="diff-badge badge-{{ caso.dificultad }}">{{ caso.dificultad | upper }}</span>
+            <span class="hero-type-badge">{{ caso.tipo }}</span>
+            <span class="hero-time-badge">⏱ {{ caso.tiempo_estimado }}</span>
+        </div>
+        <h1 class="hero-title">{{ caso.nombre }}</h1>
+        <div class="hero-company">
+            <span class="hc-name">{{ caso.empresa }}</span>
+            <span class="hc-dot">·</span>
+            <span class="hc-sector">{{ caso.sector }}</span>
+        </div>
+        <div class="hero-briefing">
+            <div class="briefing-label">Situación</div>
+            <p>{{ caso.briefing }}</p>
+        </div>
+        <div class="hero-meta">
+            <div class="hm-item">
+                <span class="hm-label">Host afectado</span>
+                <span class="hm-val">{{ caso.host_afectado }}</span>
+            </div>
+            <div class="hm-item">
+                <span class="hm-label">Usuario</span>
+                <span class="hm-val">{{ caso.usuario_afectado }}</span>
+            </div>
+            <div class="hm-item">
+                <span class="hm-label">Fecha incidente</span>
+                <span class="hm-val">{{ caso.fecha_legible }}</span>
+            </div>
+        </div>
+        {% if caso.mitre_attack %}
+        <div class="mitre-row">
+            <span class="mitre-label">MITRE ATT&CK</span>
+            {% for t in caso.mitre_attack %}
+            <span class="mitre-tag">{{ t }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="hero-sidebar">
+        <div class="progress-card" id="progressCard">
+            <div class="pc-header-row">
+                <span class="pc-label">Progreso del caso</span>
+                <span class="pc-pct" id="pctDisplay">{{ pct_progress }}%</span>
+            </div>
+            <div class="pc-bar-wrap">
+                <div class="pc-bar" id="progressBar" style="width: {{ pct_progress }}%"></div>
+            </div>
+            <div class="pc-phases-row">
+                {% for fase in caso.fases %}
+                {% set k = caso.id + ':' + fase %}
+                {% set pl = phase_labels[fase] %}
+                <div class="pc-phase-pip {% if k in progreso %}pip-done{% endif %}" title="{{ pl.label }}">
+                    <span class="pip-icon">{{ pl.icon }}</span>
+                    {% if k in progreso %}<span class="pip-check">✓</span>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="pc-score-row">
+                <div class="pc-score-item">
+                    <span class="pcs-num" id="ptsDisplay">{{ ns.pts }}</span>
+                    <span class="pcs-label">pts ganados</span>
+                </div>
+                <div class="pc-score-sep"></div>
+                <div class="pc-score-item">
+                    <span class="pcs-num">{{ caso.puntos_max }}</span>
+                    <span class="pcs-label">pts máximos</span>
+                </div>
+                <div class="pc-score-sep"></div>
+                <div class="pc-score-item">
+                    <span class="pcs-num" id="fasesDisplay">{{ ns.completadas }}</span>
+                    <span class="pcs-label">de {{ total_fases }} fases</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-tip">
+            <span class="tip-icon">💡</span>
+            <span>Completa cada fase antes de pasar al veredicto. Los hints tienen coste en puntos.</span>
+        </div>
+    </div>
+</div>
+
+{# ── STEPPER ── #}
+<div class="phase-stepper">
+    {% for fase in caso.fases %}
+    {% set pl = phase_labels[fase] %}
+    {% set k = caso.id + ':' + fase %}
+    {% set done = k in progreso %}
+    {% set is_first = loop.first %}
+    <div class="stepper-item {% if is_first %}active{% endif %} {% if done %}done{% endif %}"
+         id="step-{{ fase }}" onclick="switchPhase('{{ fase }}')">
+        <div class="stepper-top">
+            <div class="step-circle">
+                {% if done %}✓{% else %}{{ loop.index }}{% endif %}
+            </div>
+            {% if not loop.last %}
+            <div class="step-line {% if done %}line-done{% endif %}"></div>
+            {% endif %}
+        </div>
+        <div class="step-info">
+            <div class="step-icon-name">
+                <span>{{ pl.icon }}</span>
+                <span class="step-name">{{ pl.label }}</span>
+            </div>
+            <div class="step-pts">
+                {% if done %}
+                <span class="step-pts-done">+{{ progreso[k].puntos }} pts ✓</span>
+                {% elif fase == 'verdict' %}
+                <span>{{ caso.fase_puntos.get(fase, '') }} pts</span>
+                {% else %}
+                <span>+{{ caso.fase_puntos.get(fase, '') }} pts</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{# ── PANELS ── #}
+<div class="panels-wrap">
+
+    {# ══ EMAIL ══ #}
+    {% if 'email' in phases %}{% set email = phases.email %}
+    <div class="phase-panel {% if caso.fases[0] == 'email' %}active{% endif %}" id="panel-email">
+
+        <div class="panel-topbar">
+            <div class="ptb-left">
+                <span class="ptb-icon">📧</span>
+                <div>
+                    <div class="ptb-title">Análisis de Email</div>
+                    <div class="ptb-desc">Examina el mensaje, cabeceras técnicas, URLs y adjuntos</div>
+                </div>
+            </div>
+            <span class="ptb-pts">+{{ caso.fase_puntos.get('email','') }} pts</span>
+        </div>
+
+        <div class="objective-card">
+            <div class="obj-header"><span class="obj-icon">🎯</span> Objetivo de investigación</div>
+            <ul class="obj-list">
+                <li>¿El dominio del remitente es legítimo? Compara con el dominio oficial</li>
+                <li>¿Los registros SPF, DKIM y DMARC validan el correo?</li>
+                <li>¿Hay URLs sospechosas? Analiza el dominio real al que apuntan</li>
+                <li>¿El adjunto es malicioso? Revisa el tipo MIME, macros y hash</li>
+            </ul>
+        </div>
+
+        <div class="evidence-block">
+            <div class="evidence-header">
+                <div class="ev-header-left">
+                    <span class="ev-source-badge">📨 Email reportado</span>
+                </div>
+                <div class="ev-subtabs">
+                    <button class="ev-tab active" onclick="switchEmailTab('msg',this)">✉ Mensaje</button>
+                    <button class="ev-tab" onclick="switchEmailTab('headers',this)">🔍 Cabeceras</button>
+                    <button class="ev-tab" onclick="switchEmailTab('urls',this)">🔗 URLs</button>
+                    <button class="ev-tab" onclick="switchEmailTab('adjuntos',this)">📎 Adjuntos</button>
+                </div>
+            </div>
+
+            <div class="ev-content active" id="ev-msg">
+                <div class="email-client">
+                    <div class="email-client-header">
+                        <div class="ec-field"><span class="ecf-label">De</span><span class="ecf-val danger">{{ email.mensaje.de_nombre }} &lt;{{ email.mensaje.de_email }}&gt;</span></div>
+                        <div class="ec-field"><span class="ecf-label">Para</span><span class="ecf-val">{{ email.mensaje.para }}</span></div>
+                        <div class="ec-field"><span class="ecf-label">Asunto</span><span class="ecf-val danger">{{ email.mensaje.asunto }}</span></div>
+                        <div class="ec-field"><span class="ecf-label">Fecha</span><span class="ecf-val">{{ email.mensaje.fecha }}</span></div>
+                    </div>
+                    <div class="email-client-body">{{ email.mensaje.cuerpo }}</div>
+                </div>
+            </div>
+
+            <div class="ev-content" id="ev-headers">
+                <div class="headers-legend"><span class="hl-sus">⚠ Sospechoso</span><span class="hl-ok">✓ Normal</span></div>
+                <div class="headers-table">
+                    {% for h in email.headers %}
+                    <div class="hdr-row {% if h.sospechoso %}hdr-sus{% endif %}">
+                        <div class="hdr-key">{{ h.clave }}</div>
+                        <div class="hdr-right">
+                            <div class="hdr-val {% if h.sospechoso %}val-danger{% endif %}">{{ h.valor }}</div>
+                            {% if h.nota %}<div class="hdr-nota">⚑ {{ h.nota }}</div>{% endif %}
+                        </div>
+                        <div class="hdr-flag">{% if h.sospechoso %}<span class="flag-sus">SUS</span>{% else %}<span class="flag-ok">OK</span>{% endif %}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="ev-content" id="ev-urls">
+                <div class="url-cards">
+                    {% for url in email.urls %}
+                    <div class="url-analysis-card">
+                        <div class="uac-header">
+                            <div class="uac-title">{{ url.tipo }}</div>
+                            <span class="threat-score {% if url.reputacion == 'MALICIOSO' %}ts-high{% else %}ts-low{% endif %}">{{ url.reputacion }}</span>
+                        </div>
+                        <div class="uac-url-display">
+                            <span class="uac-url-label">URL</span>
+                            <span class="uac-url-val">{{ url.url }}</span>
+                        </div>
+                        <div class="uac-details">
+                            {% for d in url.detalles %}
+                            <div class="uac-row">
+                                <span class="uac-dl">{{ d.campo }}</span>
+                                <span class="uac-dv">{{ d.valor }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="ev-content" id="ev-adjuntos">
+                {% for adj in email.adjuntos %}
+                <div class="attachment-analysis">
+                    <div class="aa-header">
+                        <div class="aa-icon-name">
+                            <span class="aa-icon">⚠️</span>
+                            <div>
+                                <div class="aa-name">{{ adj.nombre }}</div>
+                                <div class="aa-sub">{{ adj.tamano }} · {{ adj.tipo }}</div>
+                            </div>
+                        </div>
+                        {% if adj.tiene_macros %}<span class="macro-badge">MACROS ACTIVAS</span>{% endif %}
+                    </div>
+                    <div class="aa-details">
+                        {% for d in adj.detalles %}
+                        <div class="aa-row">
+                            <span class="aa-label">{{ d.campo }}</span>
+                            <span class="aa-val {% if d.peligro %}val-danger{% endif %}">{{ d.valor }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="complete-bar">
+            {% set ek = caso.id + ':email' %}
+            <div class="cb-text">He revisado el email en detalle y estoy listo para continuar con la siguiente fase.</div>
+            <button class="btn-complete {% if ek in progreso %}btn-done{% endif %}" id="btn-email"
+                    onclick="completePhase('{{ caso.id }}','email',this)"
+                    {% if ek in progreso %}disabled{% endif %}>
+                {% if ek in progreso %}✓ Fase completada · +{{ progreso[ek].puntos }} pts
+                {% else %}Marcar fase como completada · +{{ caso.fase_puntos.get('email','') }} pts →{% endif %}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ══ WIN LOGS ══ #}
+    {# ══ WIN LOGS — LetsDefend style ══ #}
+    {% if 'win_logs' in phases %}{% set win = phases.win_logs %}
+    <div class="phase-panel {% if caso.fases[0] == 'win_logs' %}active{% endif %}" id="panel-win_logs">
+
+        <div class="panel-topbar">
+            <div class="ptb-left">
+                <span class="ptb-icon">📋</span>
+                <div>
+                    <div class="ptb-title">Windows Event Logs</div>
+                    <div class="ptb-desc">{{ win.descripcion }}</div>
+                </div>
+            </div>
+            <span class="ptb-pts">+{{ caso.fase_puntos.get('win_logs','') }} pts</span>
+        </div>
+
+        <div class="objective-card">
+            <div class="obj-header"><span class="obj-icon">🎯</span> Objetivo de investigación</div>
+            <ul class="obj-list">
+                <li>Identifica la cadena de procesos maliciosos (EventID 1 / 4688)</li>
+                <li>Localiza el mecanismo de persistencia (EventID 13 / registro)</li>
+                <li>Busca autenticaciones exitosas y fallidas (EventID 4624 / 4625)</li>
+                <li>Detecta movimiento lateral, creación de cuentas y escalada de privilegios</li>
+            </ul>
+        </div>
+
+        {# LetsDefend Log Management UI #}
+        {% set win_mal = win.eventos | selectattr('malicioso') | list | length %}
+        <div class="lm-container" id="lm-win">
+            {# Search bar #}
+            <div class="lm-search-bar">
+                <input class="lm-search-input" type="text" placeholder="Enter search here..."
+                       id="winSearch" oninput="lmFilter('win')">
+                <button class="lm-search-btn" onclick="lmFilter('win')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </button>
+            </div>
+
+            {# Count + pagination top #}
+            <div class="lm-meta-bar">
+                <span class="lm-count" id="winCount">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="#22c55e" stroke="none"><circle cx="12" cy="12" r="12"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none"/></svg>
+                    {{ win.eventos | length }} events
+                </span>
+                <div class="lm-pagination" id="winPager"></div>
+            </div>
+
+            {# Main split: fields sidebar + events list #}
+            <div class="lm-body">
+                <div class="lm-fields-panel" id="winFieldsPanel">
+                    <button class="lm-hide-fields" onclick="lmToggleFields('win')">
+                        <span id="winFieldsArrow">&#8249;</span> Hide Fields
+                    </button>
+                    <div class="lm-fields-section" id="winFieldsBody">
+                        <div class="lm-fields-title">INTERESTING FIELDS</div>
+                        <div class="lm-field-item" onclick="lmHighlightField('win','event_id')">
+                            <span class="lm-field-icon lm-icon-num">#</span>
+                            <span class="lm-field-name">event_id</span>
+                        </div>
+                        <div class="lm-field-item" onclick="lmHighlightField('win','host')">
+                            <span class="lm-field-icon lm-icon-str">α</span>
+                            <span class="lm-field-name">host</span>
+                        </div>
+                        <div class="lm-field-item" onclick="lmHighlightField('win','usuario')">
+                            <span class="lm-field-icon lm-icon-str">α</span>
+                            <span class="lm-field-name">usuario</span>
+                        </div>
+                        <div class="lm-field-item" onclick="lmHighlightField('win','descripcion')">
+                            <span class="lm-field-icon lm-icon-str">α</span>
+                            <span class="lm-field-name">descripcion</span>
+                        </div>
+                        <div class="lm-field-item" onclick="lmHighlightField('win','mitre')">
+                            <span class="lm-field-icon lm-icon-str">α</span>
+                            <span class="lm-field-name">mitre</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lm-events-list" id="winEventsList">
+                    {% for ev in win.eventos %}
+                    <div class="lm-event {% if ev.malicioso %}lm-event-alert{% endif %}"
+                         data-idx="{{ loop.index0 }}"
+                         data-search="{{ ev.event_id }} {{ ev.host }} {{ ev.usuario }} {{ ev.descripcion }} {{ ev.nota if ev.nota else '' }}"
+                         data-page-win="0">
+                        <div class="lm-event-summary" onclick="lmToggle(this)">
+                            <span class="lm-expand-arrow">&#8250;</span>
+                            <span class="lm-event-line">
+                                <span class="lm-ts">[{{ ev.timestamp }}]</span>
+                                <span class="lm-kv"><span class="lm-key">event_id</span>=<span class="lm-val {% if ev.malicioso %}lm-val-alert{% endif %}">{{ ev.event_id }}</span></span>
+                                <span class="lm-kv"><span class="lm-key">host</span>=<span class="lm-val">{{ ev.host }}</span></span>
+                                <span class="lm-kv"><span class="lm-key">usuario</span>=<span class="lm-val">{{ ev.usuario }}</span></span>
+                                <span class="lm-kv lm-kv-desc"><span class="lm-key">descripcion</span>=<span class="lm-val">{{ ev.descripcion }}</span></span>
+                            </span>
+                            {% if ev.malicioso %}<span class="lm-badge-alert">ALERTA</span>{% endif %}
+                        </div>
+                        <div class="lm-event-detail" style="display:none">
+                            <div class="lm-detail-grid">
+                                <div class="lm-detail-row"><span class="lm-dk">timestamp</span><span class="lm-dv">{{ ev.timestamp }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">event_id</span><span class="lm-dv lm-dv-mono {% if ev.malicioso %}lm-val-alert{% endif %}">{{ ev.event_id }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">host</span><span class="lm-dv">{{ ev.host }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">usuario</span><span class="lm-dv">{{ ev.usuario }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">descripcion</span><span class="lm-dv">{{ ev.descripcion }}</span></div>
+                                {% if ev.nota %}<div class="lm-detail-row lm-detail-nota"><span class="lm-dk">analyst_note</span><span class="lm-dv lm-dv-note">{{ ev.nota }}</span></div>{% endif %}
+                                {% if ev.mitre is defined and ev.mitre %}<div class="lm-detail-row"><span class="lm-dk">mitre</span><span class="lm-dv lm-dv-mitre">{{ ev.mitre }}</span></div>{% endif %}
+                                <div class="lm-detail-row"><span class="lm-dk">malicioso</span><span class="lm-dv {% if ev.malicioso %}lm-val-alert{% else %}lm-val-ok{% endif %}">{{ ev.malicioso }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="lm-pagination lm-pager-bottom" id="winPagerBottom"></div>
+        </div>
+
+        <div class="complete-bar">
+            {% set wk = caso.id + ':win_logs' %}
+            <div class="cb-text">He analizado los eventos de Windows y he identificado los eventos maliciosos.</div>
+            <button class="btn-complete {% if wk in progreso %}btn-done{% endif %}" id="btn-win_logs"
+                    onclick="completePhase('{{ caso.id }}','win_logs',this)"
+                    {% if wk in progreso %}disabled{% endif %}>
+                {% if wk in progreso %}✓ Fase completada · +{{ progreso[wk].puntos }} pts
+                {% else %}Marcar fase como completada · +{{ caso.fase_puntos.get('win_logs','') }} pts →{% endif %}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ══ NET LOGS — LetsDefend style ══ #}
+    {% if 'net_logs' in phases %}{% set net = phases.net_logs %}
+    <div class="phase-panel {% if caso.fases[0] == 'net_logs' %}active{% endif %}" id="panel-net_logs">
+
+        <div class="panel-topbar">
+            <div class="ptb-left">
+                <span class="ptb-icon">🌐</span>
+                <div>
+                    <div class="ptb-title">Logs de Red</div>
+                    <div class="ptb-desc">{{ net.descripcion }}</div>
+                </div>
+            </div>
+            <span class="ptb-pts">+{{ caso.fase_puntos.get('net_logs','') }} pts</span>
+        </div>
+
+        <div class="objective-card">
+            <div class="obj-header"><span class="obj-icon">🎯</span> Objetivo de investigación</div>
+            <ul class="obj-list">
+                <li>Identifica la IP del servidor C2 y los puertos utilizados</li>
+                <li>Localiza descargas de payloads o herramientas maliciosas</li>
+                <li>Detecta exfiltración de datos (grandes transferencias salientes)</li>
+                <li>Correlaciona las conexiones con los procesos identificados en el host</li>
+            </ul>
+        </div>
+
+        {# LetsDefend Log Management UI #}
+        {% set net_mal = net.logs | selectattr('malicioso') | list | length %}
+        <div class="lm-container" id="lm-net">
+            {# Search bar #}
+            <div class="lm-search-bar">
+                <input class="lm-search-input" type="text" placeholder="Enter search here..."
+                       id="netSearch" oninput="lmFilter('net')">
+                <button class="lm-search-btn" onclick="lmFilter('net')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </button>
+            </div>
+
+            {# Count + pagination top #}
+            <div class="lm-meta-bar">
+                <span class="lm-count" id="netCount">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="#22c55e" stroke="none"><circle cx="12" cy="12" r="12"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none"/></svg>
+                    {{ net.logs | length }} events
+                </span>
+                <div class="lm-pagination" id="netPager"></div>
+            </div>
+
+            {# Main split: fields sidebar + events list #}
+            <div class="lm-body">
+                <div class="lm-fields-panel" id="netFieldsPanel">
+                    <button class="lm-hide-fields" onclick="lmToggleFields('net')">
+                        <span id="netFieldsArrow">&#8249;</span> Hide Fields
+                    </button>
+                    <div class="lm-fields-section" id="netFieldsBody">
+                        <div class="lm-fields-title">INTERESTING FIELDS</div>
+                        <div class="lm-field-item" onclick="lmHighlightField('net','source_address')">
+                            <span class="lm-field-icon lm-icon-str">α</span>
+                            <span class="lm-field-name">source_address</span>
+                        </div>
+                        <div class="lm-field-item" onclick="lmHighlightField('net','destination_address')">
+                            <span class="lm-field-icon lm-icon-str">α</span>
+                            <span class="lm-field-name">destination_address</span>
+                        </div>
+                        <div class="lm-field-item" onclick="lmHighlightField('net','destination_port')">
+                            <span class="lm-field-icon lm-icon-num">#</span>
+                            <span class="lm-field-name">destination_port</span>
+                        </div>
+                        <div class="lm-field-item" onclick="lmHighlightField('net','protocol')">
+                            <span class="lm-field-icon lm-icon-str">α</span>
+                            <span class="lm-field-name">protocol</span>
+                        </div>
+                        <div class="lm-field-item" onclick="lmHighlightField('net','bytes')">
+                            <span class="lm-field-icon lm-icon-num">#</span>
+                            <span class="lm-field-name">bytes</span>
+                        </div>
+                        <div class="lm-field-item" onclick="lmHighlightField('net','raw_log')">
+                            <span class="lm-field-icon lm-icon-str">α</span>
+                            <span class="lm-field-name">raw_log</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lm-events-list" id="netEventsList">
+                    {% for log in net.logs %}
+                    <div class="lm-event {% if log.malicioso %}lm-event-alert{% endif %}"
+                         data-idx="{{ loop.index0 }}"
+                         data-search="{{ log.src_ip }} {{ log.dst_ip }} {{ log.protocolo }} {{ log.puerto }} {{ log.descripcion }} {{ log.nota if log.nota else '' }}"
+                         data-page-net="0">
+                        <div class="lm-event-summary" onclick="lmToggle(this)">
+                            <span class="lm-expand-arrow">&#8250;</span>
+                            <span class="lm-event-line">
+                                <span class="lm-ts">[{{ log.timestamp }}]</span>
+                                <span class="lm-kv"><span class="lm-key">source_address</span>=<span class="lm-val">{{ log.src_ip }}</span></span>
+                                <span class="lm-kv"><span class="lm-key">destination_address</span>=<span class="lm-val {% if log.malicioso %}lm-val-alert{% endif %}">{{ log.dst_ip }}</span></span>
+                                <span class="lm-kv"><span class="lm-key">destination_port</span>=<span class="lm-val">{{ log.puerto }}</span></span>
+                                <span class="lm-kv lm-kv-desc"><span class="lm-key">raw_log</span>=<span class="lm-val">{{ log.descripcion }}</span></span>
+                            </span>
+                            {% if log.malicioso %}<span class="lm-badge-alert">ALERTA</span>{% endif %}
+                        </div>
+                        <div class="lm-event-detail" style="display:none">
+                            <div class="lm-detail-grid">
+                                <div class="lm-detail-row"><span class="lm-dk">timestamp</span><span class="lm-dv">{{ log.timestamp }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">source_address</span><span class="lm-dv lm-dv-mono">{{ log.src_ip }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">destination_address</span><span class="lm-dv lm-dv-mono {% if log.malicioso %}lm-val-alert{% endif %}">{{ log.dst_ip }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">destination_port</span><span class="lm-dv lm-dv-mono">{{ log.puerto }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">protocol</span><span class="lm-dv">{{ log.protocolo }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">bytes</span><span class="lm-dv lm-dv-mono">{{ log.bytes }}</span></div>
+                                <div class="lm-detail-row"><span class="lm-dk">raw_log</span><span class="lm-dv">{{ log.descripcion }}</span></div>
+                                {% if log.nota %}<div class="lm-detail-row lm-detail-nota"><span class="lm-dk">analyst_note</span><span class="lm-dv lm-dv-note">{{ log.nota }}</span></div>{% endif %}
+                                <div class="lm-detail-row"><span class="lm-dk">malicioso</span><span class="lm-dv {% if log.malicioso %}lm-val-alert{% else %}lm-val-ok{% endif %}">{{ log.malicioso }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="lm-pagination lm-pager-bottom" id="netPagerBottom"></div>
+        </div>
+
+        <div class="complete-bar">
+            {% set nk = caso.id + ':net_logs' %}
+            <div class="cb-text">He analizado el tráfico de red e identificado las conexiones maliciosas y el servidor C2.</div>
+            <button class="btn-complete {% if nk in progreso %}btn-done{% endif %}" id="btn-net_logs"
+                    onclick="completePhase('{{ caso.id }}','net_logs',this)"
+                    {% if nk in progreso %}disabled{% endif %}>
+                {% if nk in progreso %}✓ Fase completada · +{{ progreso[nk].puntos }} pts
+                {% else %}Marcar fase como completada · +{{ caso.fase_puntos.get('net_logs','') }} pts →{% endif %}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ══ SERVER LOGS ══ #}
+    {% if 'server_logs' in phases %}{% set srv = phases.server_logs %}
+    <div class="phase-panel {% if caso.fases[0] == 'server_logs' %}active{% endif %}" id="panel-server_logs">
+
+        <div class="panel-topbar">
+            <div class="ptb-left">
+                <span class="ptb-icon">🐧</span>
+                <div>
+                    <div class="ptb-title">Server Logs</div>
+                    <div class="ptb-desc">{{ srv.descripcion }}</div>
+                </div>
+            </div>
+            <span class="ptb-pts">+{{ caso.fase_puntos.get('server_logs','') }} pts</span>
+        </div>
+
+        <div class="objective-card">
+            <div class="obj-header"><span class="obj-icon">🎯</span> Objetivo de investigación</div>
+            <ul class="obj-list">
+                <li>Identifica intentos de autenticación fallidos y su origen</li>
+                <li>Localiza el login exitoso: ¿qué usuario, desde qué IP y a qué hora?</li>
+                <li>Detecta comandos ejecutados tras el acceso (reconocimiento, descargas)</li>
+                <li>Determina si el atacante consiguió su objetivo en este servidor</li>
+            </ul>
+        </div>
+
+        {% set srv_mal = srv.logs | selectattr('malicioso') | list | length %}
+        <div class="evidence-block">
+            <div class="evidence-header">
+                <div class="ev-header-left">
+                    <span class="ev-source-badge">🐧 auth.log / syslog</span>
+                    <span class="ev-stats-badge ev-stats-danger">{{ srv_mal }} eventos críticos</span>
+                    <span class="ev-stats-badge">{{ srv.logs | length }} entradas</span>
+                </div>
+                <input class="log-search" type="text" placeholder="Filtrar por usuario, mensaje…" id="srvFilter" oninput="filterTableLogs('srvTable','srvFilter','srvCount')">
+                <span class="log-search-count" id="srvCount">{{ srv.logs | length }}</span>
+            </div>
+            <div class="log-table-wrap">
+                <table class="log-table" id="srvTable">
+                    <thead><tr><th>Timestamp</th><th>Host</th><th>Usuario</th><th>Mensaje</th><th></th></tr></thead>
+                    <tbody>
+                    {% for log in srv.logs %}
+                    <tr class="lr {% if log.malicioso %}lr-mal{% endif %}"
+                        data-searchable="{{ log.usuario }} {{ log.mensaje }}"
+                        onclick="toggleRow(this)">
+                        <td class="lt-time">{{ log.timestamp }}</td>
+                        <td class="lt-host">{{ log.host }}</td>
+                        <td class="lt-user">{{ log.usuario }}</td>
+                        <td class="lt-desc">{{ log.mensaje }}</td>
+                        <td><span class="{% if log.malicioso %}badge-alert{% else %}badge-normal{% endif %}">{% if log.malicioso %}ALERTA{% else %}OK{% endif %}</span></td>
+                    </tr>
+                    {% if log.nota %}
+                    <tr class="lr-note {% if log.malicioso %}lr-note-mal{% endif %}" style="display:none">
+                        <td colspan="5"><span class="note-arrow">⚑</span> {{ log.nota }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="complete-bar">
+            {% set sk = caso.id + ':server_logs' %}
+            <div class="cb-text">He analizado los logs del servidor e identificado el acceso no autorizado.</div>
+            <button class="btn-complete {% if sk in progreso %}btn-done{% endif %}" id="btn-server_logs"
+                    onclick="completePhase('{{ caso.id }}','server_logs',this)"
+                    {% if sk in progreso %}disabled{% endif %}>
+                {% if sk in progreso %}✓ Fase completada · +{{ progreso[sk].puntos }} pts
+                {% else %}Marcar fase como completada · +{{ caso.fase_puntos.get('server_logs','') }} pts →{% endif %}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ══ TERMINAL ══ #}
+    {% if 'terminal' in phases %}{% set term = phases.terminal %}
+    <div class="phase-panel {% if caso.fases[0] == 'terminal' %}active{% endif %}" id="panel-terminal">
+
+        <div class="panel-topbar">
+            <div class="ptb-left">
+                <span class="ptb-icon">💻</span>
+                <div>
+                    <div class="ptb-title">Análisis Forense — Terminal</div>
+                    <div class="ptb-desc">{{ term.descripcion }}</div>
+                </div>
+            </div>
+            <span class="ptb-pts">+{{ caso.fase_puntos.get('terminal','') }} pts</span>
+        </div>
+
+        <div class="objective-card">
+            <div class="obj-header"><span class="obj-icon">🎯</span> Objetivo de investigación</div>
+            <ul class="obj-list">
+                <li>Confirma el proceso malicioso en ejecución y su ruta en disco</li>
+                <li>Verifica el mecanismo de persistencia en el registro o en el sistema</li>
+                <li>Compara hashes SHA256 de binarios sospechosos</li>
+                <li>Localiza artefactos: ficheros cifrados, notas de rescate, configuraciones C2</li>
+            </ul>
+        </div>
+
+        <div class="evidence-block" style="padding:0;">
+            <div class="terminal-wrap">
+                <div class="term-titlebar">
+                    <div class="term-dots">
+                        <span class="td td-red"></span>
+                        <span class="td td-yellow"></span>
+                        <span class="td td-green"></span>
+                    </div>
+                    <span class="term-path">forensics@ir-station — {{ caso.host_afectado }}</span>
+                    <span class="term-os">Windows PowerShell / cmd</span>
+                </div>
+                <div class="term-body">
+                    {% for bloque in term.bloques %}
+                    <div class="term-block">
+                        <div class="term-cmd-line">
+                            <span class="term-num">[{{ loop.index }}]</span>
+                            <span class="term-prompt">PS&gt;</span>
+                            <span class="term-cmd-text">{{ bloque.cmd }}</span>
+                        </div>
+                        <div class="term-output">{% for linea in bloque.salida
+                            %}<div class="to-line {% if linea.tipo == 'alert' %}to-danger{% elif linea.tipo == 'warn' %}to-warn{% elif linea.tipo == 'info' %}to-info{% endif %}">{{ linea.linea }}</div>{% endfor %}</div>
+                        {% if bloque.nota %}
+                        <div class="term-callout">
+                            <span class="tc-icon">⚑</span>
+                            <span class="tc-text">{{ bloque.nota }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="complete-bar">
+            {% set tk = caso.id + ':terminal' %}
+            <div class="cb-text">He revisado los artefactos forenses y confirmado los indicadores de compromiso.</div>
+            <button class="btn-complete {% if tk in progreso %}btn-done{% endif %}" id="btn-terminal"
+                    onclick="completePhase('{{ caso.id }}','terminal',this)"
+                    {% if tk in progreso %}disabled{% endif %}>
+                {% if tk in progreso %}✓ Fase completada · +{{ progreso[tk].puntos }} pts
+                {% else %}Marcar fase como completada · +{{ caso.fase_puntos.get('terminal','') }} pts →{% endif %}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ══ VERDICT ══ #}
+    {% if 'verdict' in phases %}{% set vd = phases.verdict %}
+    <div class="phase-panel {% if caso.fases[0] == 'verdict' %}active{% endif %}" id="panel-verdict">
+
+        <div class="panel-topbar">
+            <div class="ptb-left">
+                <span class="ptb-icon">⚖️</span>
+                <div>
+                    <div class="ptb-title">Veredicto Final</div>
+                    <div class="ptb-desc">Evaluación del analista basada en las evidencias</div>
+                </div>
+            </div>
+            <span class="ptb-pts">{{ caso.fase_puntos.get('verdict','') }} pts</span>
+        </div>
+
+        <div class="verdict-intro-card">
+            <div class="vic-icon">📋</div>
+            <div>
+                <div class="vic-title">Informe de Análisis</div>
+                <div class="vic-text">{{ vd.intro }}</div>
+            </div>
+        </div>
+
+        <div class="verdict-questions">
+            {% for q in vd.preguntas %}
+            <div class="vq-card" id="qcard-{{ q.id }}">
+                <div class="vq-header">
+                    <div class="vq-num">{{ loop.index }}</div>
+                    <div class="vq-meta">
+                        <span class="vq-pts-good">+{{ q.puntos }} pts correcta</span>
+                        {% if q.penalizacion %}<span class="vq-pts-bad">{{ q.penalizacion }} pts incorrecta</span>{% endif %}
+                    </div>
+                </div>
+                <div class="vq-question">{{ q.texto }}</div>
+
+                <div class="vq-options" id="opts-{{ q.id }}">
+                    {% for opt in q.opciones %}
+                    <button class="vq-opt" data-letter="{{ opt.id }}" data-qid="{{ q.id }}" data-opt="{{ opt.id }}" onclick="selectOption(this)">
+                        <span class="vq-opt-letter">{{ opt.id }}</span>
+                        <span class="vq-opt-text">{{ opt.texto }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <div class="vq-feedback" id="fb-{{ q.id }}"></div>
+
+                {% if q.hints %}
+                <div class="vq-hints">
+                    <button class="vqh-toggle" onclick="toggleHints('hints-{{ q.id }}')">
+                        <span>💡 Pistas disponibles</span>
+                        <span class="vqh-count">{{ q.hints | length }}</span>
+                    </button>
+                    <div class="vqh-body" id="hints-{{ q.id }}">
+                        {% for hint in q.hints %}
+                        <div class="vqh-item">
+                            <button class="vqh-btn" id="hbtn-{{ q.id }}-{{ hint.nivel }}"
+                                    onclick="getHint('{{ caso.id }}','{{ q.id }}',{{ hint.nivel }},this)">
+                                <span class="vqh-level">Pista {{ hint.nivel }}</span>
+                                <span class="vqh-cost {% if hint.coste == 0 %}cost-free{% else %}cost-paid{% endif %}">
+                                    {% if hint.coste == 0 %}Gratuita{% else %}-{{ hint.coste }} pts{% endif %}
+                                </span>
+                            </button>
+                            <div class="vqh-content" id="hcontent-{{ q.id }}-{{ hint.nivel }}"></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="verdict-submit-section">
+            <div class="vss-info">
+                <span>{{ vd.preguntas | length }} preguntas · {{ caso.fase_puntos.get('verdict','') }} pts máximos</span>
+            </div>
+            <button class="btn-verdict-submit" id="btnVerdict" onclick="submitVerdict('{{ caso.id }}')">
+                Emitir veredicto final →
+            </button>
+        </div>
+
+        <div class="verdict-result-card" id="verdictResult">
+            <div class="vrc-top">
+                <div class="vrc-score-wrap">
+                    <div class="vrc-score-num" id="vrScore">0</div>
+                    <div class="vrc-score-of">/ {{ caso.fase_puntos.get('verdict','') }} pts</div>
+                </div>
+                <div class="vrc-grade" id="vrGrade">—</div>
+            </div>
+            <div class="vrc-msg" id="vrMsg"></div>
+            <a href="/" class="vrc-back">← Volver a la cola de alertas</a>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>{# /panels-wrap #}
+
+<script>
+const caseId    = '{{ caso.id }}';
+const phaseList = {{ caso.fases | tojson }};
+const phasePts  = {{ caso.fase_puntos | tojson }};
+const verdictPts= {{ caso.fase_puntos.get('verdict', 0) }};
+
+// ── Stepper + panel switch ──
+function switchPhase(fase) {
+    document.querySelectorAll('.phase-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.stepper-item').forEach(s => s.classList.remove('active'));
+    const panel = document.getElementById('panel-' + fase);
+    const step  = document.getElementById('step-' + fase);
+    if (panel) panel.classList.add('active');
+    if (step)  step.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Email sub-tabs ──
+function switchEmailTab(tab, btn) {
+    document.querySelectorAll('.ev-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.ev-tab').forEach(t => t.classList.remove('active'));
+    const el = document.getElementById('ev-' + tab);
+    if (el) el.classList.add('active');
+    if (btn) btn.classList.add('active');
+}
+
+// ── Row expand (click to show nota) ──
+function toggleRow(row) {
+    const next = row.nextElementSibling;
+    if (next && next.classList.contains('lr-note')) {
+        next.style.display = next.style.display === 'none' ? '' : 'none';
+    }
+}
+
+// ══ LetsDefend-style Log Management ══
+const LM_PAGE_SIZE = 10;
+const lmState = {};
+
+function lmInit(ns) {
+    const events = Array.from(document.querySelectorAll(`#${ns}EventsList .lm-event`));
+    lmState[ns] = { events, filtered: events, page: 0 };
+    lmRender(ns);
+}
+
+function lmRender(ns) {
+    const s = lmState[ns];
+    if (!s) return;
+    const { filtered, page } = s;
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / LM_PAGE_SIZE));
+    const start = page * LM_PAGE_SIZE;
+    const end   = start + LM_PAGE_SIZE;
+
+    // Show/hide events
+    s.events.forEach(ev => ev.style.display = 'none');
+    filtered.slice(start, end).forEach(ev => ev.style.display = '');
+
+    // Count label
+    const countEl = document.getElementById(ns + 'Count');
+    if (countEl) countEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#22c55e" stroke="none"><circle cx="12" cy="12" r="12"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none"/></svg> ${total} events`;
+
+    // Pagination
+    ['', 'Bottom'].forEach(suffix => {
+        const pager = document.getElementById(ns + 'Pager' + suffix);
+        if (!pager) return;
+        pager.innerHTML = '';
+        if (pages <= 1) return;
+
+        const mkBtn = (label, p, active) => {
+            const b = document.createElement('button');
+            b.className = 'lm-page-btn' + (active ? ' lm-page-active' : '');
+            b.textContent = label;
+            b.onclick = () => { lmState[ns].page = p; lmRender(ns); };
+            return b;
+        };
+
+        if (page > 0) pager.appendChild(mkBtn('‹', page - 1, false));
+        const maxVisible = 5;
+        let lo = Math.max(0, page - 2), hi = Math.min(pages - 1, lo + maxVisible - 1);
+        lo = Math.max(0, hi - maxVisible + 1);
+        if (lo > 0) { pager.appendChild(mkBtn('1', 0, false)); if (lo > 1) pager.appendChild(Object.assign(document.createElement('span'), {className:'lm-page-ellipsis', textContent:'…'})); }
+        for (let i = lo; i <= hi; i++) pager.appendChild(mkBtn(i + 1, i, i === page));
+        if (hi < pages - 1) { if (hi < pages - 2) pager.appendChild(Object.assign(document.createElement('span'), {className:'lm-page-ellipsis', textContent:'…'})); pager.appendChild(mkBtn(pages, pages - 1, false)); }
+        if (page < pages - 1) pager.appendChild(mkBtn('›', page + 1, false));
+    });
+}
+
+function lmFilter(ns) {
+    const s = lmState[ns];
+    if (!s) return;
+    const q = (document.getElementById(ns + 'Search').value || '').toLowerCase();
+    s.filtered = q ? s.events.filter(ev => (ev.dataset.search || '').toLowerCase().includes(q)) : s.events;
+    s.page = 0;
+    // close all open details on filter
+    s.events.forEach(ev => {
+        ev.querySelector('.lm-event-detail').style.display = 'none';
+        ev.querySelector('.lm-expand-arrow').style.transform = '';
+    });
+    lmRender(ns);
+}
+
+function lmToggle(summary) {
+    const event = summary.closest('.lm-event');
+    const detail = event.querySelector('.lm-event-detail');
+    const arrow  = summary.querySelector('.lm-expand-arrow');
+    const open   = detail.style.display !== 'none';
+    detail.style.display = open ? 'none' : '';
+    arrow.style.transform = open ? '' : 'rotate(90deg)';
+}
+
+function lmToggleFields(ns) {
+    const body  = document.getElementById(ns + 'FieldsBody');
+    const panel = document.getElementById(ns + 'FieldsPanel');
+    const arrow = document.getElementById(ns + 'FieldsArrow');
+    const hidden = body.style.display === 'none';
+    body.style.display = hidden ? '' : 'none';
+    panel.style.minWidth = hidden ? '' : '36px';
+    arrow.innerHTML = hidden ? '&#8249;' : '&#8250;';
+}
+
+function lmHighlightField(ns, field) {
+    // Toggle highlight on all key spans matching this field
+    const list = document.getElementById(ns + 'EventsList');
+    list.querySelectorAll('.lm-key').forEach(k => {
+        if (k.textContent === field) k.classList.toggle('lm-key-active');
+    });
+}
+
+// Init all LM panels on load
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('winEventsList')) lmInit('win');
+    if (document.getElementById('netEventsList')) lmInit('net');
+});
+
+// ── Log filter ──
+function filterTableLogs(tableId, filterId, countId) {
+    const q = (document.getElementById(filterId).value || '').toLowerCase();
+    const rows = document.querySelectorAll('#' + tableId + ' tbody tr.lr');
+    let visible = 0;
+    rows.forEach(row => {
+        const text = (row.dataset.searchable || row.textContent).toLowerCase();
+        const show = !q || text.includes(q);
+        row.style.display = show ? '' : 'none';
+        const note = row.nextElementSibling;
+        if (note && note.classList.contains('lr-note')) note.style.display = 'none';
+        if (show) visible++;
+    });
+    const el = document.getElementById(countId);
+    if (el) el.textContent = visible;
+}
+
+// ── Hints ──
+function toggleHints(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+}
+
+function getHint(caseId, qid, nivel, btn) {
+    if (btn.classList.contains('used')) return;
+    fetch('/api/hint/' + caseId + '/' + qid + '/' + nivel, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { showToast(data.error, 'error'); return; }
+            const content = document.getElementById('hcontent-' + qid + '-' + nivel);
+            if (content) { content.textContent = data.contenido; content.classList.add('visible'); }
+            btn.classList.add('used');
+            const costEl = btn.querySelector('.vqh-cost');
+            if (costEl) { costEl.textContent = '✓ Usada'; costEl.className = 'vqh-cost cost-used'; }
+        });
+}
+
+// ── Complete phase ──
+function completePhase(caseId, phase, btn) {
+    fetch('/api/case/' + caseId + '/phase/' + phase + '/complete', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.ok) return;
+            btn.disabled = true;
+            btn.classList.add('btn-done');
+            btn.textContent = '✓ Fase completada · +' + data.puntos + ' pts';
+            const step = document.getElementById('step-' + phase);
+            if (step) {
+                step.classList.add('done');
+                const circle = step.querySelector('.step-circle');
+                if (circle) circle.textContent = '✓';
+                const line = step.querySelector('.step-line');
+                if (line) line.classList.add('line-done');
+                const ptsEl = step.querySelector('.step-pts');
+                if (ptsEl) ptsEl.innerHTML = '<span class="step-pts-done">+' + data.puntos + ' pts ✓</span>';
+            }
+            updateProgress(data.puntos);
+            showToast('+' + data.puntos + ' pts — Fase completada', 'success');
+        });
+}
+
+// ── Progress update ──
+function updateProgress(addedPts) {
+    const bar   = document.getElementById('progressBar');
+    const pct   = document.getElementById('pctDisplay');
+    const pts   = document.getElementById('ptsDisplay');
+    const fases = document.getElementById('fasesDisplay');
+    const done  = document.querySelectorAll('.stepper-item.done').length;
+    const total = phaseList.length;
+    const newPct = Math.round((done / total) * 100);
+    const curPts = parseInt(pts.textContent || '0') + addedPts;
+    if (bar)   bar.style.width = newPct + '%';
+    if (pct)   pct.textContent = newPct + '%';
+    if (pts)   pts.textContent = curPts;
+    if (fases) fases.textContent = done;
+}
+
+// ── Select verdict option ──
+const selectedOptions = {};
+function selectOption(btn) {
+    const qid = btn.dataset.qid;
+    document.querySelectorAll('#opts-' + qid + ' .vq-opt').forEach(b => b.classList.remove('vq-opt-selected'));
+    btn.classList.add('vq-opt-selected');
+    selectedOptions[qid] = btn.dataset.opt;
+}
+
+// ── Submit verdict ──
+function submitVerdict(caseId) {
+    const cards = document.querySelectorAll('.vq-card');
+    const respuestas = {};
+    cards.forEach(c => {
+        const qid = c.id.replace('qcard-', '');
+        respuestas[qid] = selectedOptions[qid] || '';
+    });
+
+    fetch('/api/case/' + caseId + '/verdict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ respuestas })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.ok) return;
+
+        Object.entries(data.resultados).forEach(([qid, res]) => {
+            document.querySelectorAll('#opts-' + qid + ' .vq-opt').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('vq-opt-selected');
+                if (btn.dataset.opt === res.respuesta_correcta)
+                    btn.classList.add('vq-opt-correct');
+                else if (btn.dataset.opt === selectedOptions[qid] && !res.correcta)
+                    btn.classList.add('vq-opt-wrong');
+                else
+                    btn.classList.add('vq-opt-dim');
+            });
+            const fb = document.getElementById('fb-' + qid);
+            if (fb) {
+                fb.innerHTML = '<span class="fb-icon">' + (res.correcta ? '✓' : '✗') + '</span>' + res.feedback;
+                fb.className = 'vq-feedback ' + (res.correcta ? 'fb-correct' : 'fb-wrong');
+            }
+        });
+
+        document.getElementById('btnVerdict').disabled = true;
+        const result = document.getElementById('verdictResult');
+        result.classList.add('visible');
+        document.getElementById('vrScore').textContent = Math.max(0, data.total_puntos);
+
+        const pct = data.total_puntos / verdictPts;
+        let grade, msg;
+        if (pct >= 0.9)      { grade = 'A'; msg = '¡Excelente, Analista! Investigación ejemplar. Has identificado todos los vectores de ataque correctamente.'; }
+        else if (pct >= 0.7) { grade = 'B'; msg = 'Buen trabajo. Has identificado los puntos clave del ataque, aunque algunos detalles pueden mejorar.'; }
+        else if (pct >= 0.5) { grade = 'C'; msg = 'Investigación parcial. Revisa el feedback de cada pregunta y vuelve a las evidencias antes de cerrar el caso.'; }
+        else                  { grade = 'F'; msg = 'Necesitas repasar las evidencias con más detalle. Cada pregunta tiene hints que pueden ayudarte.'; }
+
+        const gradeEl = document.getElementById('vrGrade');
+        if (gradeEl) { gradeEl.textContent = grade; gradeEl.className = 'vrc-grade grade-' + grade; }
+        document.getElementById('vrMsg').textContent = msg;
+        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+}
+
+// ── Toast notification ──
+function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.classList.add('toast-show'), 10);
+    setTimeout(() => { t.classList.remove('toast-show'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{
+  "id": "caso-003",
+  "codename": "NightCrypt",
+  "nombre": "Operación NightCrypt",
+  "empresa": "FinCorp Solutions S.A.",
+  "sector": "Servicios Financieros",
+  "tipo": "Ransomware · Incident Response",
+  "dificultad": "hard",
+  "puntos_max": 2000,
+  "tiempo_estimado": "60–90 min",
+  "descripcion": "El 14 de noviembre a las 03:14 el equipo de seguridad detectó cifrado masivo. En 20 minutos el 80% de ficheros corporativos aparecieron con extensión .ncrypt.",
+  "briefing": "El 14 de noviembre a las 03:14 UTC el SOC de FinCorp recibió una cascada de alertas del EDR. En menos de 20 minutos, el 80% de los ficheros corporativos en los shares de red aparecieron cifrados con extensión .ncrypt. Tienes logs de Windows, red, servidor de backup y artefactos forenses. Reconstruye la cadena completa: acceso inicial, movimiento lateral, persistencia y cifrado.",
+  "fases": ["win_logs", "net_logs", "server_logs", "terminal", "verdict"],
+  "fase_puntos": {
+    "win_logs": 300,
+    "net_logs": 300,
+    "server_logs": 200,
+    "terminal": 200,
+    "verdict": 1000
+  },
+  "fecha_incidente": "2025-11-14T03:14:00Z",
+  "fecha_legible": "14 nov 2025 · 03:14",
+  "host_afectado": "WKSTN-042, SRV-FILES-01, SRV-BACKUP-01",
+  "usuario_afectado": "j.martinez",
+  "mitre_attack": ["T1566.001", "T1059.001", "T1547.001", "T1021.002", "T1486"],
+  "tags": ["Ransomware", "Lateral Movement", "Persistence", "Encryption"],
+  "bloqueado": false
+}

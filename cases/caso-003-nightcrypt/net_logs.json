@@ -1,0 +1,181 @@
+{
+  "descripcion": "NetFlow y proxy corporativo de FinCorp Solutions. Período: 13 nov 2025 17:55 – 14 nov 2025 03:45. Segmento afectado: 10.10.0.0/16. Especial atención al host 10.10.5.42 (WKSTN-042) y al servidor 10.10.1.15 (SRV-FILES-01).",
+  "logs": [
+    {
+      "timestamp": "13 nov · 18:02:44",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTP",
+      "puerto": "80",
+      "bytes": "1024",
+      "descripcion": "GET /s/stage1.ps1 HTTP/1.1 — Host: 185.220.101.47 — UserAgent: PowerShell/7.3",
+      "malicioso": true,
+      "nota": "PowerShell descarga el stager directamente por HTTP — proxy corporativo no bloqueó la IP"
+    },
+    {
+      "timestamp": "13 nov · 18:03:01",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTP",
+      "puerto": "80",
+      "bytes": "913408",
+      "descripcion": "GET /s/payload.bin HTTP/1.1 — descarga de 892 KB (payload cifrado)",
+      "malicioso": true,
+      "nota": "Descarga del ransomware principal — payload cifrado para evadir análisis estático del proxy"
+    },
+    {
+      "timestamp": "13 nov · 18:03:12",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "2048",
+      "descripcion": "TLS 1.3 — C2 beacon inicial — POST /api/v2/register — body cifrado",
+      "malicioso": true,
+      "nota": "Registro del host comprometido en el panel C2 — el servidor del atacante recibe fingerprint del sistema"
+    },
+    {
+      "timestamp": "13 nov · 22:14:00",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "512",
+      "descripcion": "POST /api/v2/checkin — beacon C2 nocturno (intervalo: 4 horas)",
+      "malicioso": true,
+      "nota": "Beacon de baja frecuencia para no saturar los logs — técnica de evasión"
+    },
+    {
+      "timestamp": "14 nov · 02:14:00",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "49152",
+      "descripcion": "POST /api/v2/checkin — respuesta del C2: 47 KB — GET /api/v2/task/nightcrypt_v3.enc",
+      "malicioso": true,
+      "nota": "C2 ACTIVA EL MÓDULO RANSOMWARE — descarga el módulo de cifrado nightcrypt_v3.enc — 1h antes del ataque"
+    },
+    {
+      "timestamp": "14 nov · 02:14:31",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "256",
+      "descripcion": "POST /api/v2/key — recibe clave pública RSA-4096 para el cifrado asimétrico",
+      "malicioso": true,
+      "nota": "La clave privada solo existe en el servidor del atacante — sin pago no hay descifrado"
+    },
+    {
+      "timestamp": "14 nov · 03:08:19",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "10.10.1.15",
+      "protocolo": "SMB",
+      "puerto": "445",
+      "bytes": "65536",
+      "descripcion": "SMB — autenticación NTLM de WKSTN-042$ en SRV-FILES-01 — acceso a ADMIN$",
+      "malicioso": true,
+      "nota": "Movimiento lateral via SMB — WKSTN-042 se conecta al servidor de ficheros con cuenta de máquina"
+    },
+    {
+      "timestamp": "14 nov · 03:09:17",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "10.10.1.15",
+      "protocolo": "SMB",
+      "puerto": "445",
+      "bytes": "917504",
+      "descripcion": "SMB — copia de C:\\Windows\\Temp\\nc.exe a \\\\SRV-FILES-01\\ADMIN$ (892 KB)",
+      "malicioso": true,
+      "nota": "El ransomware se copia a sí mismo en el servidor de ficheros via SMB"
+    },
+    {
+      "timestamp": "14 nov · 03:09:22",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "10.10.1.15",
+      "protocolo": "RPC",
+      "puerto": "135",
+      "bytes": "4096",
+      "descripcion": "RPC — PsExec — creación de servicio PSEXESVC en SRV-FILES-01 — ejecuta nc.exe",
+      "malicioso": true,
+      "nota": "PsExec crea un servicio temporal para ejecutar el ransomware en SRV-FILES-01"
+    },
+    {
+      "timestamp": "14 nov · 03:12:41",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "10.10.2.30",
+      "protocolo": "SSH",
+      "puerto": "22",
+      "bytes": "8192",
+      "descripcion": "SSH — intento de conexión a SRV-BACKUP-01 — usuario: backup_svc — 4 intentos fallidos",
+      "malicioso": true,
+      "nota": "INTENTO DE COMPROMETER BACKUP — el ransomware intenta llegar al servidor de backups"
+    },
+    {
+      "timestamp": "14 nov · 03:13:09",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "10.10.2.30",
+      "protocolo": "SSH",
+      "puerto": "22",
+      "bytes": "24576",
+      "descripcion": "SSH — login EXITOSO en SRV-BACKUP-01 — usuario: backup_svc — contraseña reutilizada de WKSTN-042",
+      "malicioso": true,
+      "nota": "Backup server comprometido — el equipo de IR lo detuvo antes del cifrado completo"
+    },
+    {
+      "timestamp": "14 nov · 03:14:07",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "1024",
+      "descripcion": "POST /api/v2/started — notificación al C2: cifrado iniciado en WKSTN-042 y SRV-FILES-01",
+      "malicioso": true,
+      "nota": "El C2 es notificado del inicio del cifrado — el atacante monitorea el progreso en tiempo real"
+    },
+    {
+      "timestamp": "14 nov · 03:34:00",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "2048",
+      "descripcion": "POST /api/v2/done — notificación al C2: cifrado completado — 8.421 ficheros — solicita pago",
+      "malicioso": true,
+      "nota": "El ransomware notifica la finalización — 20 minutos de cifrado, 80% del almacenamiento afectado"
+    },
+    {
+      "timestamp": "13 nov · 17:55:00",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "52.96.184.100",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "8192",
+      "descripcion": "Outlook Web Access — Microsoft 365 — sesión de correo legítima de j.martinez",
+      "malicioso": false,
+      "nota": "El usuario revisa su correo antes de abrir el documento malicioso"
+    },
+    {
+      "timestamp": "14 nov · 02:45:00",
+      "src_ip": "10.10.1.15",
+      "dst_ip": "10.10.2.30",
+      "protocolo": "TCP",
+      "puerto": "873",
+      "bytes": "524288",
+      "descripcion": "rsync — backup nocturno de SRV-FILES-01 a SRV-BACKUP-01 — job programado",
+      "malicioso": false,
+      "nota": "Backup legítimo ejecutándose antes del ataque — los backups de anoche están íntegros"
+    },
+    {
+      "timestamp": "14 nov · 01:00:00",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "10.10.1.1",
+      "protocolo": "DNS",
+      "puerto": "53",
+      "bytes": "64",
+      "descripcion": "Query A: windowsupdate.microsoft.com — tráfico normal Windows Update",
+      "malicioso": false,
+      "nota": ""
+    }
+  ]
+}

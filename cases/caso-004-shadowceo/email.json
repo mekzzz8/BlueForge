@@ -1,0 +1,103 @@
+{
+  "descripcion": "Email fraudulento enviado el 28 feb 2025 a las 14:33 desde la cuenta REAL del CEO (a.morales@medigroup.es), comprometida mediante phishing de consentimiento OAuth el día anterior. El email superó todos los controles de autenticación (SPF, DKIM, DMARC) al enviarse desde el servidor legítimo. El fraude no fue un spoofing clásico — la cuenta del CEO estaba bajo control del atacante.",
+  "mensaje": {
+    "de_nombre": "Antonio Morales — CEO MediGroup",
+    "de_email": "a.morales@medigroup.es",
+    "para": "i.fernandez@medigroup.es",
+    "cc": "r.vidal@medigroup.es",
+    "asunto": "URGENTE CONFIDENCIAL — Transferencia operación adquisición",
+    "fecha": "28 feb 2025 · 14:33 (viernes)",
+    "cuerpo": "Isabel,\n\nEstoy en reunión de adquisición en Londres y necesito tu ayuda urgente. Acabamos de cerrar un acuerdo preliminar con el grupo Pharmatec y necesitan confirmación de fondos HOY antes del cierre de mercados europeos.\n\nNecesito que proceses una transferencia de 380.000€ a la cuenta de escrow del asesor legal:\n\n  Beneficiario: HELIOS TRADING LTD\n  IBAN: CY89002001950000357001234567\n  BIC/SWIFT: BCYPCY2N\n  Banco: Bank of Cyprus, Nicosia\n  Concepto: 'Anticipo legal Operación Phoenix'\n\nEs CRÍTICO que esto quede estrictamente confidencial hasta que anunciemos el lunes. No lo comentéis con nadie del equipo ni con Compliance por ahora — ya tengo su aprobación verbal antes de salir.\n\nRafael ya tiene contexto sobre esta operación y puede ayudarte con el formulario interno de autorización.\n\nUsad el portal de confirmación adjunto si necesitáis verificar los datos de la cuenta receptora.\n\nGracias y perdonad las prisas. Desde el móvil no puedo llamar — estoy en sala de reuniones.\n\nAntonio Morales\nCEO — MediGroup Ibérica S.A.\n+34 91 XXX XX XX"
+  },
+  "headers": [
+    {
+      "clave": "From",
+      "valor": "Antonio Morales <a.morales@medigroup.es>",
+      "sospechoso": false,
+      "nota": "Dirección legítima del CEO — la cuenta real estaba comprometida, no suplantada. Este es el indicador clave: no es spoofing"
+    },
+    {
+      "clave": "Reply-To",
+      "valor": "a.morales.ceo@protonmail.com",
+      "sospechoso": true,
+      "nota": "CRÍTICO: Reply-To apunta a Protonmail externo, no al dominio corporativo. Todas las respuestas de Isabel irían al atacante, no al CEO real"
+    },
+    {
+      "clave": "Authentication-Results",
+      "valor": "medigroup.es; spf=pass smtp.mailfrom=medigroup.es; dkim=pass header.d=medigroup.es; dmarc=pass action=none header.from=medigroup.es",
+      "sospechoso": false,
+      "nota": "SPF, DKIM y DMARC pasan correctamente — el email salió del servidor real de MediGroup, por eso evadió todos los filtros de phishing"
+    },
+    {
+      "clave": "X-MS-Exchange-Client-Session-Id",
+      "valor": "OWA/2025.022.0228 [165.73.48.22] — Netherlands, NL — ProtonVPN exit node",
+      "sospechoso": true,
+      "nota": "CRÍTICO: La sesión de Outlook Web App se abrió desde 165.73.48.22 (Amsterdam). El CEO estaba en Londres ese día — IP confirmada en logs de red como nodo ProtonVPN"
+    },
+    {
+      "clave": "X-Originating-IP",
+      "valor": "165.73.48.22",
+      "sospechoso": true,
+      "nota": "IP de origen del cliente: 165.73.48.22 — registrada en múltiples llamadas a Microsoft Graph API en los logs de red. Confirma al atacante como emisor"
+    },
+    {
+      "clave": "Received",
+      "valor": "from MAIL-SRV-01.medigroup.es ([10.0.1.5]) by mx.medigroup.es with ESMTPS; Fri, 28 Feb 2025 14:33:01 +0000",
+      "sospechoso": false,
+      "nota": "El email pasó por el servidor de correo interno legítimo (10.0.1.5) — confirma que el atacante usó la API de Microsoft, no un servidor externo"
+    },
+    {
+      "clave": "X-MS-Exchange-Organization-AuthAs",
+      "valor": "Authenticated — Method: OAuth2 Bearer Token — AppID: 8f3a2c1d-97e4-4a2b-bc8f-2e1a3b4c5d6e",
+      "sospechoso": true,
+      "nota": "Autenticación via OAuth2 con app 'InvoiceAssist Pro' — el CEO nunca usa apps de terceros para enviar correo. App concedida el día anterior"
+    },
+    {
+      "clave": "X-Forwarding-Disposition",
+      "valor": "MoveToDeletedItems — RuleID: fr_a3b2c1 — CreatedAt: 2025-02-27T10:21:00Z",
+      "sospechoso": true,
+      "nota": "El atacante creó una regla de bandeja de entrada que mueve a Elementos Eliminados todas las respuestas a este email — ocultando la operación al CEO real"
+    },
+    {
+      "clave": "X-Priority",
+      "valor": "1 (Highest)",
+      "sospechoso": true,
+      "nota": "Prioridad máxima — técnica BEC clásica para generar urgencia y presión psicológica en el receptor"
+    },
+    {
+      "clave": "Return-Path",
+      "valor": "<a.morales@medigroup.es>",
+      "sospechoso": false,
+      "nota": "Return-Path legítimo — confirma que el servidor de MediGroup tramitó el mensaje, ningún servidor externo"
+    },
+    {
+      "clave": "Message-ID",
+      "valor": "<CALxyz7f28feb2025143301@MAIL-SRV-01.medigroup.es>",
+      "sospechoso": false,
+      "nota": "Message-ID generado por MAIL-SRV-01 corporativo — apariencia completamente legítima"
+    },
+    {
+      "clave": "Date",
+      "valor": "Fri, 28 Feb 2025 14:33:01 +0000 (UTC)",
+      "sospechoso": false,
+      "nota": "Hora en UTC — viernes 14:33, minutos antes del cierre de mercados europeos (17:30 CET). Presión temporal deliberada"
+    }
+  ],
+  "urls": [
+    {
+      "tipo": "Portal de verificación de cuenta bancaria",
+      "url": "https://medigroup-secure-payment.vercel.app/confirm/OP-phoenix-2025",
+      "reputacion": "MALICIOSO",
+      "detalles": [
+        {"campo": "Dominio real", "valor": "medigroup-secure-payment.vercel.app (NO es medigroup.es ni medigroup.com)"},
+        {"campo": "Registrado", "valor": "28 feb 2025 a las 10:14 — 4 horas antes del email fraudulento"},
+        {"campo": "Hosting", "valor": "Vercel CDN (76.76.21.98) — dominio typosquatting creado ad-hoc para esta operación"},
+        {"campo": "Certificado SSL", "valor": "Let's Encrypt, emitido el mismo día — válido pero no indica legitimidad"},
+        {"campo": "Contenido", "valor": "Clon visual del portal de banca corporativa de MediGroup — captura credenciales de acceso"},
+        {"campo": "VirusTotal", "valor": "14/90 detectores — categorizado como Phishing por Proofpoint, Cisco Talos, Palo Alto"},
+        {"campo": "Visitado por", "valor": "i.fernandez desde WKSTN-FIN-01 a las 14:44 (confirmado en logs de proxy)"}
+      ]
+    }
+  ],
+  "adjuntos": []
+}

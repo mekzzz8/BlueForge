@@ -1,0 +1,100 @@
+{
+  "intro": "Caso EXPERT. Has analizado tres fuentes de evidencias: el email fraudulento, los Windows Event Logs y los logs de red. Esta investigación combina un ataque BEC con un insider threat. Algunas preguntas requieren correlacionar eventos de DOS o TRES fases para llegar a la respuesta correcta. Las penalizaciones son severas — es mejor no responder que responder mal.",
+  "preguntas": [
+    {
+      "id": "Q1",
+      "texto": "¿Cómo obtuvieron los atacantes acceso persistente a la cuenta del CEO sin necesidad de conocer ni robar su contraseña?",
+      "opciones": [
+        {"id": "A", "texto": "Credential stuffing — usaron la contraseña del CEO filtrada en una brecha de datos anterior (HaveIBeenPwned)"},
+        {"id": "B", "texto": "Phishing de consentimiento OAuth — el CEO autorizó voluntariamente una app maliciosa ('InvoiceAssist Pro') con permisos de lectura y envío de correo"},
+        {"id": "C", "texto": "Pass-the-Hash — capturaron el hash NTLM del CEO desde la red corporativa con Responder y lo reutilizaron"},
+        {"id": "D", "texto": "SIM swapping — clonaron la SIM del CEO para interceptar el SMS del MFA y autenticarse con su contraseña habitual"}
+      ],
+      "respuesta_correcta": "B",
+      "puntos": 300,
+      "penalizacion": -100,
+      "feedback_correcto": "Correcto. El Sysmon EventID 1 en CEO-LAPTOP-01 muestra chrome.exe cargando una URL de consentimiento OAuth con scope=Mail.Read+Mail.Send+offline_access. El Exchange-Audit del minuto siguiente confirma OAuthAppConsent — AppDisplayName: InvoiceAssist Pro. La clave es offline_access: este permiso emite un refresh_token permanente que el atacante usa sin necesitar la contraseña nunca más. Ni MFA ni cambio de contraseña lo invalida hasta que se revoca la app.",
+      "feedback_incorrecto": "Incorrecto. El indicio clave está en el Sysmon EventID 1 de CEO-LAPTOP-01 a las 09:21 (chrome.exe con URL de consentimiento OAuth) y el Exchange-Audit a las 09:24 (OAuthAppConsent). La técnica OAuth Consent Phishing no requiere robar contraseñas — el usuario las concede voluntariamente pensando que es una app legítima.",
+      "hints": [
+        {"nivel": 1, "coste": 0, "contenido": "Busca el Sysmon EventID 1 en CEO-LAPTOP-01 a las 09:21 del 27 feb. ¿A qué URL se conecta chrome.exe? ¿Qué parámetros tiene esa URL? Fíjate en 'scope' y 'client_id'."},
+        {"nivel": 2, "coste": 90, "contenido": "OAuth Consent Phishing: el atacante envía al CEO un enlace a una URL real de Microsoft (login.microsoftonline.com) que pide permisos para una app maliciosa. El CEO, creyendo que es una app corporativa, hace clic en 'Aceptar'. Microsoft emite tokens de acceso válidos. No se roba ninguna contraseña — se roba el consentimiento."}
+      ]
+    },
+    {
+      "id": "Q2",
+      "texto": "Correlacionando las cabeceras del email con los logs de red O365, ¿qué combinación de evidencias prueba INEQUÍVOCAMENTE que fue el atacante quien envió el email y no el CEO en persona?",
+      "opciones": [
+        {"id": "A", "texto": "El campo Reply-To apunta a Protonmail y el SPF del email falla — contradicción que revela al remitente real"},
+        {"id": "B", "texto": "La IP 165.73.48.22 aparece en la cabecera X-MS-Exchange-Client-Session-Id del email Y como IP origen en los logs O365-Audit que muestran el POST /sendMail — mientras los logs de Teams confirman que el CEO estaba desconectado desde las 10:30"},
+        {"id": "C", "texto": "El email usa python-requests como UserAgent, y ningún cliente de correo normal genera ese UserAgent"},
+        {"id": "D", "texto": "El campo X-Priority: 1 (Highest) es infrecuente en los emails legítimos del CEO, lo que demuestra que no lo redactó él"}
+      ],
+      "respuesta_correcta": "B",
+      "puntos": 400,
+      "penalizacion": -150,
+      "feedback_correcto": "Correcto. La correlación de tres fuentes es la prueba más sólida: (1) Cabecera X-MS-Exchange-Client-Session-Id del email muestra la sesión OWA desde 165.73.48.22 (Amsterdam). (2) Los logs de red O365-Audit del 28 feb 14:33 muestran POST /sendMail desde la misma IP 165.73.48.22. (3) El log de red del 28 feb 08:15 muestra al CEO en Teams hasta las 10:30 y luego desconectado (en el avión). Ninguna de estas evidencias aisladas es concluyente, pero las tres juntas son irrefutables.",
+      "feedback_incorrecto": "Incorrecto. Aunque la opción C es técnicamente cierta (python-requests en los logs O365-Audit), no es la respuesta más completa. Tampoco A: el SPF pasa correctamente porque el email salió del servidor real. La respuesta correcta requiere correlacionar la IP en las cabeceras del email, la misma IP en los logs de red, y la confirmación de que el CEO estaba en vuelo.",
+      "hints": [
+        {"nivel": 1, "coste": 0, "contenido": "Busca la misma IP en dos fuentes distintas: (1) ¿Qué IP aparece en la cabecera X-MS-Exchange-Client-Session-Id del email? (2) ¿Qué IP origina el POST /sendMail en los O365-Audit logs de red? ¿Y qué dice el log de Teams sobre la disponibilidad del CEO ese día?"},
+        {"nivel": 2, "coste": 120, "contenido": "La IP 165.73.48.22 (ProtonVPN Amsterdam) aparece en: (a) la cabecera del email como IP de la sesión OWA, (b) el log de red del POST /sendMail a las 14:33, y (c) todos los accesos a Graph API del 27 y 28 feb. Los logs de Teams muestran al CEO desconectado desde las 10:30 (en el avión). Esto prueba que el email fue enviado por el atacante desde Amsterdam, no por el CEO desde Londres."}
+      ]
+    },
+    {
+      "id": "Q3",
+      "texto": "¿Cuántas horas aproximadamente antes del email fraudulento (28 feb 14:33) realizó r.vidal su PRIMER acceso al formulario SEPA en el servidor de ficheros?",
+      "opciones": [
+        {"id": "A", "texto": "6 horas — accedió por primera vez el mismo 28 de febrero a las 08:33"},
+        {"id": "B", "texto": "18 horas — accedió la madrugada del 28 de febrero alrededor de las 20:00 del día anterior"},
+        {"id": "C", "texto": "38 horas — accedió la noche del 26 al 27 de febrero a las 23:57, un día y medio antes"},
+        {"id": "D", "texto": "72 horas — accedió tres días antes, sin relación causal demostrable con el fraude"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 350,
+      "penalizacion": -125,
+      "feedback_correcto": "Correcto. El EventID 4663 en FILESVR-01 registra el primer acceso de r.vidal al formulario SEPA a las 23:57 del 26 de febrero. El email fraudulento se envió el 28 de febrero a las 14:33. El intervalo es de 38 horas y 36 minutos. Este timing es crucial: r.vidal accedió al formulario ANTES de que la cuenta del CEO fuera comprometida (el compromiso ocurrió el 27 feb a las 09:24), lo que implica que r.vidal tenía conocimiento previo del plan, independientemente del compromiso técnico.",
+      "feedback_incorrecto": "Incorrecto. Hay DOS accesos al formulario SEPA: el primero a las 23:57 del 26 feb (38 horas antes) y el segundo a las 08:33 del 28 feb (6 horas antes). La respuesta A corresponde al segundo acceso. Para detectar el primero necesitas revisar los eventos 4663 de FILESVR-01 en la madrugada del 26 al 27 de febrero.",
+      "hints": [
+        {"nivel": 1, "coste": 0, "contenido": "En los Windows Logs, busca los EventID 4663 sobre el objeto 'Formulario_SEPA_Internacional_v3.docx'. Hay más de un acceso — ¿cuál es el PRIMERO en orden cronológico? Calcula la diferencia con las 14:33 del 28 feb."},
+        {"nivel": 2, "coste": 100, "contenido": "El primer acceso está en la madrugada del 26 feb a las 23:57 — un ReadData seguido de un WriteData a las 00:14. Desde las 23:57 del 26 feb hasta las 14:33 del 28 feb hay exactamente 38h 36min. Dato clave: esto ocurrió ANTES del compromiso OAuth del CEO (27 feb 09:24), lo que implica que r.vidal ya sabía del plan."}
+      ]
+    },
+    {
+      "id": "Q4",
+      "texto": "El atacante usó DOS mecanismos distintos para ocultar el email fraudulento del buzón del CEO. ¿Cuáles son, correlacionando las cabeceras del email y los logs de red?",
+      "opciones": [
+        {"id": "A", "texto": "Modificó el campo BCC para que la copia saliente no apareciera en Elementos Enviados, y usó el campo Return-Path para desviar los bounces"},
+        {"id": "B", "texto": "Creó una regla de bandeja de entrada (X-Forwarding-Disposition) que mueve las RESPUESTAS a Elementos Eliminados, y llamó a Graph API DELETE para borrar el EMAIL ENVIADO de SentItems"},
+        {"id": "C", "texto": "Desactivó la auditoría de Exchange con una llamada admin API, y redirigió el buzón del CEO a una cuenta de Protonmail para interceptar las respuestas"},
+        {"id": "D", "texto": "Configuró un filtro de spam en el servidor para mover los emails relacionados con 'transferencia' a cuarentena, y borró los logs de Exchange con una cuenta de administrador comprometida"}
+      ],
+      "respuesta_correcta": "B",
+      "puntos": 350,
+      "penalizacion": -125,
+      "feedback_correcto": "Correcto. Los DOS mecanismos son: (1) La cabecera X-Forwarding-Disposition: MoveToDeletedItems — una regla de bandeja de entrada creada el 27 feb (el día del compromiso) que mueve automáticamente las RESPUESTAS que lleguen al CEO a Elementos Eliminados, evitando que las vea. (2) El log de red O365-Audit del 28 feb 14:35 muestra una llamada DELETE a Graph API sobre el email enviado — borrando el registro de Elementos Enviados. Juntos consiguen que el CEO real no encuentre ningún rastro del email si revisa su buzón.",
+      "feedback_incorrecto": "Incorrecto. La respuesta está en dos evidencias distintas: la cabecera X-Forwarding-Disposition del email (para las respuestas entrantes) y el log de red O365-Audit a las 14:35 del 28 feb que muestra un DELETE sobre el email enviado. Correlaciona ambas fuentes.",
+      "hints": [
+        {"nivel": 1, "coste": 0, "contenido": "Busca en las cabeceras del email el campo X-Forwarding-Disposition. ¿Qué hace esa regla? Luego, en los logs de red, busca qué llamada Graph API se ejecuta a las 14:35 del 28 feb — 2 minutos después del envío del email."},
+        {"nivel": 2, "coste": 100, "contenido": "Mecanismo 1: X-Forwarding-Disposition: MoveToDeletedItems — regla creada el 27 feb que elimina automáticamente las respuestas de Isabel antes de que lleguen a la bandeja del CEO. Mecanismo 2: DELETE graph.microsoft.com/.../messages/{id} a las 14:35 — borra el email de Elementos Enviados. El CEO real no verá ni el email enviado ni las respuestas."}
+      ]
+    },
+    {
+      "id": "Q5",
+      "texto": "Considerando TODA la evidencia de las tres fases, ¿cuál de las siguientes conclusiones sobre r.vidal está MEJOR respaldada por los datos?",
+      "opciones": [
+        {"id": "A", "texto": "r.vidal es víctima inocente — fue usado por el CEO fraudulento como 'apoyo' sin saber que el email era falso, y sus accesos nocturnos son coincidencias no relacionadas"},
+        {"id": "B", "texto": "r.vidal es cómplice confirmado — accedió y modificó el formulario SEPA 38 horas ANTES del compromiso OAuth del CEO, exfiltró documentos financieros a Dropbox personal, y borró sistemáticamente artefactos forenses tras la transferencia"},
+        {"id": "C", "texto": "r.vidal es el atacante principal — fue él quien comprometió la cuenta del CEO mediante el phishing OAuth y redactó el email fraudulento desde Amsterdam usando una VPN"},
+        {"id": "D", "texto": "r.vidal actuó por iniciativa propia sin coordinación externa — detectó una vulnerabilidad en los procesos de autorización de transferencias y la explotó en solitario, sin ayuda del atacante externo"}
+      ],
+      "respuesta_correcta": "B",
+      "puntos": 600,
+      "penalizacion": -200,
+      "feedback_correcto": "Correcto. La evidencia multi-fuente es concluyente: (EMAIL) r.vidal está en CC del email fraudulento con instrucción explícita de 'ayudar' a i.fernandez, lo que revela coordinación. (WIN_LOGS) Accedió y MODIFICÓ el formulario SEPA a las 23:57 del 26 feb — 38 horas antes del fraude y ANTES de que la cuenta del CEO fuera comprometida — lo que demuestra conocimiento previo del plan. Tras la transferencia, ejecutó tres comandos de borrado de artefactos forenses en 7 minutos. (NET_LOGS) Exfiltró 18.4 MB de documentos financieros a Dropbox personal el mismo día. La opción C es incorrecta porque el atacante principal operó desde 165.73.48.22 (Amsterdam) — la IP doméstica de r.vidal es 185.44.72.91 (Madrid).",
+      "feedback_incorrecto": "Incorrecto. Correlaciona el TIMING: r.vidal modificó el formulario SEPA el 26 feb a las 23:57, pero la cuenta del CEO no fue comprometida hasta el 27 feb a las 09:24. Es imposible que r.vidal actuara 'en respuesta' al compromiso si lo hizo antes. Además, la exfiltración a Dropbox y el borrado sistemático post-transferencia demuestran premeditación, no reacción.",
+      "hints": [
+        {"nivel": 1, "coste": 0, "contenido": "Compara dos timestamps clave: ¿Cuándo modificó r.vidal el formulario SEPA por primera vez (Win Logs)? ¿Cuándo fue comprometida la cuenta del CEO (Exchange-Audit)? ¿Qué implica el orden temporal de estos dos eventos sobre el conocimiento previo de r.vidal?"},
+        {"nivel": 2, "coste": 150, "contenido": "El formulario fue modificado por r.vidal a las 00:14 del 27 feb. La cuenta del CEO fue comprometida a las 09:24 del 27 feb — 9 horas después. r.vidal ya preparaba el formulario ANTES de que el atacante tuviera acceso al email del CEO. Esto solo tiene sentido si r.vidal sabía de antemano lo que iba a ocurrir. La exfiltración a Dropbox y el borrado forense confirman complicidad activa, no casualidad."}
+      ]
+    }
+  ]
+}

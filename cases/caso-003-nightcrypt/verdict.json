@@ -1,0 +1,100 @@
+{
+  "intro": "Caso HARD. Has analizado cinco fuentes de evidencias: Windows Event Logs, red, servidor de backups, terminal forense y artefactos del malware. Emite tu veredicto. Algunas respuestas requieren correlacionar información de varias fases. Las penalizaciones son significativas.",
+  "preguntas": [
+    {
+      "id": "Q1",
+      "texto": "¿Cuánto tiempo pasó entre la infección inicial (ejecución del payload) y el inicio del cifrado de ficheros?",
+      "opciones": [
+        {"id": "A", "texto": "20 minutos — el ransomware cifra de forma inmediata al ejecutarse"},
+        {"id": "B", "texto": "Aproximadamente 9 horas — el malware esperó instrucciones del C2 durante la noche"},
+        {"id": "C", "texto": "30 minutos — tiempo que tardó en establecer la persistencia antes de cifrar"},
+        {"id": "D", "texto": "47 minutos — coincide con el dwell time del atacante"}
+      ],
+      "respuesta_correcta": "B",
+      "puntos": 200,
+      "penalizacion": -75,
+      "feedback_correcto": "Correcto. El payload se ejecutó el 13 nov a las 18:03. El cifrado comenzó el 14 nov a las 03:14 — aproximadamente 9 horas después. Este patrón (infección sigilosa + activación nocturna) es característico del ransomware moderno operado por humanos. El C2 envió el módulo de cifrado a las 02:14 tras el beacon de las 4 horas.",
+      "feedback_incorrecto": "Incorrecto. Correlaciona los timestamps de los Sysmon logs (infección el 13 nov a las 18:03) con el primer evento de cifrado en los logs de Windows (14 nov 03:14). El intervalo revela el patrón de ataque.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "Busca el timestamp del primer proceso malicioso creado (Sysmon EventID 1, 13 nov) y el primer evento de cifrado de ficheros (EventID 4663, 14 nov). ¿Cuánto tiempo separa ambos?"},
+        {"nivel": 2, "coste": 60, "contenido": "El payload se ejecutó a las 18:03 del día 13. El cifrado empezó a las 03:14 del día 14. Aproximadamente 9 horas de latencia — el atacante activó el ransomware de forma remota desde el C2 durante la noche."}
+      ]
+    },
+    {
+      "id": "Q2",
+      "texto": "¿Qué mecanismo de persistencia usó el malware para sobrevivir a reinicios del sistema?",
+      "opciones": [
+        {"id": "A", "texto": "Clave HKCU\\...\\CurrentVersion\\Run con el nombre de un proceso legítimo"},
+        {"id": "B", "texto": "Tarea programada que se ejecuta al inicio de sesión"},
+        {"id": "C", "texto": "Modificación de la clave Winlogon\\Userinit para añadir su ruta"},
+        {"id": "D", "texto": "Servicio de Windows instalado con privilegios de SYSTEM"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 200,
+      "penalizacion": -75,
+      "feedback_correcto": "Correcto. El Sysmon EventID 13 registra la modificación de HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Userinit. El malware añadió su ruta al final del valor — esta clave se ejecuta en cada inicio de sesión, incluyendo el de SYSTEM, lo que garantiza persistencia incluso sin un usuario logueado.",
+      "feedback_incorrecto": "Incorrecto. Busca el Sysmon EventID 13 (Registry Value Set) en los Windows Logs. La clave modificada indica el mecanismo de persistencia exacto. Ojo: no es HKCU\\Run, es una clave diferente con mayor persistencia.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "Sysmon EventID 13 = Registry Value Set. Busca ese evento en los Windows Logs. El campo 'TargetObject' muestra qué clave del registro fue modificada."},
+        {"nivel": 2, "coste": 60, "contenido": "La clave modificada es HKLM\\...\\Winlogon\\Userinit — se ejecuta al iniciar sesión cualquier usuario, incluyendo SYSTEM. Más sigiloso que HKCU\\Run porque no aparece en Autoruns por defecto."}
+      ]
+    },
+    {
+      "id": "Q3",
+      "texto": "¿Por qué los backups de SRV-BACKUP-01 NO fueron cifrados, a pesar de que el atacante consiguió acceso?",
+      "opciones": [
+        {"id": "A", "texto": "El equipo IR desconectó SRV-BACKUP-01 de la red antes de que el atacante pudiera actuar"},
+        {"id": "B", "texto": "fail2ban bloqueó al atacante antes de que pudiera descargar el payload Linux"},
+        {"id": "C", "texto": "El proceso de cifrado fue matado por el OOM killer del kernel Linux por falta de memoria RAM"},
+        {"id": "D", "texto": "El payload Linux no era compatible con la versión de Ubuntu del servidor de backups"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 250,
+      "penalizacion": -100,
+      "feedback_correcto": "Correcto. Los server logs muestran que el payload .crypt descargado por el atacante fue ejecutado a las 03:14:08 pero el kernel Linux lo mató inmediatamente con 'Out of memory: Kill process'. SRV-BACKUP-01 solo tenía 2 GB de RAM — insuficientes para el proceso de cifrado masivo. Un fallo de infraestructura salvó los backups.",
+      "feedback_incorrecto": "Incorrecto. El ataque progresó más de lo que parece. El atacante logró SSH, descargó el payload Linux Y lo ejecutó. Revisa los server logs de SRV-BACKUP-01 — especialmente las entradas del kernel después de las 03:14.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "En los server logs de SRV-BACKUP-01, busca qué ocurrió justo después de que el atacante ejecutó /tmp/.crypt. ¿Qué mensaje del kernel aparece a las 03:14:09?"},
+        {"nivel": 2, "coste": 75, "contenido": "El kernel Linux tiene un mecanismo llamado OOM killer (Out of Memory Killer) que mata procesos cuando la RAM se agota. SRV-BACKUP-01 tenía 2 GB RAM — el proceso de cifrado necesitaba más y fue terminado antes de cifrar nada."}
+      ]
+    },
+    {
+      "id": "Q4",
+      "texto": "¿Qué técnica usó el ransomware para propagarse de WKSTN-042 a SRV-FILES-01?",
+      "opciones": [
+        {"id": "A", "texto": "Explotó una vulnerabilidad EternalBlue (MS17-010) en el servidor de ficheros"},
+        {"id": "B", "texto": "Usó credenciales robadas de j.martinez para un login RDP en SRV-FILES-01"},
+        {"id": "C", "texto": "PsExec vía SMB usando la cuenta de máquina WKSTN-042$ para ejecutar el payload remotamente"},
+        {"id": "D", "texto": "Phishing interno — envió un email a usuarios de SRV-FILES-01 con el malware adjunto"}
+      ],
+      "respuesta_correcta": "C",
+      "puntos": 200,
+      "penalizacion": -75,
+      "feedback_correcto": "Correcto. El Sysmon EventID 1 muestra PsExec.exe lanzado desde svchost.exe (PID 3872) a las 03:09:17 apuntando a \\\\SRV-FILES-01. Los logs de red confirman la autenticación NTLM de la cuenta de máquina WKSTN-042$ via SMB/RPC. Esta técnica usa privilegios inherentes de las cuentas de máquina en dominios Active Directory.",
+      "feedback_incorrecto": "Incorrecto. No hay evidencias de EternalBlue ni de credenciales de usuario en el movimiento lateral. Correlaciona el Sysmon EventID 1 (proceso PsExec) con el EventID 4624 en SRV-FILES-01 y los logs de red SMB/RPC.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "En los Windows Logs, busca EventID 1 alrededor de las 03:09 con el proceso PsExec. ¿A qué servidor apunta y qué cuenta usa para autenticarse?"},
+        {"nivel": 2, "coste": 60, "contenido": "PsExec.exe \\\\SRV-FILES-01 -s -d cmd — la autenticación se hace con la cuenta de máquina WKSTN-042$ (AccountName que termina en $). Confirmado por el EventID 4624 en SRV-FILES-01 que muestra ese usuario."}
+      ]
+    },
+    {
+      "id": "Q5",
+      "texto": "El malware ejecutó tres comandos para destruir las posibilidades de recuperación antes de cifrar. ¿Cuáles son los tres correctos?",
+      "opciones": [
+        {"id": "A", "texto": "vssadmin delete shadows · wbadmin delete catalog · bcdedit /set recoveryenabled No"},
+        {"id": "B", "texto": "format C: /fs:NTFS · del /f /s *.bak · net stop \"Volume Shadow Copy\""},
+        {"id": "C", "texto": "cipher /w:C: · attrib +h +s *.* · icacls C:\\ /deny Everyone:(OI)(CI)(F)"},
+        {"id": "D", "texto": "schtasks /delete · reg delete HKLM\\SYSTEM · wmic shadowcopy delete"}
+      ],
+      "respuesta_correcta": "A",
+      "puntos": 150,
+      "penalizacion": -50,
+      "feedback_correcto": "Correcto. Los tres comandos del Sysmon (EventID 1) son: vssadmin delete shadows /all /quiet (elimina instantáneas de volumen), wbadmin delete catalog -quiet (destruye el catálogo de Windows Backup) y bcdedit /set {default} recoveryenabled No (impide el modo de recuperación al arrancar). Los tres ejecutados a las 03:08 como SYSTEM, 6 minutos antes del inicio del cifrado.",
+      "feedback_incorrecto": "Incorrecto. Revisa los Sysmon EventID 1 alrededor de las 03:08 donde el Parent es svchost.exe (PID 3872). Hay tres procesos creados en esos 9 segundos con herramientas nativas de Windows — los comandos exactos están en la columna CommandLine.",
+      "hints": [
+        {"nivel": 1, "coste": 0,  "contenido": "En los Windows Logs, busca los EventID 1 (Sysmon Process Create) entre las 03:08:22 y 03:08:31. Hay tres comandos ejecutados en 9 segundos por svchost.exe (PID 3872)."},
+        {"nivel": 2, "coste": 50, "contenido": "Los tres binarios son vssadmin.exe, wbadmin.exe y bcdedit.exe — herramientas nativas de Windows usadas para eliminar Shadow Copies, catálogo de backup y modo de recuperación respectivamente. Living off the Land pre-cifrado."}
+      ]
+    }
+  ]
+}

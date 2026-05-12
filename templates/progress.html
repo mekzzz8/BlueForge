@@ -1,62 +1,338 @@
 {% extends 'base.html' %}
-
 {% block title %}Mi Progreso{% endblock %}
 
 {% block content %}
 
-<div class="progress-header">
-    <h1>Panel de Progreso</h1>
-    <p class="subtitle">Tu avance como analista Blue Team</p>
+{# ══════════════════════════════════════════════════
+   CÁLCULO DE ESTADÍSTICAS GLOBALES
+   ══════════════════════════════════════════════════ #}
+{% set ns = namespace(total_max=0, fases_total=0, fases_done=0, casos_done=0, casos_active=0) %}
+{% for c in cases %}
+  {% set ns.total_max = ns.total_max + c.puntos_max %}
+  {% set ns.fases_total = ns.fases_total + (c.fases | length) %}
+  {% set st = case_status(c.id, c.fases, progreso) %}
+  {% if st == 'done' %}{% set ns.casos_done = ns.casos_done + 1 %}{% endif %}
+  {% if st == 'active' %}{% set ns.casos_active = ns.casos_active + 1 %}{% endif %}
+  {% for f in c.fases %}
+    {% if (c.id + ':' + f) in progreso %}{% set ns.fases_done = ns.fases_done + 1 %}{% endif %}
+  {% endfor %}
+{% endfor %}
+
+{# ── Rank system ── #}
+{% set rank = namespace(name='Junior Analyst', color='rank-none', icon='◇', prev=0, next=500) %}
+{% if total_puntos >= 6000 %}
+  {% set rank.name = 'Incident Responder' %}
+  {% set rank.color = 'rank-expert' %}
+  {% set rank.icon = '◆' %}
+  {% set rank.prev = 6000 %}
+  {% set rank.next = ns.total_max %}
+{% elif total_puntos >= 3000 %}
+  {% set rank.name = 'Threat Hunter' %}
+  {% set rank.color = 'rank-hard' %}
+  {% set rank.icon = '▲' %}
+  {% set rank.prev = 3000 %}
+  {% set rank.next = 6000 %}
+{% elif total_puntos >= 1500 %}
+  {% set rank.name = 'Senior Analyst' %}
+  {% set rank.color = 'rank-medium' %}
+  {% set rank.icon = '■' %}
+  {% set rank.prev = 1500 %}
+  {% set rank.next = 3000 %}
+{% elif total_puntos >= 500 %}
+  {% set rank.name = 'SOC Analyst' %}
+  {% set rank.color = 'rank-easy' %}
+  {% set rank.icon = '●' %}
+  {% set rank.prev = 500 %}
+  {% set rank.next = 1500 %}
+{% endif %}
+
+{% if rank.next > rank.prev %}
+  {% set xp_pct = (((total_puntos - rank.prev) / (rank.next - rank.prev)) * 100) | round | int %}
+{% else %}
+  {% set xp_pct = 100 %}
+{% endif %}
+{% if xp_pct > 100 %}{% set xp_pct = 100 %}{% endif %}
+{% if xp_pct < 0 %}{% set xp_pct = 0 %}{% endif %}
+
+{# ══════════════════════════════════════════════════
+   HERO — PERFIL DEL ANALISTA
+   ══════════════════════════════════════════════════ #}
+<div class="prog-hero">
+    <div class="prog-hero-left">
+        <div class="analyst-av">🔍</div>
+        <div class="prog-hero-info">
+            <div class="prog-hero-top">
+                <h1 class="prog-analyst-name">Analista BlueForge</h1>
+                <span class="prog-rank-badge {{ rank.color }}">{{ rank.icon }} {{ rank.name }}</span>
+            </div>
+            <div class="prog-hero-sub">Blue Team · Incident Response · Threat Analysis</div>
+            <div class="xp-section">
+                <div class="xp-labels">
+                    <span class="xp-current">{{ total_puntos }} XP</span>
+                    {% if rank.next > rank.prev and total_puntos < rank.next %}
+                    <span class="xp-next">Siguiente: {{ rank.next }} XP para subir de rango</span>
+                    {% else %}
+                    <span class="xp-next">Rango máximo alcanzado</span>
+                    {% endif %}
+                </div>
+                <div class="xp-track">
+                    <div class="xp-fill {{ rank.color }}" style="width: {{ xp_pct }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="prog-hero-right">
+        <div class="prog-total-pts">
+            <span class="prog-pts-num">{{ total_puntos }}</span>
+            <span class="prog-pts-label">puntos totales</span>
+        </div>
+        <div class="prog-pts-max">de {{ ns.total_max }} pts disponibles</div>
+    </div>
 </div>
 
-<div class="stats-bar">
-    <div class="stat">
-        <span class="stat-num" id="total-puntos">0</span>
-        <span class="stat-label">Puntos totales</span>
+{# ══════════════════════════════════════════════════
+   ESTADÍSTICAS
+   ══════════════════════════════════════════════════ #}
+<div class="prog-stats">
+    <div class="pstat">
+        <span class="pstat-num">{{ ns.fases_done }}</span>
+        <span class="pstat-sep">/{{ ns.fases_total }}</span>
+        <span class="pstat-label">Fases completadas</span>
     </div>
-    <div class="stat">
-        <span class="stat-num" id="total-resueltos">0</span>
-        <span class="stat-label">Objetivos resueltos</span>
+    <div class="pstat">
+        <span class="pstat-num">{{ ns.casos_done }}</span>
+        <span class="pstat-sep">/{{ cases | length }}</span>
+        <span class="pstat-label">Casos cerrados</span>
     </div>
-    <div class="stat">
-        <span class="stat-num" id="total-escenarios">0</span>
-        <span class="stat-label">Escenarios completados</span>
+    <div class="pstat">
+        <span class="pstat-num">{{ ns.casos_active }}</span>
+        <span class="pstat-label">En investigación</span>
+    </div>
+    <div class="pstat">
+        <span class="pstat-num">{{ ((total_puntos / ns.total_max) * 100) | round | int if ns.total_max > 0 else 0 }}%</span>
+        <span class="pstat-label">Completado global</span>
     </div>
 </div>
 
-<div class="progress-scenarios">
-    <h2>Progreso por escenario</h2>
-    <div id="scenarios-progress"></div>
+{# ══════════════════════════════════════════════════
+   EMPTY STATE (sin progreso)
+   ══════════════════════════════════════════════════ #}
+{% if not progreso %}
+<div class="empty-prog">
+    <div class="ep-icon">🛡️</div>
+    <h2 class="ep-title">Aún no has iniciado ninguna investigación</h2>
+    <p class="ep-text">Accede a la cola de alertas SOC y elige tu primer caso. Cada fase completada suma puntos a tu expediente de analista.</p>
+    <a href="/" class="ep-cta">Ver cola de alertas →</a>
+    <div class="ep-milestones">
+        <div class="ep-milestone {% if total_puntos >= 0 %}em-unlocked{% endif %}">◇ Junior Analyst — 0 pts</div>
+        <div class="ep-milestone {% if total_puntos >= 500 %}em-unlocked{% endif %}">● SOC Analyst — 500 pts</div>
+        <div class="ep-milestone {% if total_puntos >= 1500 %}em-unlocked{% endif %}">■ Senior Analyst — 1.500 pts</div>
+        <div class="ep-milestone {% if total_puntos >= 3000 %}em-unlocked{% endif %}">▲ Threat Hunter — 3.000 pts</div>
+        <div class="ep-milestone {% if total_puntos >= 6000 %}em-unlocked{% endif %}">◆ Incident Responder — 6.000 pts</div>
+    </div>
 </div>
+{% else %}
 
-<div class="progress-history">
-    <h2>Objetivos completados</h2>
-    <div id="objetivos-list"></div>
+{# ══════════════════════════════════════════════════
+   CONTENIDO PRINCIPAL — 2 COLUMNAS
+   ══════════════════════════════════════════════════ #}
+<div class="prog-main">
+
+    {# ── Columna izquierda: progreso por caso ── #}
+    <div class="cases-col">
+        <div class="section-label">Casos · Progreso de investigación</div>
+
+        {% for c in cases %}
+        {% set st = case_status(c.id, c.fases, progreso) %}
+        {% set ns_c = namespace(pts=0, done=0) %}
+        {% for f in c.fases %}
+          {% set k = c.id + ':' + f %}
+          {% if k in progreso %}
+            {% set ns_c.pts = ns_c.pts + progreso[k].puntos %}
+            {% set ns_c.done = ns_c.done + 1 %}
+          {% endif %}
+        {% endfor %}
+        {% set c_pct = ((ns_c.pts / c.puntos_max) * 100) | round | int if c.puntos_max > 0 else 0 %}
+
+        <div class="cp-card cp-{{ st }}">
+            <div class="cp-card-header">
+                <div class="cp-header-left">
+                    <span class="cp-case-id">{{ c.id | upper }}</span>
+                    <span class="diff-badge badge-{{ c.dificultad }}">{{ c.dificultad | upper }}</span>
+                    {% if st == 'done' %}
+                    <span class="cp-status-badge cp-badge-done">✓ Cerrado</span>
+                    {% elif st == 'active' %}
+                    <span class="cp-status-badge cp-badge-active">▶ En curso</span>
+                    {% else %}
+                    <span class="cp-status-badge cp-badge-open">○ Sin iniciar</span>
+                    {% endif %}
+                </div>
+                <span class="cp-time-badge">⏱ {{ c.tiempo_estimado }}</span>
+            </div>
+
+            <div class="cp-case-name">{{ c.nombre }}</div>
+            <div class="cp-case-company">{{ c.empresa }} · <span>{{ c.sector }}</span></div>
+
+            <div class="cp-phases">
+                {% for f in c.fases %}
+                {% set k = c.id + ':' + f %}
+                {% set pl = phase_labels[f] %}
+                {% set is_done = k in progreso %}
+                <div class="cph-item {% if is_done %}cph-done{% endif %}" title="{{ pl.label }}{% if is_done %} · +{{ progreso[k].puntos }} pts{% endif %}">
+                    <span class="cph-icon">{{ pl.icon }}</span>
+                    <span class="cph-name">{{ pl.label }}</span>
+                    {% if is_done %}<span class="cph-check">✓</span>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="cp-bar-section">
+                <div class="cp-bar-track">
+                    <div class="cp-bar-fill cp-fill-{{ c.dificultad }}" style="width: {{ c_pct }}%"></div>
+                </div>
+                <div class="cp-bar-labels">
+                    <span class="cp-pts-earned">{{ ns_c.pts }} pts</span>
+                    <span class="cp-pct-label">{{ c_pct }}%</span>
+                    <span class="cp-pts-max">/ {{ c.puntos_max }} pts</span>
+                </div>
+            </div>
+
+            <div class="cp-actions">
+                {% if st == 'done' %}
+                <a href="/case/{{ c.id }}" class="cp-btn cp-btn-done">Ver resultados →</a>
+                {% elif st == 'active' %}
+                <a href="/case/{{ c.id }}" class="cp-btn cp-btn-active">Continuar investigación →</a>
+                {% else %}
+                <a href="/case/{{ c.id }}" class="cp-btn cp-btn-open">Iniciar investigación →</a>
+                {% endif %}
+                <span class="cp-fases-count">{{ ns_c.done }}/{{ c.fases | length }} fases</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# ── Columna derecha: skills + actividad ── #}
+    <div class="side-col">
+
+        {# Skills panel #}
+        <div class="skills-card">
+            <div class="section-label">Habilidades desarrolladas</div>
+            {% for ptype in ['email', 'win_logs', 'net_logs', 'server_logs', 'terminal', 'verdict'] %}
+            {% set ns_sk = namespace(total=0, done=0, pts=0) %}
+            {% for c in cases %}
+              {% if ptype in c.fases %}
+                {% set ns_sk.total = ns_sk.total + 1 %}
+                {% set k = c.id + ':' + ptype %}
+                {% if k in progreso %}
+                  {% set ns_sk.done = ns_sk.done + 1 %}
+                  {% set ns_sk.pts = ns_sk.pts + progreso[k].puntos %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+            {% if ns_sk.total > 0 %}
+            {% set sk_pct = ((ns_sk.done / ns_sk.total) * 100) | round | int %}
+            {% set pl = phase_labels[ptype] %}
+            <div class="skill-row">
+                <div class="skill-label">
+                    <span class="skill-icon">{{ pl.icon }}</span>
+                    <span class="skill-name">{{ pl.label }}</span>
+                </div>
+                <div class="skill-track">
+                    <div class="skill-fill {% if sk_pct == 100 %}sf-full{% elif sk_pct > 0 %}sf-partial{% endif %}" style="width: {{ sk_pct }}%"></div>
+                </div>
+                <div class="skill-right">
+                    <span class="skill-fraction">{{ ns_sk.done }}/{{ ns_sk.total }}</span>
+                    {% if ns_sk.pts > 0 %}<span class="skill-pts">+{{ ns_sk.pts }}</span>{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        {# Actividad reciente #}
+        <div class="activity-card">
+            <div class="section-label">Actividad registrada</div>
+            {% set has_activity = namespace(v=false) %}
+            {% for c in cases %}
+              {% for f in c.fases %}
+                {% set k = c.id + ':' + f %}
+                {% if k in progreso %}{% set has_activity.v = true %}{% endif %}
+              {% endfor %}
+            {% endfor %}
+
+            {% if not has_activity.v %}
+            <div class="af-empty">Sin actividad registrada</div>
+            {% else %}
+            <div class="af-list">
+            {% for c in cases %}
+              {% for f in c.fases %}
+                {% set k = c.id + ':' + f %}
+                {% if k in progreso %}
+                {% set pl = phase_labels[f] %}
+                {% set p = progreso[k] %}
+                <div class="af-item">
+                    <span class="af-phase-icon">{{ pl.icon }}</span>
+                    <div class="af-item-body">
+                        <span class="af-phase-name">{{ pl.label }}</span>
+                        <span class="af-case-name">{{ c.codename }}</span>
+                    </div>
+                    <span class="af-pts {% if p.puntos > 0 %}af-pts-pos{% elif p.puntos < 0 %}af-pts-neg{% else %}af-pts-zero{% endif %}">
+                        {% if p.puntos > 0 %}+{{ p.puntos }}{% elif p.puntos == 0 %}0{% else %}{{ p.puntos }}{% endif %} pts
+                    </span>
+                </div>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        {# Rango y próximos hitos #}
+        <div class="milestones-card">
+            <div class="section-label">Escala de rangos</div>
+            <div class="milestone-list">
+                {% for m in [
+                    ('◇', 'Junior Analyst', 0, 'rank-none'),
+                    ('●', 'SOC Analyst', 500, 'rank-easy'),
+                    ('■', 'Senior Analyst', 1500, 'rank-medium'),
+                    ('▲', 'Threat Hunter', 3000, 'rank-hard'),
+                    ('◆', 'Incident Responder', 6000, 'rank-expert')
+                ] %}
+                {% set m_icon, m_name, m_pts, m_color = m %}
+                <div class="milestone-item {% if total_puntos >= m_pts %}mi-done{% endif %}">
+                    <span class="mi-icon {{ m_color }}">{{ m_icon }}</span>
+                    <div class="mi-info">
+                        <span class="mi-name">{{ m_name }}</span>
+                        <span class="mi-pts">{{ m_pts | int | string | replace('0', '0', 1) }} pts</span>
+                    </div>
+                    {% if total_puntos >= m_pts %}
+                    <span class="mi-check">✓</span>
+                    {% else %}
+                    <span class="mi-lock">{{ m_pts - total_puntos }} pts restantes</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>{# /side-col #}
+</div>{# /prog-main #}
+
+{# Reset #}
+<div class="reset-section">
+    <button class="btn-reset" onclick="confirmReset()">Reiniciar todo el progreso</button>
+    <span class="reset-warn">Esta acción borrará todos los puntos y fases completadas</span>
 </div>
 
 <script>
-fetch('/api/progreso')
-    .then(r => r.json())
-    .then(data => {
-        document.getElementById('total-puntos').textContent = data.total_puntos;
-        document.getElementById('total-resueltos').textContent = data.objetivos_resueltos.length;
-
-        const lista = document.getElementById('objetivos-list');
-        if (data.objetivos_resueltos.length === 0) {
-            lista.innerHTML = '<p class="empty-msg">Aún no has resuelto ningún objetivo. ¡Empieza investigando!</p>';
-        } else {
-            data.objetivos_resueltos.forEach(objId => {
-                const div = document.createElement('div');
-                div.className = 'obj-done-card';
-                div.innerHTML = `
-                    <span class="obj-done-icon">✓</span>
-                    <span class="obj-done-id">${objId}</span>
-                    <span class="obj-done-label">Objetivo completado</span>
-                `;
-                lista.appendChild(div);
-            });
-        }
-    });
+function confirmReset() {
+    if (!confirm('¿Seguro que quieres borrar todo tu progreso? Esta acción no se puede deshacer.')) return;
+    fetch('/api/reset', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => window.location.reload());
+}
 </script>
+
+{% endif %}{# /if progreso #}
 
 {% endblock %}

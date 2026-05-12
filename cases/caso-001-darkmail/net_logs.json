@@ -1,0 +1,126 @@
+{
+  "descripcion": "Logs de red capturados por el firewall perimetral y el proxy corporativo el 3 de marzo de 2025. Filtrado por host WKSTN-FIN-07.",
+  "logs": [
+    {
+      "timestamp": "09:14:31",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTP",
+      "puerto": "80",
+      "bytes": "312",
+      "descripcion": "GET /acceder?ref=RT-2025-00834&user=lgarcia HTTP/1.1 — Host: expediente-rt2025.xyz",
+      "malicioso": true,
+      "nota": "Primera conexión al dominio phishing — usuario clickó el enlace"
+    },
+    {
+      "timestamp": "09:14:32",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTP",
+      "puerto": "80",
+      "bytes": "501248",
+      "descripcion": "GET /dl/documento_hacienda_2025.docm HTTP/1.1 — Host: cdn-delivery-proxy.net",
+      "malicioso": true,
+      "nota": "Descarga del documento Word con macros (487 KB)"
+    },
+    {
+      "timestamp": "09:26:18",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTP",
+      "puerto": "80",
+      "bytes": "1843200",
+      "descripcion": "GET /win/update32.exe HTTP/1.1 — Host: cdn-delivery-proxy.net",
+      "malicioso": true,
+      "nota": "Macro ejecutada — descarga del payload principal (1.8 MB)"
+    },
+    {
+      "timestamp": "09:26:44",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "2048",
+      "descripcion": "TLS handshake completado — C2 beacon inicial",
+      "malicioso": true,
+      "nota": "El malware establece canal C2 cifrado"
+    },
+    {
+      "timestamp": "09:26:44",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "8.8.8.8",
+      "protocolo": "DNS",
+      "puerto": "53",
+      "bytes": "89",
+      "descripcion": "Query A: update-svc.microsoft-cdn.net",
+      "malicioso": true,
+      "nota": "DNS para dominio C2 camuflado como Microsoft"
+    },
+    {
+      "timestamp": "09:27:01",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "512",
+      "descripcion": "POST /api/checkin — beacon C2 (intervalo: 60s)",
+      "malicioso": true,
+      "nota": "Beacon periódico de C2 — solicita instrucciones"
+    },
+    {
+      "timestamp": "09:28:01",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "512",
+      "descripcion": "POST /api/checkin — beacon C2",
+      "malicioso": true,
+      "nota": ""
+    },
+    {
+      "timestamp": "09:35:14",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "185.220.101.47",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "94208",
+      "descripcion": "POST /api/upload — exfiltración de datos (92 KB)",
+      "malicioso": true,
+      "nota": "Exfiltración detectada — datos enviados al C2"
+    },
+    {
+      "timestamp": "09:26:10",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "10.10.1.10",
+      "protocolo": "DNS",
+      "puerto": "53",
+      "bytes": "76",
+      "descripcion": "Query A: contosofinancial.es",
+      "malicioso": false,
+      "nota": "Tráfico DNS normal"
+    },
+    {
+      "timestamp": "09:25:47",
+      "src_ip": "10.10.5.107",
+      "dst_ip": "52.96.184.100",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "4096",
+      "descripcion": "GET /owa/auth.owa — Outlook Web Access (Microsoft 365)",
+      "malicioso": false,
+      "nota": "Acceso normal a correo corporativo"
+    },
+    {
+      "timestamp": "09:38:22",
+      "src_ip": "10.10.0.5",
+      "dst_ip": "10.10.5.107",
+      "protocolo": "TCP",
+      "puerto": "445",
+      "bytes": "1024",
+      "descripcion": "SMB — conexión entrante desde WKSTN-FIN-07 a SRV-FILES-01",
+      "malicioso": false,
+      "nota": "Acceso normal a servidor de ficheros"
+    }
+  ]
+}

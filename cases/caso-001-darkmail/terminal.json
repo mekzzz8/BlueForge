@@ -1,0 +1,77 @@
+{
+  "descripcion": "Análisis forense de WKSTN-FIN-07 realizado por el equipo IR a las 09:45. Windows 11 Pro · l.garcia · Domain: CONTOSO",
+  "bloques": [
+    {
+      "cmd": "netstat -ano | findstr ESTABLISHED",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "Proto  Local Address          Foreign Address        State           PID",       "tipo": "normal"},
+        {"linea": "TCP    10.10.5.107:52341      185.220.101.47:443     ESTABLISHED     4821",     "tipo": "alert"},
+        {"linea": "TCP    10.10.5.107:52342      185.220.101.47:443     ESTABLISHED     4821",     "tipo": "alert"},
+        {"linea": "TCP    10.10.5.107:49823      52.96.184.100:443      ESTABLISHED     3204",     "tipo": "normal"},
+        {"linea": "TCP    10.10.5.107:51012      10.10.1.10:53          ESTABLISHED     1088",     "tipo": "normal"}
+      ],
+      "nota": "PID 4821 mantiene 2 conexiones activas a 185.220.101.47:443 (C2)"
+    },
+    {
+      "cmd": "tasklist /fi \"PID eq 4821\" /v",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "Image Name       PID  Session  Mem Usage  Status   User Name                    CPU Time  Window Title",  "tipo": "normal"},
+        {"linea": "update32.exe    4821  Console   18,432 K  Running  CONTOSO\\l.garcia             0:00:47   N/A",           "tipo": "alert"}
+      ],
+      "nota": "update32.exe ejecutándose como l.garcia — nombre engañoso que simula ser una actualización de Windows"
+    },
+    {
+      "cmd": "wmic process where name='update32.exe' get ExecutablePath,CommandLine",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "CommandLine                                           ExecutablePath",                            "tipo": "normal"},
+        {"linea": "\"C:\\Users\\l.garcia\\AppData\\Roaming\\update32.exe\"     C:\\Users\\l.garcia\\AppData\\Roaming\\update32.exe", "tipo": "alert"}
+      ],
+      "nota": "Ejecutable en AppData\\Roaming — directorio de escritura sin privilegios de admin"
+    },
+    {
+      "cmd": "reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\"",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",          "tipo": "normal"},
+        {"linea": "    WindowsUpdate    REG_SZ    C:\\Users\\l.garcia\\AppData\\Roaming\\update32.exe", "tipo": "alert"},
+        {"linea": "    OneDrive         REG_SZ    C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe", "tipo": "normal"}
+      ],
+      "nota": "Persistencia establecida en HKCU Run — se ejecutará en cada inicio de sesión"
+    },
+    {
+      "cmd": "Get-FileHash 'C:\\Users\\l.garcia\\AppData\\Roaming\\update32.exe' -Algorithm SHA256",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "Algorithm  Hash                                                              Path",         "tipo": "normal"},
+        {"linea": "SHA256     3A7F2B9C1D5E8F4A2B6C9D3E7F1A5B8C2D6E9F3A7B1C4D8E2F5A9B3C6D1E4F7  ...update32.exe", "tipo": "warn"}
+      ],
+      "nota": "Hash coincide con el SHA256 del adjunto del email — mismo binario"
+    },
+    {
+      "cmd": "Get-ChildItem 'C:\\Users\\l.garcia\\AppData\\Local\\Temp\\' -Recurse | Sort LastWriteTime | Select -Last 10",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "Mode    LastWriteTime       Length  Name",                          "tipo": "normal"},
+        {"linea": "-a----  03/03/2025 09:26    487424  documento_hacienda_2025.docm",  "tipo": "warn"},
+        {"linea": "-a----  03/03/2025 09:26   1843200  update32.exe",                  "tipo": "alert"},
+        {"linea": "-a----  03/03/2025 09:26      2048  cfg.bin",                       "tipo": "alert"},
+        {"linea": "-a----  03/03/2025 09:26       512  log_cap.tmp",                   "tipo": "alert"}
+      ],
+      "nota": "cfg.bin: configuración C2 cifrada. log_cap.tmp: captura de keystrokes"
+    },
+    {
+      "cmd": "strings 'C:\\Users\\l.garcia\\AppData\\Local\\Temp\\cfg.bin' | Select-String -Pattern '(http|185\\.|api)'",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "http://185.220.101.47/api/checkin",  "tipo": "alert"},
+        {"linea": "http://185.220.101.47/api/upload",   "tipo": "alert"},
+        {"linea": "interval=60",                         "tipo": "warn"},
+        {"linea": "exfil_path=C:\\Users\\",              "tipo": "alert"}
+      ],
+      "nota": "Configuración C2 en texto claro — endpoints, intervalo de beacon y ruta de exfiltración"
+    }
+  ]
+}

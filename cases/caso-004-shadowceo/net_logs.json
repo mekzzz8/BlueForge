@@ -1,0 +1,181 @@
+{
+  "descripcion": "Proxy corporativo, firewall perimetral y O365 Unified Audit Log de MediGroup Ibérica. Período: 26 feb – 28 feb 2025. Segmento analizado: 10.10.0.0/16. Las entradas marcadas [O365-AUDIT] provienen del SIEM integrado con Microsoft Sentinel — muestran accesos externos al tenant de O365 que no pasan por el firewall on-prem.",
+  "logs": [
+    {
+      "timestamp": "26 feb · 23:47",
+      "src_ip": "185.44.72.91",
+      "dst_ip": "10.10.0.1",
+      "protocolo": "VPN",
+      "puerto": "443",
+      "bytes": "1024",
+      "descripcion": "VPN — Conexión entrante — Usuario: r.vidal — IP origen: 185.44.72.91 (ISP Movistar, Madrid) — Autenticación: usuario+contraseña+MFA OK",
+      "malicioso": true,
+      "nota": "r.vidal se conecta a la VPN corporativa desde casa a las 23:47 de un viernes. Su horario laboral estándar termina a las 18:00. Acceso legítimo técnicamente, pero anómalo en horario y contexto"
+    },
+    {
+      "timestamp": "27 feb · 09:20",
+      "src_ip": "10.10.10.5",
+      "dst_ip": "40.126.18.150",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "8192",
+      "descripcion": "Proxy — CEO-LAPTOP-01 → login.microsoftonline.com — URL: /oauth2/v2.0/authorize?client_id=8f3a2c1d&scope=Mail.Read+Mail.Send+Contacts.Read+offline_access — UserAgent: Chrome/121",
+      "malicioso": true,
+      "nota": "El CEO navega a una página real de Microsoft login para consentir una app OAuth. La URL contiene el client_id de 'InvoiceAssist Pro' (app maliciosa). El usuario no notó que los permisos incluían Mail.Send — el alcance del fraude"
+    },
+    {
+      "timestamp": "27 feb · 09:24",
+      "src_ip": "10.10.10.5",
+      "dst_ip": "40.126.18.150",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "4096",
+      "descripcion": "Proxy — CEO-LAPTOP-01 → login.microsoftonline.com — POST /oauth2/v2.0/token — Respuesta 200 OK — OAuthGrant: access_token+refresh_token emitidos",
+      "malicioso": true,
+      "nota": "CONSENTIMIENTO CONCEDIDO — Microsoft emite tokens de acceso para 'InvoiceAssist Pro'. El refresh_token (offline_access) permite al atacante mantener acceso indefinido sin nueva autenticación, aunque el CEO cambie de contraseña"
+    },
+    {
+      "timestamp": "27 feb · 10:18",
+      "src_ip": "165.73.48.22",
+      "dst_ip": "graph.microsoft.com",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "48640",
+      "descripcion": "[O365-AUDIT] GET graph.microsoft.com/v1.0/users/a.morales@medigroup.es/messages?$top=50&$orderby=receivedDateTime+desc — Bearer: 8f3a2c1d-token — IP: 165.73.48.22 (ProtonVPN NL) — 47 emails devueltos",
+      "malicioso": true,
+      "nota": "El atacante descarga los últimos 47 emails del CEO para analizar su estilo de escritura, sus contactos financieros y confirmar que el CEO saldrá de la oficina. El UserAgent es python-requests — script automatizado"
+    },
+    {
+      "timestamp": "27 feb · 10:22",
+      "src_ip": "165.73.48.22",
+      "dst_ip": "graph.microsoft.com",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "24576",
+      "descripcion": "[O365-AUDIT] GET graph.microsoft.com/v1.0/users/a.morales@medigroup.es/contacts — Bearer: 8f3a2c1d-token — IP: 165.73.48.22 — 148 contactos exportados",
+      "malicioso": true,
+      "nota": "El atacante extrae la libreta de contactos del CEO. Identifica a i.fernandez (Directora Financiera), r.vidal (Finance Manager) y sus emails directos. Esta información se usa para redactar un email creíble con nombres reales"
+    },
+    {
+      "timestamp": "27 feb · 14:30",
+      "src_ip": "10.10.5.30",
+      "dst_ip": "52.96.184.100",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "65536",
+      "descripcion": "Proxy — WKSTN-FIN-01 (i.fernandez) → outlook.office365.com — Sesión OWA normal — Revisando correo habitual de fin de semana",
+      "malicioso": false,
+      "nota": "Tráfico legítimo de i.fernandez. En este momento todavía no ha recibido el email fraudulento (llega a las 14:33)"
+    },
+    {
+      "timestamp": "28 feb · 06:14",
+      "src_ip": "165.73.48.22",
+      "dst_ip": "graph.microsoft.com",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "12288",
+      "descripcion": "[O365-AUDIT] GET graph.microsoft.com/v1.0/users/a.morales@medigroup.es/messages?$filter=subject+contains+'Londres'+'vuelo'+'hotel' — IP: 165.73.48.22 — 12 emails — Confirma ausencia del CEO",
+      "malicioso": true,
+      "nota": "RECONOCIMIENTO FINAL a las 06:14 — el atacante confirma que el CEO está en Londres ese día. Los emails sobre vuelo y hotel confirman su ausencia. Momento elegido para ejecutar el fraude: CEO incontactable"
+    },
+    {
+      "timestamp": "28 feb · 14:33",
+      "src_ip": "165.73.48.22",
+      "dst_ip": "graph.microsoft.com",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "8192",
+      "descripcion": "[O365-AUDIT] POST graph.microsoft.com/v1.0/users/a.morales@medigroup.es/sendMail — Bearer: 8f3a2c1d-token — IP: 165.73.48.22 — To: i.fernandez CC: r.vidal — Subject: URGENTE CONFIDENCIAL",
+      "malicioso": true,
+      "nota": "EL EMAIL FRAUDULENTO SE ENVÍA — llamada Graph API POST /sendMail desde Amsterdam. El email sale del servidor legítimo de MediGroup, pasa SPF/DKIM/DMARC y llega sin ninguna alerta de spam. 0 de 90 motores de email security lo bloquearon"
+    },
+    {
+      "timestamp": "28 feb · 14:35",
+      "src_ip": "165.73.48.22",
+      "dst_ip": "graph.microsoft.com",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "1024",
+      "descripcion": "[O365-AUDIT] DELETE graph.microsoft.com/v1.0/users/a.morales@medigroup.es/messages/{msgId} — IP: 165.73.48.22 — Elemento eliminado: 'URGENTE CONFIDENCIAL' de SentItems",
+      "malicioso": true,
+      "nota": "El atacante borra el email de Elementos Enviados del CEO 2 minutos después de enviarlo. Combinado con la regla que elimina las respuestas, la operación queda completamente invisible para el CEO real"
+    },
+    {
+      "timestamp": "28 feb · 14:44",
+      "src_ip": "10.10.5.30",
+      "dst_ip": "76.76.21.98",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "4096",
+      "descripcion": "Proxy — WKSTN-FIN-01 (i.fernandez) → medigroup-secure-payment.vercel.app — GET /confirm/OP-phoenix-2025 — Categoría proxy: UNCATEGORIZED — Sin bloqueo",
+      "malicioso": true,
+      "nota": "i.fernandez hace clic en el enlace del email para 'verificar los datos bancarios'. La página imita el portal de banca corporativa de MediGroup. El proxy no lo bloqueó porque el dominio era nuevo y no figuraba en listas negras"
+    },
+    {
+      "timestamp": "28 feb · 14:46",
+      "src_ip": "10.10.5.30",
+      "dst_ip": "76.76.21.98",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "2048",
+      "descripcion": "Proxy — WKSTN-FIN-01 → medigroup-secure-payment.vercel.app — POST /api/verify — body: {\"user\":\"i.fernandez\",\"pass\":\"[REDACTED]\"} — HTTP 200 OK",
+      "malicioso": true,
+      "nota": "i.fernandez introduce sus credenciales corporativas en el portal falso. El atacante captura usuario y contraseña en tiempo real. Segunda cuenta comprometida como efecto colateral del BEC"
+    },
+    {
+      "timestamp": "28 feb · 14:51",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "162.125.81.6",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "1024",
+      "descripcion": "Proxy — WKSTN-FIN-03 (r.vidal) → api.dropbox.com — POST /2/files/upload_session/start — Dropbox personal — Categoría: Personal Cloud Storage (BLOQUEADO por política DLP) — Bypass: usuario aprobó excepción manual",
+      "malicioso": true,
+      "nota": "r.vidal intenta subir ficheros a Dropbox personal, vetado por política DLP corporativa. Sin embargo, el sistema le permite aprobar una excepción manual con justificación. r.vidal escribió: 'Documentos de trabajo personal'"
+    },
+    {
+      "timestamp": "28 feb · 14:53",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "162.125.81.6",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "19251200",
+      "descripcion": "Proxy — WKSTN-FIN-03 → content.dropboxapi.com — Upload chunks — 18.4 MB — Ficheros identificados por DLP: Presupuestos_2025_Q1_Consolidado.xlsx, Formulario_SEPA_Internacional_v3.docx, Organigrama_Ejecutivos_2025.xlsx",
+      "malicioso": true,
+      "nota": "r.vidal exfiltra 18.4 MB de documentos financieros y organizativos a su Dropbox personal — los mismos ficheros a los que accedió en la madrugada del 26 feb. El DLP registró los nombres de fichero pero no bloqueó la transferencia por la excepción manual"
+    },
+    {
+      "timestamp": "28 feb · 15:08",
+      "src_ip": "10.10.5.42",
+      "dst_ip": "216.58.215.110",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "4096",
+      "descripcion": "Proxy — WKSTN-FIN-03 → google.com — GET /search?q=como+borrar+historial+de+navegacion+windows+10+sin+rastro — DLP Alert: búsqueda de evasión forense",
+      "malicioso": true,
+      "nota": "r.vidal busca en Google cómo borrar el historial sin dejar rastro. Esta búsqueda queda registrada en el proxy y confirma la intención de ocultar la actividad. Coincide cronológicamente con los eventos de borrado en los Windows Logs"
+    },
+    {
+      "timestamp": "27 feb · 08:00",
+      "src_ip": "10.0.1.5",
+      "dst_ip": "52.96.0.1",
+      "protocolo": "SMTP",
+      "puerto": "25",
+      "bytes": "524288",
+      "descripcion": "Replicación SMTP — MAIL-SRV-01 → Exchange Online Protection — Sincronización hybrid — 847 mensajes procesados — Tráfico de mantenimiento rutinario",
+      "malicioso": false,
+      "nota": "Tráfico legítimo de Exchange híbrido. No relacionado con el incidente"
+    },
+    {
+      "timestamp": "28 feb · 08:15",
+      "src_ip": "10.10.10.5",
+      "dst_ip": "52.113.194.132",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "32768",
+      "descripcion": "Proxy — CEO-LAPTOP-01 → teams.microsoft.com — Microsoft Teams — CEO en sesión normal antes del vuelo a Londres — Presencia: Disponible → No molestar → Sin conexión (10:30)",
+      "malicioso": false,
+      "nota": "El CEO usa Teams con normalidad por la mañana antes de volar a Londres. A las 10:30 se desconecta (embarca). Esto corrobora que NO pudo enviar el email de las 14:33 desde su dispositivo"
+    }
+  ]
+}

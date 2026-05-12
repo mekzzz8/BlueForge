@@ -1,0 +1,100 @@
+{
+  "descripcion": "Análisis forense en vivo realizado por el equipo IR a las 04:15 sobre WKSTN-042 aislado de red. Windows 10 Pro · FINCORP\\j.martinez · memoria RAM volcada a USB externo antes de apagar.",
+  "bloques": [
+    {
+      "cmd": "Get-Process | Where-Object {$_.Path -like 'C:\\Users\\Public\\*'} | Select Name,Id,Path,StartTime",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "Name        Id    Path                          StartTime",                                     "tipo": "normal"},
+        {"linea": "svchost    3872   C:\\Users\\Public\\svchost.exe   13/11/2025 18:03:04",                        "tipo": "alert"},
+        {"linea": "",                                                                                              "tipo": "normal"}
+      ],
+      "nota": "svchost.exe en C:\\Users\\Public\\ — el svchost legítimo solo existe en C:\\Windows\\System32\\"
+    },
+    {
+      "cmd": "Get-FileHash 'C:\\Users\\Public\\svchost.exe' -Algorithm SHA256 | Select Hash",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "Hash",                                                                                          "tipo": "normal"},
+        {"linea": "8F3A2C1D9E7B4F6A2C8D5E3F7A1B9C4D6E8F2A5B7C9D1E3F5A7B2C4D6E8F1A3B", "tipo": "alert"}
+      ],
+      "nota": "SHA256 del malware — distinto al de C:\\Windows\\System32\\svchost.exe (F3E1D2C4B5A6978...)"
+    },
+    {
+      "cmd": "reg query 'HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon' /v Userinit",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon",                 "tipo": "normal"},
+        {"linea": "    Userinit    REG_SZ    C:\\Windows\\system32\\userinit.exe, C:\\Users\\Public\\svchost.exe",  "tipo": "alert"}
+      ],
+      "nota": "PERSISTENCIA confirmada — el malware se añadió a Userinit para ejecutarse en cada login"
+    },
+    {
+      "cmd": "vssadmin list shadows",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "vssadmin 1.1 — Herramienta de línea de comandos del Servicio de instantáneas de volumen",     "tipo": "normal"},
+        {"linea": "(c) Copyright 2001-2013 Microsoft Corp.",                                                      "tipo": "normal"},
+        {"linea": "",                                                                                              "tipo": "normal"},
+        {"linea": "No se encontraron instantáneas de volumen.",                                                   "tipo": "alert"}
+      ],
+      "nota": "Las Shadow Copies fueron eliminadas — vssadmin delete shadows /all /quiet ejecutado a las 03:08"
+    },
+    {
+      "cmd": "Get-ChildItem C:\\Users\\j.martinez\\Documents\\ | Select Name | Head -10",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "Name",                                                                                          "tipo": "normal"},
+        {"linea": "Presupuesto_2026.xlsx.ncrypt",                                                                 "tipo": "alert"},
+        {"linea": "Contratos_clientes.docx.ncrypt",                                                               "tipo": "alert"},
+        {"linea": "Nominas_oct_2025.pdf.ncrypt",                                                                  "tipo": "alert"},
+        {"linea": "Informe_auditoria_Q3.pptx.ncrypt",                                                             "tipo": "alert"},
+        {"linea": "README_DECRYPT.txt",                                                                           "tipo": "warn"},
+        {"linea": "... 1.847 ficheros más con extensión .ncrypt",                                                 "tipo": "alert"}
+      ],
+      "nota": "Todos los documentos cifrados — la extensión .ncrypt sustituye a la original"
+    },
+    {
+      "cmd": "Get-Content 'C:\\Users\\j.martinez\\Desktop\\README_DECRYPT.txt'",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "YOUR FILES HAVE BEEN ENCRYPTED WITH NIGHTCRYPT v3",                                            "tipo": "alert"},
+        {"linea": "",                                                                                              "tipo": "normal"},
+        {"linea": "All your files are encrypted with RSA-4096 + AES-256.",                                        "tipo": "warn"},
+        {"linea": "Without our decryption tool your files cannot be recovered.",                                   "tipo": "warn"},
+        {"linea": "",                                                                                              "tipo": "normal"},
+        {"linea": "Send 4 BTC to: bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",                                   "tipo": "alert"},
+        {"linea": "Then contact: decrypt@onionmail.org with your victim ID: FINCORP-8A2D",                       "tipo": "alert"},
+        {"linea": "",                                                                                              "tipo": "normal"},
+        {"linea": "You have 72 hours. After that the price doubles.",                                             "tipo": "warn"}
+      ],
+      "nota": "4 BTC ≈ 320.000€ al precio actual — 72h de plazo antes de que suba el rescate"
+    },
+    {
+      "cmd": "strings 'C:\\Users\\Public\\svchost.exe' | Select-String -Pattern '(185\\.|onion|ncrypt|vssadmin|PsExec)'",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "185.220.101.47",                                                                               "tipo": "alert"},
+        {"linea": "/api/v2/register",                                                                             "tipo": "alert"},
+        {"linea": "/api/v2/checkin",                                                                              "tipo": "alert"},
+        {"linea": "/api/v2/key",                                                                                  "tipo": "alert"},
+        {"linea": "nightcrypt_v3",                                                                                "tipo": "alert"},
+        {"linea": ".ncrypt",                                                                                      "tipo": "alert"},
+        {"linea": "vssadmin delete shadows /all /quiet",                                                          "tipo": "alert"},
+        {"linea": "wbadmin delete catalog -quiet",                                                                "tipo": "alert"},
+        {"linea": "PsExec.exe \\\\%s -s -d cmd /c",                                                              "tipo": "alert"}
+      ],
+      "nota": "El binario contiene las cadenas del C2, los comandos de destrucción de backups y la lógica de movimiento lateral"
+    },
+    {
+      "cmd": "Get-WinEvent -LogName Security | Where-Object {$_.Id -eq 4648} | Select TimeCreated,Message | Select -Last 5",
+      "tipo": "normal",
+      "salida": [
+        {"linea": "TimeCreated           Message",                                                                 "tipo": "normal"},
+        {"linea": "14/11/2025 03:09:17   Logon explícito — cuenta: WKSTN-042$ — servidor: SRV-FILES-01",          "tipo": "alert"},
+        {"linea": "14/11/2025 03:13:09   Logon explícito — cuenta: backup_svc — servidor: SRV-BACKUP-01",         "tipo": "alert"}
+      ],
+      "nota": "Dos movimientos laterales confirmados: servidor de ficheros (éxito + cifrado) y servidor de backups (éxito pero cifrado fallido)"
+    }
+  ]
+}

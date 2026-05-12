@@ -1,0 +1,203 @@
+{
+  "descripcion": "Windows Security Event Log y Sysmon del servidor SRV-RDP-01. Windows Server 2022 · controlador de dominio secundario · expuesto en internet en el puerto 3389.",
+  "eventos": [
+    {
+      "timestamp": "22:47:03",
+      "event_id": "4625",
+      "host": "SRV-RDP-01",
+      "usuario": "administrator",
+      "descripcion": "Logon fallido — Tipo 3 (red) — IP origen: 91.213.50.12 — Motivo: nombre de usuario o contraseña incorrectos",
+      "malicioso": true,
+      "nota": "Inicio de la oleada de brute force — primer intento"
+    },
+    {
+      "timestamp": "22:47:04",
+      "event_id": "4625",
+      "host": "SRV-RDP-01",
+      "usuario": "admin",
+      "descripcion": "Logon fallido — Tipo 10 (RemoteInteractive/RDP) — IP origen: 91.213.50.14",
+      "malicioso": true,
+      "nota": ""
+    },
+    {
+      "timestamp": "22:47:05",
+      "event_id": "4625",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Logon fallido — Tipo 10 (RemoteInteractive/RDP) — IP origen: 91.213.50.18 — Intentos acumulados: 3",
+      "malicioso": true,
+      "nota": "El atacante ya prueba usuarios de dominio reales — tiene un listado previo de cuentas"
+    },
+    {
+      "timestamp": "22:47:08",
+      "event_id": "4625",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Logon fallido — Tipo 10 (RemoteInteractive/RDP) — IP origen: 91.213.50.22",
+      "malicioso": true,
+      "nota": ""
+    },
+    {
+      "timestamp": "22:48:41",
+      "event_id": "4740",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Cuenta bloqueada (lockout) — 5 intentos fallidos en 60 segundos — Caller: SRV-RDP-01",
+      "malicioso": true,
+      "nota": "Cuenta bloqueada pero el atacante cambia de IP y espera el reset automático (30 min)"
+    },
+    {
+      "timestamp": "22:49:12",
+      "event_id": "4625",
+      "host": "SRV-RDP-01",
+      "usuario": "backup_svc",
+      "descripcion": "Logon fallido — Tipo 10 (RemoteInteractive/RDP) — IP origen: 91.213.50.31",
+      "malicioso": true,
+      "nota": "Rota a otras cuentas mientras espera el reset de j.rodriguez"
+    },
+    {
+      "timestamp": "22:51:03",
+      "event_id": "4625",
+      "host": "SRV-RDP-01",
+      "usuario": "svcaccount",
+      "descripcion": "Logon fallido — Tipo 10 (RemoteInteractive/RDP) — IP origen: 91.213.50.44",
+      "malicioso": true,
+      "nota": ""
+    },
+    {
+      "timestamp": "23:01:14",
+      "event_id": "4767",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Cuenta desbloqueada automáticamente tras 30 minutos — reset por política de dominio",
+      "malicioso": false,
+      "nota": "El atacante esperó exactamente el tiempo de reset — conoce la política de lockout"
+    },
+    {
+      "timestamp": "23:01:47",
+      "event_id": "4625",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Logon fallido — Tipo 10 (RemoteInteractive/RDP) — IP origen: 91.213.50.147 — Contraseña: Rodriguez2024",
+      "malicioso": true,
+      "nota": "Último intento fallido antes del éxito — contraseña casi correcta"
+    },
+    {
+      "timestamp": "23:01:52",
+      "event_id": "4624",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Logon EXITOSO — Tipo 10 (RemoteInteractive/RDP) — IP origen: 91.213.50.147 — LogonID: 0x3F2A91",
+      "malicioso": true,
+      "nota": "ACCESO CONSEGUIDO — contraseña correcta: Rodriguez2024! — sesión RDP establecida"
+    },
+    {
+      "timestamp": "23:02:08",
+      "event_id": "4688",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Proceso creado — cmd.exe — PID: 5124 — Parent: rdpclip.exe — CommandLine: cmd.exe /c whoami /all",
+      "malicioso": true,
+      "nota": "Primera acción post-acceso: reconocimiento de privilegios"
+    },
+    {
+      "timestamp": "23:02:11",
+      "event_id": "4688",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Proceso creado — net.exe — CommandLine: net user /domain",
+      "malicioso": true,
+      "nota": "Enumeración de todos los usuarios del dominio"
+    },
+    {
+      "timestamp": "23:02:19",
+      "event_id": "4688",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Proceso creado — net.exe — CommandLine: net localgroup administrators",
+      "malicioso": true,
+      "nota": "Enumeración del grupo local Administrators"
+    },
+    {
+      "timestamp": "23:02:34",
+      "event_id": "4688",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Proceso creado — nltest.exe — CommandLine: nltest /dclist:CONTOSO",
+      "malicioso": true,
+      "nota": "Descubrimiento de controladores de dominio — preparación para movimiento lateral"
+    },
+    {
+      "timestamp": "23:07:22",
+      "event_id": "4720",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Cuenta de usuario creada — Nueva cuenta: svc_update$ — creada por: j.rodriguez",
+      "malicioso": true,
+      "nota": "Creación de cuenta backdoor — nombre simula cuenta de servicio legítima"
+    },
+    {
+      "timestamp": "23:07:23",
+      "event_id": "4732",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Miembro añadido a grupo — Grupo: Administrators — Usuario añadido: svc_update$ — por: j.rodriguez",
+      "malicioso": true,
+      "nota": "Backdoor con privilegios de administrador local — persistencia establecida"
+    },
+    {
+      "timestamp": "23:08:01",
+      "event_id": "4688",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Proceso creado — reg.exe — CommandLine: reg add HKLM\\System\\CurrentControlSet\\Control\\Terminal Server /v fDenyTSConnections /t REG_DWORD /d 0 /f",
+      "malicioso": true,
+      "nota": "Asegura que RDP permanece habilitado — persistencia de acceso remoto"
+    },
+    {
+      "timestamp": "23:09:15",
+      "event_id": "4688",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Proceso creado — powershell.exe — CommandLine: Get-ChildItem C:\\Users -Recurse -Include *.txt,*.docx,*.xlsx | Select FullName,Length",
+      "malicioso": true,
+      "nota": "Reconocimiento de ficheros — búsqueda de datos sensibles"
+    },
+    {
+      "timestamp": "23:15:44",
+      "event_id": "4688",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Proceso creado — xcopy.exe — CommandLine: xcopy C:\\Users\\Administrator\\Documents\\* C:\\Temp\\exfil\\ /E /H",
+      "malicioso": true,
+      "nota": "Copia de documentos del administrador a directorio temporal — pre-exfiltración"
+    },
+    {
+      "timestamp": "23:18:02",
+      "event_id": "4648",
+      "host": "SRV-RDP-01",
+      "usuario": "svc_update$",
+      "descripcion": "Logon explícito con credenciales alternativas — LogonID: 0x3F9B22 — IP: 91.213.50.147",
+      "malicioso": true,
+      "nota": "Atacante confirma que la cuenta backdoor funciona iniciando sesión con ella"
+    },
+    {
+      "timestamp": "23:45:00",
+      "event_id": "4624",
+      "host": "SRV-RDP-01",
+      "usuario": "SYSTEM",
+      "descripcion": "Logon de sistema — Tipo 5 (servicio) — normal",
+      "malicioso": false,
+      "nota": ""
+    },
+    {
+      "timestamp": "23:48:31",
+      "event_id": "4625",
+      "host": "SRV-RDP-01",
+      "usuario": "j.rodriguez",
+      "descripcion": "Alerta EDR — Comportamiento anómalo detectado: proceso cmd.exe hijo de rdpclip.exe + enumeración masiva de usuarios — Sesión LogonID: 0x3F2A91",
+      "malicioso": true,
+      "nota": "DETECCIÓN — 47 minutos después del acceso inicial"
+    }
+  ]
+}

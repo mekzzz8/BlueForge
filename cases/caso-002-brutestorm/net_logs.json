@@ -1,0 +1,181 @@
+{
+  "descripcion": "Firewall perimetral y NetFlow del segmento DMZ. Servidor RDP expuesto en internet: rdp.govcloud-min.es → 203.0.113.45 (IP pública de SRV-RDP-01). Período: 15 mar 2025 22:47 – 16 mar 2025 00:10.",
+  "logs": [
+    {
+      "timestamp": "22:47:03",
+      "src_ip": "91.213.50.12",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "4096",
+      "descripcion": "RDP SYN — intento de conexión desde AS-205090 (Rusia)",
+      "malicioso": true,
+      "nota": "Inicio del ataque — primera IP del bloque 91.213.50.x"
+    },
+    {
+      "timestamp": "22:47:04",
+      "src_ip": "91.213.50.14",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "4096",
+      "descripcion": "RDP SYN — intento de conexión",
+      "malicioso": true,
+      "nota": "Segunda IP — rotación rápida para evadir bloqueos por IP"
+    },
+    {
+      "timestamp": "22:47:05",
+      "src_ip": "91.213.50.18",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "4096",
+      "descripcion": "RDP SYN — intento de conexión",
+      "malicioso": true,
+      "nota": ""
+    },
+    {
+      "timestamp": "22:47:07",
+      "src_ip": "91.213.50.22",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "4096",
+      "descripcion": "RDP SYN — intento de conexión",
+      "malicioso": true,
+      "nota": ""
+    },
+    {
+      "timestamp": "22:47:12",
+      "src_ip": "91.213.50.31",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "4096",
+      "descripcion": "RDP SYN — intento de conexión",
+      "malicioso": true,
+      "nota": ""
+    },
+    {
+      "timestamp": "22:48:00",
+      "src_ip": "91.213.50.0/24",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "9830400",
+      "descripcion": "AGREGADO — 4.820 intentos RDP fallidos desde 23 IPs únicas del bloque 91.213.50.0/24 en 8 minutos",
+      "malicioso": true,
+      "nota": "Herramienta: Hydra o NLBrute — patrón de distributed brute force con lista de credenciales conocidas"
+    },
+    {
+      "timestamp": "22:55:41",
+      "src_ip": "91.213.50.0/24",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "512",
+      "descripcion": "Cese temporal de intentos — pausa de 6 minutos",
+      "malicioso": true,
+      "nota": "El atacante espera el reset del lockout de cuenta (política: 30 min)"
+    },
+    {
+      "timestamp": "23:01:47",
+      "src_ip": "91.213.50.147",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "8192",
+      "descripcion": "RDP — CONEXIÓN EXITOSA — sesión establecida — duración: 47 min 39 seg",
+      "malicioso": true,
+      "nota": "ACCESO CONSEGUIDO — única IP que logra sesión completa — 91.213.50.147 (Moscú, RU — VPN/proxy)"
+    },
+    {
+      "timestamp": "23:02:08",
+      "src_ip": "203.0.113.45",
+      "dst_ip": "10.20.1.10",
+      "protocolo": "LDAP",
+      "puerto": "389",
+      "bytes": "24576",
+      "descripcion": "LDAP query — enumeración de usuarios y grupos de directorio activo desde SRV-RDP-01",
+      "malicioso": true,
+      "nota": "Reconocimiento interno — el atacante enumera AD desde dentro de la red"
+    },
+    {
+      "timestamp": "23:02:34",
+      "src_ip": "203.0.113.45",
+      "dst_ip": "10.20.1.10",
+      "protocolo": "RPC",
+      "puerto": "135",
+      "bytes": "3072",
+      "descripcion": "RPC — NetLogon — nltest /dclist — descubrimiento de controladores de dominio",
+      "malicioso": true,
+      "nota": "El atacante mapea la infraestructura AD del Ministerio"
+    },
+    {
+      "timestamp": "23:09:15",
+      "src_ip": "203.0.113.45",
+      "dst_ip": "10.20.5.0/24",
+      "protocolo": "TCP",
+      "puerto": "445",
+      "bytes": "1024",
+      "descripcion": "SMB scan — SRV-RDP-01 escanea hosts internos en el segmento 10.20.5.0/24",
+      "malicioso": true,
+      "nota": "Movimiento lateral potencial — el servidor comprometido escanea la red interna vía SMB"
+    },
+    {
+      "timestamp": "23:15:44",
+      "src_ip": "203.0.113.45",
+      "dst_ip": "91.213.50.147",
+      "protocolo": "HTTPS",
+      "puerto": "443",
+      "bytes": "5242880",
+      "descripcion": "HTTPS POST — transferencia saliente de 5 MB desde SRV-RDP-01 hacia IP atacante",
+      "malicioso": true,
+      "nota": "EXFILTRACIÓN — documentos copiados a C:\\Temp\\exfil\\ enviados al atacante (5 MB)"
+    },
+    {
+      "timestamp": "23:18:02",
+      "src_ip": "91.213.50.147",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "4096",
+      "descripcion": "Nueva sesión RDP — cuenta: svc_update$ — verificación de backdoor",
+      "malicioso": true,
+      "nota": "El atacante comprueba que la cuenta backdoor funciona correctamente"
+    },
+    {
+      "timestamp": "23:49:26",
+      "src_ip": "91.213.50.147",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "1024",
+      "descripcion": "Cierre de sesión RDP — sesión j.rodriguez terminada",
+      "malicioso": false,
+      "nota": "Atacante desconecta la sesión principal tras 47 minutos — backdoor activo"
+    },
+    {
+      "timestamp": "22:45:10",
+      "src_ip": "10.20.8.5",
+      "dst_ip": "203.0.113.45",
+      "protocolo": "RDP",
+      "puerto": "3389",
+      "bytes": "102400",
+      "descripcion": "RDP — sesión legítima — administrador IT conectado para mantenimiento rutinario",
+      "malicioso": false,
+      "nota": "Tráfico legítimo previo al ataque — conexión del equipo de sistemas"
+    },
+    {
+      "timestamp": "22:30:00",
+      "src_ip": "203.0.113.45",
+      "dst_ip": "8.8.8.8",
+      "protocolo": "DNS",
+      "puerto": "53",
+      "bytes": "128",
+      "descripcion": "Query A: windowsupdate.microsoft.com — tráfico normal de actualizaciones",
+      "malicioso": false,
+      "nota": ""
+    }
+  ]
+}
